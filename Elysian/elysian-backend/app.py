@@ -16,7 +16,6 @@ app = Flask(__name__)
 # ---------------------------------------------------------
 
 service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
-# service_account_info = "elysianproject-2b9ce-firebase-adminsdk-fbsvc-542db33246.json"
 
 cred = credentials.Certificate(service_account_info)
 firebase_admin.initialize_app(cred)
@@ -50,15 +49,9 @@ interpreter = tf.lite.Interpreter(model_path="user_encoder.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
-# for i, d in enumerate(input_details):
-#     print(i, d["name"], d["shape"], d["dtype"])
 
 output_details = interpreter.get_output_details()
 
-# Expecting:
-# input 0 → origin_enc (float32, shape [1,1])
-# input 1 → fav_enc (float32, shape [1,1])
-# input 2 → multi_hot (float32, shape [1, multi_dim])
 U_MULTI_IDX = 0
 U_ORIGIN_IDX = 1
 U_FAV_IDX = 2
@@ -68,22 +61,22 @@ U_FAV_IDX = 2
 # Helper: Encode user profile into model-ready inputs
 # ---------------------------------------------------------
 def encode_user_inputs(data):
-    # Encode origin country
+    # Encode origin country using the pickled encoded origin country file.
     origin_enc = float(le_origin.transform([data["origin_country"]])[0])
 
-    # Encode favorite country visited
+    # Encode favorite country visited using the pickled encoded favorite country file.
     fav_enc = float(le_fav.transform([data["favorite_country_visited"]])[0])
 
-    # Encode multi-hot vector
+    # Encode multi-hot vector.
     multi_hot_parts = []
-
+    # Go through each question that is multi-select.
     for feature in ["vacation_types", "seasons", "budget", "place_type"]:
         values = data.get(feature, [])
-        mlb = mlbs[feature]
+        mlb = mlbs[feature] # Encode the feature based on the MultiLabelBinarizer file.
         encoded = mlb.transform([values])[0]
-        multi_hot_parts.append(encoded)
+        multi_hot_parts.append(encoded) # Add this to the encoded multi hot questions.
 
-    multi_hot = np.concatenate(multi_hot_parts).astype(np.float32)
+    multi_hot = np.concatenate(multi_hot_parts).astype(np.float32) # Change as a np, which is what the model expects.
     # print("User multi-hot length:", len(multi_hot))
 
 
@@ -94,17 +87,14 @@ def encode_user_inputs(data):
 # Helper: Run user encoder TFLite model
 # ---------------------------------------------------------
 def get_user_embedding(origin_enc, fav_enc, multi_hot):
-    # Prepare tensors
-    origin_tensor = np.array([[origin_enc]], dtype=np.float32)
-    fav_tensor = np.array([[fav_enc]], dtype=np.float32)
-    multi_tensor = np.array([multi_hot], dtype=np.float32)
+    # Set the input details that the user tower needs.
+    #ASK: Isn't the order different in the model code vs how we pass it in here?
+    # There was an error when we did it another way, so we changed it to use this order but it doesn't make sense.
+    interpreter.set_tensor(input_details[U_MULTI_IDX]["index"], np.array([multi_hot], dtype=np.float32)) # Set the multi hot input.
+    interpreter.set_tensor(input_details[U_ORIGIN_IDX]["index"], np.array([[origin_enc]], dtype=np.float32)) # Set the origin country input.
+    interpreter.set_tensor(input_details[U_FAV_IDX]["index"], np.array([[fav_enc]], dtype=np.float32)) # Set the favorite country input.
 
-    # Correct order for user-only TFLite model
-    interpreter.set_tensor(input_details[U_MULTI_IDX]["index"], np.array([multi_hot], dtype=np.float32))
-    interpreter.set_tensor(input_details[U_ORIGIN_IDX]["index"], np.array([[origin_enc]], dtype=np.float32))
-    interpreter.set_tensor(input_details[U_FAV_IDX]["index"], np.array([[fav_enc]], dtype=np.float32))
-
-
+    # Given the encoded user inputs, invoke the model to get the embedded user inputs.
     interpreter.invoke()
 
     # Output is the user embedding vector
@@ -115,22 +105,22 @@ def get_user_embedding(origin_enc, fav_enc, multi_hot):
 # Firebase helpers: likes/dislikes
 # ---------------------------------------------------------
 def get_user_feedback(user_id):
-    fav_doc = db.collection("userFavorites").document(user_id).get()
-    dislike_doc = db.collection("userDislikes").document(user_id).get()
+    fav_doc = db.collection("userFavorites").document(user_id).get() # Get the favorite cities of the user.
+    dislike_doc = db.collection("userDislikes").document(user_id).get() # Get the disliked cities of the user.
 
-    liked = list(fav_doc.to_dict().keys()) if fav_doc.exists else []
-    disliked = list(dislike_doc.to_dict().keys()) if dislike_doc.exists else []
+    liked = list(fav_doc.to_dict().keys()) if fav_doc.exists else [] # Save as a dictionary.
+    disliked = list(dislike_doc.to_dict().keys()) if dislike_doc.exists else [] # Save as a dictionary.
 
     return liked, disliked
 
 def adjust_user_embedding(user_vec, liked_idx, disliked_idx, lr=0.1):
     if liked_idx:
-        liked_vecs = city_vectors[liked_idx]
-        user_vec += lr * np.mean(liked_vecs, axis=0)
+        liked_vecs = city_vectors[liked_idx] # Get the city vector of the liked city.
+        user_vec += lr * np.mean(liked_vecs, axis=0) # Add the mean of the liked city to the user vector to give more weight to similar cities.
 
     if disliked_idx:
-        disliked_vecs = city_vectors[disliked_idx]
-        user_vec -= lr * np.mean(disliked_vecs, axis=0)
+        disliked_vecs = city_vectors[disliked_idx] # Get the city vector of the disliked city.
+        user_vec -= lr * np.mean(disliked_vecs, axis=0) # Subtract the mean of the disliked city to the user vector to give less weight to similar cities.
 
     # Normalize to keep vector stable
     user_vec = user_vec / (np.linalg.norm(user_vec) + 1e-8)
@@ -150,6 +140,7 @@ def cosine(a, b):
 def similarity_to_group(city_vec, group_idx):
     if not group_idx:
         return 0.0
+    # Get the cosine similarity of a city vector compared to the group.
     sims = [cosine(city_vec, city_vectors[i]) for i in group_idx]
     return float(np.mean(sims))
 
@@ -160,26 +151,30 @@ GAMMA = 0.7
 
 
 def get_dynamic_scores(user_vec, user_id):
+    # Get the liked and disliked cities and convert them to their corresponding city vector.
     liked_ids, disliked_ids = get_user_feedback(user_id)
     liked_idx = to_indices(liked_ids)
     disliked_idx = to_indices(disliked_ids)
 
-    base_scores = city_vectors @ user_vec  # same as before
+    base_scores = city_vectors @ user_vec  # From the modified user vector, get the similarity scores as the base score.
 
     final_scores = []
     for i, city_vec in enumerate(city_vectors):
+        # Get the cosine similarity of a single city vector and the group of liked city vectors.
         sim_liked = similarity_to_group(city_vec, liked_idx)
+        # Get the cosine similarity of a single city vector and the group of disliked city vectors.
         sim_disliked = similarity_to_group(city_vec, disliked_idx)
-
+        # Now, recompute the scores to keep the base score weight, but also the liked and disliked weights.
         score = (
             ALPHA * base_scores[i] +
             BETA * sim_liked -
             GAMMA * sim_disliked
         )
-        final_scores.append(score)
+        final_scores.append(score) # Keep a list of all the scores
 
     return np.array(final_scores), liked_idx, disliked_idx
 def next_city(user_vec, user_id):
+    # Gets the new scores based on the new liked/disliked cities.
     scores, liked_idx, disliked_idx = get_dynamic_scores(user_vec, user_id)
 
     # Exclude already swiped cities
@@ -187,15 +182,15 @@ def next_city(user_vec, user_id):
     for idx in seen:
         scores[idx] = -1e9  # effectively remove
 
-    next_idx = int(np.argmax(scores))
-    row = cities_df.iloc[next_idx]
+    next_idx = int(np.argmax(scores)) # The next city is the one with the highest score.
+    row = cities_df.iloc[next_idx] # Get the corresponding row of that city.
 
     return {
         "city_id": row["city_id"],
         "city_name": row["city_name"],
         "country": row["country"],
         "score": float(scores[next_idx])
-    }
+    } # Return the city recommendation in format.
 
 
 # ---------------------------------------------------------
@@ -204,32 +199,35 @@ def next_city(user_vec, user_id):
 @app.route("/recommend", methods=["POST"])
 def recommend():
     try:
-        data = request.get_json()
+        data = request.get_json() # The data is the fetched user answers during profile setup.
 
         # Encode user answers
+        # Get the encoded integer version of each single select answer and one for the multi-hot answers.
         origin_enc, fav_enc, multi_hot = encode_user_inputs(data)
 
         # Get user embedding
+        # Invoke the model to get the embedding of the user using the user tower.
         user_vec = get_user_embedding(origin_enc, fav_enc, multi_hot)
 
         # Compute similarity scores
+        # Now that the user vector can be compared, compute the score for each city compared to the user vector.
         scores = city_vectors @ user_vec
 
-        # Top K
+        # Here, get the top 5 of the cities with the highest scores.
         k = data.get("k", 5)
-        top_idx = scores.argsort()[::-1][:k]
+        top_idx = scores.argsort()[::-1][:k] # Sort from high to low.
 
         results = []
-        for idx in top_idx:
-            row = cities_df.iloc[idx]
+        for idx in top_idx: # Go through each index.
+            row = cities_df.iloc[idx] # Get the row associated with the index.
             results.append({
                 "city_id": row["city_id"],
                 "city_name": row["city_name"],
                 "country": row["country"],
                 "score": float(scores[idx])
-            })
+            }) # Append the recommended city in this format.
 
-        return jsonify({"recommendations": results})
+        return jsonify({"recommendations": results}) # Give back a JSON as a POST.
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -237,19 +235,22 @@ def recommend():
 @app.route("/next_city", methods=["POST"])
 def api_next_city():
     try:
-        data = request.get_json()
-        user_id = data["user_id"]  # you must send this from frontend
+        data = request.get_json() # The data given is the user profile.
+        user_id = data["user_id"]  # Get the user id given from the data.
 
         # Same encoding as /recommend
-        origin_enc, fav_enc, multi_hot = encode_user_inputs(data)
-        user_vec = get_user_embedding(origin_enc, fav_enc, multi_hot)
+        origin_enc, fav_enc, multi_hot = encode_user_inputs(data) # First encode the data.
+        user_vec = get_user_embedding(origin_enc, fav_enc, multi_hot) # Then, embedd the encoded vector.
+        # Get the dictionaries of the user favorite and disliked cities from Firebase.
         liked_ids, disliked_ids = get_user_feedback(user_id)
+        # Get the corresponding indices of the favorited and disliked cities.
         liked_idx = to_indices(liked_ids)
         disliked_idx = to_indices(disliked_ids)
+        # Now, change the initial user vector taken from the model to adjust based on the city swipes.
         user_vec = adjust_user_embedding(user_vec, liked_idx, disliked_idx)
-
+        # After the user vector is adjusted, get the next best city.
         city = next_city(user_vec, user_id)
-        return jsonify({"city": city})
+        return jsonify({"city": city}) # Give a JSON as a POST of the next city.
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
