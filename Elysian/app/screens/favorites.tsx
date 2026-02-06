@@ -3,16 +3,21 @@ File: favorites.tsx
 Function: Displays users liked places loaded from Firebase userFavorites.
 */
 
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Image, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Card, Modal, Button } from 'react-native-paper';
-import { styles } from './app_styles.styles';
-import { getAuth } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc, deleteField, setDoc } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-
+import React, { useEffect, useState } from "react";
+import { View, ScrollView, Image, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, Card, Modal, Button } from "react-native-paper";
+import { styles } from "./app_styles.styles";
+import { getAuth } from "firebase/auth";
+import {
+  doc,
+  onSnapshot,
+  updateDoc,
+  deleteField,
+  setDoc,
+} from "firebase/firestore";
+import { FIREBASE_DB } from "../../FirebaseConfig";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Same interface as Home ... maybe change ?
 interface Recomendation {
@@ -24,7 +29,7 @@ interface Recomendation {
   image?: string;
 }
 
-// Favorites component 
+// Favorites component
 const Favorites = () => {
   const [favorites, setFavorites] = useState<Recomendation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,11 +38,12 @@ const Favorites = () => {
   const [selectedCity, setSelectedCity] = useState<Recomendation | null>(null);
   const [cityModalOpen, setCityModalOpen] = useState(false);
 
-
-  // Only uses Wikipedia REST API 
+  // Only uses Wikipedia REST API
   const fetchCityImage = async (cityName: string, country: string) => {
     try {
-      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(`${cityName}, ${country}`)}`;
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+        `${cityName}, ${country}`
+      )}`;
       const res = await fetch(url);
       if (!res.ok) return undefined;
       const data = await res.json();
@@ -46,14 +52,33 @@ const Favorites = () => {
       const rawImage = data.originalimage?.source || data.thumbnail?.source;
       if (!rawImage) return undefined;
       const lower = rawImage.toLowerCase();
-      if (lower.includes('flag') || lower.includes('flag_of')) return undefined;
+      if (lower.includes("flag") || lower.includes("flag_of")) return undefined;
 
       return rawImage;
     } catch (err) {
-      console.error('Error fetching city image:', err);
+      console.error("Error fetching city image:", err);
       return undefined;
     }
   };
+
+  const fetchUnsplashImage = async (cityName: string, country: string) => {
+    try {
+      const url =
+        `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
+          cityName
+        )}` + `&country=${encodeURIComponent(country)}`;
+
+      const res = await fetch(url);
+      if (!res.ok) return null;
+
+      const json = await res.json();
+      return json?.data?.imageUrl ?? null;
+    } catch (e) {
+      console.error("Unsplash fetch error:", e);
+      return null;
+    }
+  };
+
   const fetchCityDescription = async (cityName: string, country: string) => {
     try {
       // 1) We try the Wikivoyage first (it's more travel/aesthetic)
@@ -62,39 +87,39 @@ const Favorites = () => {
         `${cityName} (${country})`,
         `${cityName}, ${country}`,
       ];
-  
+
       for (const title of tryTitles) {
         const voyageUrl =
           `https://en.wikivoyage.org/w/api.php` +
           `?action=query&prop=extracts&exintro=1&explaintext=1` +
           `&titles=${encodeURIComponent(title)}` +
           `&format=json&origin=*`;
-  
+
         const voyageRes = await fetch(voyageUrl);
         if (voyageRes.ok) {
           const voyageData = await voyageRes.json();
           const pages = voyageData?.query?.pages;
           const firstPage = pages ? pages[Object.keys(pages)[0]] : null;
           const extract = firstPage?.extract;
-  
+
           if (extract && extract.trim().length > 0) {
             return extract;
           }
         }
       }
-  
+
       // 2) If Wikivoyage doesn't work then we fallback to Wikipedia (reliable if Wikivoyage has no page)
       const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
         `${cityName}, ${country}`
       )}`;
-  
+
       const wikiRes = await fetch(wikiUrl);
       if (!wikiRes.ok) return undefined;
-  
+
       const wikiData = await wikiRes.json();
       return wikiData.extract || undefined;
     } catch (err) {
-      console.error('Error fetching city description:', err);
+      console.error("Error fetching city description:", err);
       return undefined;
     }
   };
@@ -103,15 +128,15 @@ const Favorites = () => {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) return;
-  
-      const favoritesRef = doc(FIREBASE_DB, 'userFavorites', user.uid);
-      const dislikesRef = doc(FIREBASE_DB, 'userDislikes', user.uid);
-  
+
+      const favoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+      const dislikesRef = doc(FIREBASE_DB, "userDislikes", user.uid);
+
       // 1) Remove from favorites
       await updateDoc(favoritesRef, {
         [city.city_id]: deleteField(),
       });
-  
+
       // 2) Add to dislikes (merge so we don't overwrite existing dislikes)
       await setDoc(
         dislikesRef,
@@ -125,46 +150,71 @@ const Favorites = () => {
         { merge: true }
       );
     } catch (err) {
-      console.error('Error removing favorite:', err);
-      setError('Could not update that place.');
+      console.error("Error removing favorite:", err);
+      setError("Could not update that place.");
     }
-  };  
+  };
 
-  // Load liked locations from Firestore 
+  // Load liked locations from Firestore
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
-  
+
     if (!user) {
-      setError('No user signed in.');
+      setError("No user signed in.");
       return;
     }
-  
+
     setLoading(true);
-  
-    const favoritesRef = doc(FIREBASE_DB, 'userFavorites', user.uid);
-  
+
+    const favoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
     const unsubscribe = onSnapshot(
       favoritesRef,
       async (snapshot) => {
         try {
           if (!snapshot.exists()) {
             setFavorites([]);
-            setError('No favorites found.');
+            setError("No favorites found.");
             setLoading(false);
             return;
           }
-  
+
           setError(null);
-  
+
           const cityData = snapshot.data() || {};
-  
+
           const favoritesArray: Recomendation[] = await Promise.all(
             Object.keys(cityData).map(async (key) => {
               const city = cityData[key];
-              const image = await fetchCityImage(city.city_name, city.country_name);
-              const description = await fetchCityDescription(city.city_name, city.country_name);
-  
+              let image = city.image;
+
+              if (!image) {
+                // Try Unsplash first
+                image = await fetchUnsplashImage(
+                  city.city_name,
+                  city.country_name
+                );
+
+                // Fallback to Wikipedia if needed
+                if (!image) {
+                  image = await fetchCityImage(
+                    city.city_name,
+                    city.country_name
+                  );
+                }
+
+                if (image && image.includes("images.unsplash.com")) {
+                  await updateDoc(favoritesRef, {
+                    [`${key}.image`]: image,
+                  });
+                }
+              }
+              const description = await fetchCityDescription(
+                city.city_name,
+                city.country_name
+              );
+
               return {
                 city_id: key,
                 city_name: city.city_name,
@@ -174,25 +224,24 @@ const Favorites = () => {
               };
             })
           );
-  
+
           setFavorites(favoritesArray);
         } catch (err) {
-          console.error('Error building favorites array:', err);
-          setError('Failed to load liked places.');
+          console.error("Error building favorites array:", err);
+          setError("Failed to load liked places.");
         } finally {
           setLoading(false);
         }
       },
       (err) => {
-        console.error('onSnapshot error:', err);
-        setError('Failed to load liked places.');
+        console.error("onSnapshot error:", err);
+        setError("Failed to load liked places.");
         setLoading(false);
       }
     );
-  
+
     return () => unsubscribe();
   }, []);
-  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -201,13 +250,13 @@ const Favorites = () => {
           Your Favorite Locations!
         </Text>
 
-        {loading && <Text style={styles.sectionTitle}>Loading favorites...</Text>}
+        {loading && (
+          <Text style={styles.sectionTitle}>Loading favorites...</Text>
+        )}
         {error && !loading && <Text>{error}</Text>}
 
         {!loading && favorites.length > 0 && (
           <View style={styles.resultsContainer}>
-            
-
             {favorites.map((city) => (
               <Pressable
                 key={city.city_id}
@@ -225,9 +274,16 @@ const Favorites = () => {
                           e.stopPropagation();
                           removeFavorite(city);
                         }}
-                        style={[styles.removeIconBtn, styles.removeIconBtnShadow]}
+                        style={[
+                          styles.removeIconBtn,
+                          styles.removeIconBtnShadow,
+                        ]}
                       >
-                        <MaterialCommunityIcons name="heart" size={18} color="#fff" />
+                        <MaterialCommunityIcons
+                          name="heart"
+                          size={18}
+                          color="#fff"
+                        />
                       </Pressable>
 
                       {city.image ? (
@@ -274,15 +330,15 @@ const Favorites = () => {
             ) : null}
 
             <Text style={styles.cityModalDescription}>
-              {selectedCity.description || 'No description available.'}
+              {selectedCity.description || "No description available."}
             </Text>
 
-              <Button
-                mode="contained"
-                onPress={() => setCityModalOpen(false)}
-                style={styles.cityModalCloseBtn}
-              >
-                Close
+            <Button
+              mode="contained"
+              onPress={() => setCityModalOpen(false)}
+              style={styles.cityModalCloseBtn}
+            >
+              Close
             </Button>
           </View>
         )}
