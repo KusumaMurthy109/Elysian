@@ -334,6 +334,42 @@ export const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 25,
   },
+  floatingUploadButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5
+  },
+  uploadIcon: {
+    fontSize: 32,
+    color: '#000'
+  },
+   post: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  uploader: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#555',
+  },
+  uploadingIndicator: {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  marginLeft: -25,
+  marginTop: -25,
+  zIndex: 100,
+}
 });
 
 export const inputTheme = {
