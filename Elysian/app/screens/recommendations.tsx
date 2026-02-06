@@ -13,7 +13,7 @@ import { FIREBASE_DB } from '../../FirebaseConfig';
 // Define the navigation parameter list
 export type RootParamList = {
   Home: undefined;
-  Recommendations: {recommendations: Recommendation[]};
+  Recommendations: { recommendations: Recommendation[] };
   Liked: undefined;
 };
 
@@ -27,10 +27,10 @@ interface Recommendation {
 }
 
 type City = {
-    city_name: string;
-    country_name: string;
-    score: number;
-    };
+  city_name: string;
+  country_name: string;
+  score: number;
+};
 
 
 // Cute spinning globe loader
@@ -52,7 +52,7 @@ const GlobeLoader = () => {
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
 
   return (
@@ -64,7 +64,6 @@ const GlobeLoader = () => {
   );
 };
 
-
 // Home component
 const Recommendations = () => {
   // Initialize navigation with type safety
@@ -72,23 +71,27 @@ const Recommendations = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<Recommendation | null>(null);
   const [cityModalOpen, setCityModalOpen] = useState(false);
-  const screenWidth = Dimensions.get('window').width;
+  const screenWidth = Dimensions.get("window").width;
   const position = useRef(new Animated.ValueXY()).current;
   const doubleTap = useRef<number | null>(null);
   const [currentCity, setCurrentCity] = useState<Recommendation | null>(null);
   const currentCityRef = useRef<Recommendation | null>(null);
+  const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     currentCityRef.current = currentCity;
   }, [currentCity]);
 
-  const fetchWikivoyageIntro = async ( cityName: string, country: string): Promise<string | null> => {
+  const fetchWikivoyageIntro = async (
+    cityName: string,
+    country: string
+  ): Promise<string | null> => {
     const titlesToTry = [
       cityName,
       `${cityName}, ${country}`,
       `${cityName} (${country})`,
     ];
-  
+
     for (const title of titlesToTry) {
       try {
         const url =
@@ -96,20 +99,20 @@ const Recommendations = () => {
           `?action=query&format=json&origin=*` +
           `&prop=extracts&exintro=1&explaintext=1&redirects=1` +
           `&titles=${encodeURIComponent(title)}`;
-  
+
         const res = await fetch(url);
         const data = await res.json();
-  
+
         const pages = data?.query?.pages;
         if (!pages) continue;
-  
+
         const page = pages[Object.keys(pages)[0]];
         const extract = page?.extract;
-  
+
         if (
           extract &&
-          !extract.toLowerCase().includes('more than one place') &&
-          !extract.toLowerCase().includes('may refer to')
+          !extract.toLowerCase().includes("more than one place") &&
+          !extract.toLowerCase().includes("may refer to")
         ) {
           return extract;
         }
@@ -117,20 +120,22 @@ const Recommendations = () => {
         continue;
       }
     }
-  
+
     return null;
   };
-  
+
   const shorten = (text: string, sentences = 3) => {
-    const cleaned = text.replace(/\s+/g, ' ').trim();
-    if (!cleaned) return '';
-    const parts = cleaned.split('. ');
-    const sliced = parts.slice(0, sentences).join('. ');
-    return sliced.endsWith('.') ? sliced : sliced + '.';
+    const cleaned = text.replace(/\s+/g, " ").trim();
+    if (!cleaned) return "";
+    const parts = cleaned.split(". ");
+    const sliced = parts.slice(0, sentences).join(". ");
+    return sliced.endsWith(".") ? sliced : sliced + ".";
   };
-  
+
   const fetchWikipediaSummary = async (title: string) => {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+      title
+    )}`;
     const res = await fetch(url);
     if (!res.ok) return null;
     return res.json();
@@ -139,9 +144,9 @@ const Recommendations = () => {
   const isFlagImage = (url?: string) => {
     if (!url) return false;
     const lower = url.toLowerCase();
-    return lower.includes('flag') || lower.includes('flag_of');
-  };  
-  
+    return lower.includes("flag") || lower.includes("flag_of");
+  };
+
   const fetchCityInfo = async (cityName: string, country: string) => {
     try {
       // 1) Travel-style text first from Wikivoyage
@@ -151,25 +156,42 @@ const Recommendations = () => {
       if (!wikiData) {
         wikiData = await fetchWikipediaSummary(`${cityName}, ${country}`);
       }
-  
+
       const wikiText: string | null = wikiData?.extract || null;
       const rawImage =
-        wikiData?.originalimage?.source ||
-        wikiData?.thumbnail?.source;
-        
+        wikiData?.originalimage?.source || wikiData?.thumbnail?.source;
+
       const image = isFlagImage(rawImage) ? undefined : rawImage;
-  
-      const descriptionRaw = voyText || wikiText || '';
+
+      const descriptionRaw = voyText || wikiText || "";
       const description = descriptionRaw
         ? shorten(descriptionRaw, 3)
-        : 'No description available.';
-  
+        : "No description available.";
+
       return { description, image };
     } catch (err) {
-      console.error('Error fetching city info:', err);
-      return { description: 'No description available.', image: undefined };
+      console.error("Error fetching city info:", err);
+      return { description: "No description available.", image: undefined };
     }
-  };  
+  };
+
+  const fetchUnsplashImage = async (cityName: string, country: string) => {
+    try {
+      const url =
+        `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
+          cityName
+        )}` + `&country=${encodeURIComponent(country)}`;
+
+      const res = await fetch(url);
+      if (!res.ok) return null;
+
+      const json = await res.json();
+      return json?.data?.imageUrl ?? null;
+    } catch (e) {
+      console.error("Unsplash fetch error:", e);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const loadInitial = async () => {
@@ -181,9 +203,14 @@ const Recommendations = () => {
 
         const city = await fetchNextCity(user.uid);
         const extra = await fetchCityInfo(city.city_name, city.country);
-        setCurrentCity({ ...city, ...extra });
-        console.log(currentCity)
 
+        setUnsplashImageUrl(null);
+
+        const uImg = await fetchUnsplashImage(city.city_name, city.country);
+        setUnsplashImageUrl(uImg);
+
+        setCurrentCity({ ...city, ...extra });
+        console.log(currentCity);
       } catch (err) {
         console.error(err);
         setError("Failed to get recommendations");
@@ -198,85 +225,113 @@ const Recommendations = () => {
   const rightSwipe = async (cityId: string, city: City) => {
     const auth = getAuth();
     const user = auth.currentUser;
-    
+
     if (!user) {
-      alert('Error, User must be signed in!');
+      alert("Error, User must be signed in!");
       return;
     }
 
     try {
-      const userDocRef = doc(FIREBASE_DB, 'userFavorites', user.uid);
-      await setDoc(userDocRef, {[`${cityId}`]: city}, {merge: true});
+      const userDocRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+      await setDoc(
+        userDocRef,
+        {
+          [`${cityId}`]: {
+            ...city,
+            image: unsplashImageUrl || null,
+          },
+        },
+        { merge: true }
+      );
       // await sendSwipe(user.uid, cityId, true); // Update backend with the swipe
+
       const nextCity = await fetchNextCity(user.uid);
       const extra = await fetchCityInfo(nextCity.city_name, nextCity.country);
+
+      setUnsplashImageUrl(null);
+
+      const uImg = await fetchUnsplashImage(
+        nextCity.city_name,
+        nextCity.country
+      );
+      setUnsplashImageUrl(uImg);
+
       setCurrentCity({ ...nextCity, ...extra });
+    } catch (error) {
+      console.error("Encountered an error while saving your favorites:", error);
+      alert("Error, There was an error while saving your favorites.");
     }
-    catch (error) {
-      console.error('Encountered an error while saving your favorites:', error);
-      alert('Error, There was an error while saving your favorites.')
-    }
-  }
+  };
 
   const leftSwipe = async (cityId: string, city: City) => {
     const auth = getAuth();
     const user = auth.currentUser;
 
     if (!user) {
-      alert('Error, User must be signed in!');
+      alert("Error, User must be signed in!");
       return;
     }
 
-    try{
-      const userDocRef = doc(FIREBASE_DB, 'userDislikes', user.uid);
-      await setDoc(userDocRef, {[`${cityId}`]: city}, {merge: true});
+    try {
+      const userDocRef = doc(FIREBASE_DB, "userDislikes", user.uid);
+      await setDoc(userDocRef, { [`${cityId}`]: city }, { merge: true });
       // await sendSwipe(user.uid, cityId, false); // Update backend with the swipe
       const nextCity = await fetchNextCity(user.uid);
       const extra = await fetchCityInfo(nextCity.city_name, nextCity.country);
+
+      setUnsplashImageUrl(null);
+      const uImg = await fetchUnsplashImage(
+        nextCity.city_name,
+        nextCity.country
+      );
+      setUnsplashImageUrl(uImg);
+
       setCurrentCity({ ...nextCity, ...extra });
+    } catch (error) {
+      console.error("Encountered an error while saving your dislikes:", error);
+      alert("Error, There was an error while saving your dislikes.");
     }
-    catch (error) {
-      console.error('Encountered an error while saving your dislikes:', error);
-      alert('Error, There was an error while saving your dislikes.')
-    }
-  }
-
-async function getUserProfileAnswers(userId: string) {
-  const ref = doc(FIREBASE_DB, "userProfiles", userId);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) {
-    throw new Error("User profile not found");
-  }
-
-  const data = snap.data();
-  const responses = data.responses;
-
-  return {
-    origin_country: responses[0],
-    vacation_types: responses[1] || [],
-    seasons: responses[2] || [],
-    budget: responses[3] || [],
-    favorite_country_visited: responses[4],
-    place_type: responses[5] || []
   };
-}
+
+  async function getUserProfileAnswers(userId: string) {
+    const ref = doc(FIREBASE_DB, "userProfiles", userId);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      throw new Error("User profile not found");
+    }
+
+    const data = snap.data();
+    const responses = data.responses;
+
+    return {
+      origin_country: responses[0],
+      vacation_types: responses[1] || [],
+      seasons: responses[2] || [],
+      budget: responses[3] || [],
+      favorite_country_visited: responses[4],
+      place_type: responses[5] || [],
+    };
+  }
 
   async function fetchNextCity(userId: string) {
     // You need to supply the same profile answers you used to generate recs.
     // If you stored them in Firestore, read them here; for now assume you have them.
     const profile = await getUserProfileAnswers(userId);
 
-    const res = await fetch('https://capstone-team-generated-group30-project.onrender.com/next_city', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        user_id: userId,
-        ...profile,
-      }),
-    });
+    const res = await fetch(
+      "https://capstone-team-generated-group30-project.onrender.com/next_city",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          ...profile,
+        }),
+      }
+    );
 
-    if (!res.ok) throw new Error('Failed to fetch next city');
+    if (!res.ok) throw new Error("Failed to fetch next city");
     const json = await res.json();
     return json.city as Recommendation;
   }
@@ -284,51 +339,48 @@ async function getUserProfileAnswers(userId: string) {
   const swipeFunction = (direction: 'left' | 'right') => {
     if (!currentCityRef.current) return;
 
-    const x = direction === 'right' ? screenWidth : -screenWidth;
+    const x = direction === "right" ? screenWidth : -screenWidth;
     Animated.timing(position, {
-      toValue: {x, y: 0},
+      toValue: { x, y: 0 },
       duration: 300,
       useNativeDriver: false,
     }).start(() => {
+      const city = currentCityRef.current;
+      if (!city) return;
 
-    const city = currentCityRef.current;
-    if (!city) return;
-
-    if (direction === 'right'){
-      rightSwipe(city.city_id, {
-        city_name: city.city_name,
-        country_name: city.country,
-        score: city.score,
-      });
-    }
-    else {
-      leftSwipe(city.city_id, {
-        city_name: city.city_name,
-        country_name: city.country,
-        score: city.score,
-      });
-    }
-    position.setValue({x:0, y:0});
+      if (direction === "right") {
+        rightSwipe(city.city_id, {
+          city_name: city.city_name,
+          country_name: city.country,
+          score: city.score,
+        });
+      } else {
+        leftSwipe(city.city_id, {
+          city_name: city.city_name,
+          country_name: city.country,
+          score: city.score,
+        });
+      }
+      position.setValue({ x: 0, y: 0 });
     });
   };
 
   const swipeAction = useRef(
     PanResponder.create({
       onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponderCapture: (_, gesture) => Math.abs(gesture.dx) > 10,
+      onMoveShouldSetPanResponderCapture: (_, gesture) =>
+        Math.abs(gesture.dx) > 10,
       onPanResponderMove: (_, gesture) => {
         position.setValue({ x: gesture.dx, y: gesture.dy });
       },
       onPanResponderRelease: (_, gesture) => {
         if (gesture.dx > 120) {
-          swipeFunction('right');
-        }
-        else if (gesture.dx < -120){
-          swipeFunction('left');
-        }
-        else {
+          swipeFunction("right");
+        } else if (gesture.dx < -120) {
+          swipeFunction("left");
+        } else {
           Animated.spring(position, {
-            toValue: {x:0, y:0}, 
+            toValue: { x: 0, y: 0 },
             useNativeDriver: false,
           }).start();
         }
@@ -366,7 +418,7 @@ async function getUserProfileAnswers(userId: string) {
                       {
                         rotate: position.x.interpolate({
                           inputRange: [-screenWidth, 0, screenWidth],
-                          outputRange: ['-15deg', '0deg', '15deg'],
+                          outputRange: ["-15deg", "0deg", "15deg"],
                         }),
                       },
                     ],
@@ -385,7 +437,13 @@ async function getUserProfileAnswers(userId: string) {
                   }}
                 >
                   <View style={styles.cityCardInner}>
-                    {currentCity.image ? (
+                    {unsplashImageUrl ? (
+                      <Image
+                        source={{ uri: unsplashImageUrl }}
+                        style={styles.cityImage}
+                        resizeMode="cover"
+                      />
+                    ) : currentCity.image ? (
                       <Image
                         source={{ uri: currentCity.image }}
                         style={styles.cityImage}
@@ -420,8 +478,8 @@ async function getUserProfileAnswers(userId: string) {
         <Pressable
           style={{
             flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            justifyContent: 'center',
+            backgroundColor: "rgba(0,0,0,0.4)",
+            justifyContent: "center",
           }}
           onPress={() => setCityModalOpen(false)}
         >
@@ -441,7 +499,7 @@ async function getUserProfileAnswers(userId: string) {
                 )}
 
                 <Text style={styles.cityModalDescription}>
-                  {selectedCity.description || 'No description available.'}
+                  {selectedCity.description || "No description available."}
                 </Text>
 
                 <Button

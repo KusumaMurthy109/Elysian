@@ -7,3 +7,4 @@ joblib
 scikit-learn
 firebase_admin
 requests
+python-dotenv
