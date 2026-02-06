@@ -336,7 +336,6 @@ const Recommendations = () => {
     return json.city as Recommendation;
   }
 
-
   const swipeFunction = (direction: 'left' | 'right') => {
     if (!currentCityRef.current) return;
 
