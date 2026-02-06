@@ -110,6 +110,8 @@ def get_user_feedback(user_id):
 
     liked = list(fav_doc.to_dict().keys()) if fav_doc.exists else [] # Save as a dictionary.
     disliked = list(dislike_doc.to_dict().keys()) if dislike_doc.exists else [] # Save as a dictionary.
+    if (len(liked) == 0 or len(disliked) == 0):
+        return None
 
     return liked, disliked
 
@@ -150,7 +152,12 @@ BETA = 0.7
 GAMMA = 0.7
 
 
-def get_dynamic_scores(user_vec, user_id, liked_idx, disliked_idx):
+def get_dynamic_scores(user_vec, user_id):
+    # Get the liked and disliked cities and convert them to their corresponding city vector.
+    liked_ids, disliked_ids = get_user_feedback(user_id)
+    liked_idx = to_indices(liked_ids)
+    disliked_idx = to_indices(disliked_ids)
+
     base_scores = city_vectors @ user_vec  # From the modified user vector, get the similarity scores as the base score.
 
     final_scores = []
@@ -167,11 +174,10 @@ def get_dynamic_scores(user_vec, user_id, liked_idx, disliked_idx):
         )
         final_scores.append(score) # Keep a list of all the scores
 
-    return np.array(final_scores)
-
-def next_city(user_vec, user_id, liked_idx, disliked_idx):
+    return np.array(final_scores), liked_idx, disliked_idx
+def next_city(user_vec, user_id):
     # Gets the new scores based on the new liked/disliked cities.
-    scores = get_dynamic_scores(user_vec, user_id, liked_idx, disliked_idx)
+    scores, liked_idx, disliked_idx = get_dynamic_scores(user_vec, user_id)
 
     # Exclude already swiped cities
     seen = set(liked_idx + disliked_idx)
@@ -188,22 +194,48 @@ def next_city(user_vec, user_id, liked_idx, disliked_idx):
         "score": float(scores[next_idx])
     } # Return the city recommendation in format.
 
-def save_user_vector(user_vec, user_id):
-    # Helper function that saves the uservector to the users collection in Firebase. 
-    # If no user_vector exists (first time), then a field will be created.
-    # Otherwise, the field will be updated.
-    db.collection("users").document(user_id).set({"user_vector": user_vec}, merge=True)
 
+# ---------------------------------------------------------
+# Recommendation endpoint
+# ---------------------------------------------------------
+@app.route("/recommend", methods=["POST"])
+def recommend():
+    try:
+        data = request.get_json() # The data is the fetched user answers during profile setup.
 
-def get_user_vector(user_id):
-    # Helper function that gets and returns the user_vector.
-    user_vec = db.collection("users").document(user_id).get(["user_vector"])
-    return user_vec
+        # Encode user answers
+        # Get the encoded integer version of each single select answer and one for the multi-hot answers.
+        origin_enc, fav_enc, multi_hot = encode_user_inputs(data)
 
-@app.route("/generate_user_vector", methods=["POST"])
-def api_generate_user_vector():
-    # This API endpoint is only called once when the profile is setup.
-    # It will get the initial user vector and save it to Firebase.
+        # Get user embedding
+        # Invoke the model to get the embedding of the user using the user tower.
+        user_vec = get_user_embedding(origin_enc, fav_enc, multi_hot)
+
+        # Compute similarity scores
+        # Now that the user vector can be compared, compute the score for each city compared to the user vector.
+        scores = city_vectors @ user_vec
+
+        # Here, get the top 5 of the cities with the highest scores.
+        k = data.get("k", 5)
+        top_idx = scores.argsort()[::-1][:k] # Sort from high to low.
+
+        results = []
+        for idx in top_idx: # Go through each index.
+            row = cities_df.iloc[idx] # Get the row associated with the index.
+            results.append({
+                "city_id": row["city_id"],
+                "city_name": row["city_name"],
+                "country": row["country"],
+                "score": float(scores[idx])
+            }) # Append the recommended city in this format.
+
+        return jsonify({"recommendations": results}) # Give back a JSON as a POST.
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/next_city", methods=["POST"])
+def api_next_city():
     try:
         data = request.get_json() # The data given is the user profile.
         user_id = data["user_id"]  # Get the user id given from the data.
@@ -211,34 +243,15 @@ def api_generate_user_vector():
         # Same encoding as /recommend
         origin_enc, fav_enc, multi_hot = encode_user_inputs(data) # First encode the data.
         user_vec = get_user_embedding(origin_enc, fav_enc, multi_hot) # Then, embedd the encoded vector.
-        save_user_vector(user_vec, user_id) # This will save the initial generated user vector.
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-
-
-# ---------------------------------------------------------
-# Get Next City endpoint
-# ---------------------------------------------------------
-
-
-@app.route("/next_city", methods=["POST"]) # Need to pass the most recent action as body.
-def api_next_city():
-    try:
-        data = request.get_json() # The data given is the user profile.
-        user_id = data["user_id"]  # Get the user id given from the data.
-        user_vec = get_user_vector(user_id) # Get the user vector.
         # Get the dictionaries of the user favorite and disliked cities from Firebase.
         liked_ids, disliked_ids = get_user_feedback(user_id)
         # Get the corresponding indices of the favorited and disliked cities.
         liked_idx = to_indices(liked_ids)
         disliked_idx = to_indices(disliked_ids)
         # Now, change the initial user vector taken from the model to adjust based on the city swipes.
-        user_vec = adjust_user_embedding(user_vec, liked_idx, disliked_idx) # This should take the most recent action and upate user vector.
-        # After user embedding function, we need to save the user vector with the save_user_vector function.
+        user_vec = adjust_user_embedding(user_vec, liked_idx, disliked_idx)
         # After the user vector is adjusted, get the next best city.
-        city = next_city(user_vec, user_id, liked_idx, disliked_idx)
+        city = next_city(user_vec, user_id)
         return jsonify({"city": city}) # Give a JSON as a POST of the next city.
 
     except Exception as e:
