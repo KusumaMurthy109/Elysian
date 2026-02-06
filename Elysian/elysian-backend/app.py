@@ -110,8 +110,6 @@ def get_user_feedback(user_id):
 
     liked = list(fav_doc.to_dict().keys()) if fav_doc.exists else [] # Save as a dictionary.
     disliked = list(dislike_doc.to_dict().keys()) if dislike_doc.exists else [] # Save as a dictionary.
-    if (len(liked) == 0 or len(disliked) == 0):
-        return None
 
     return liked, disliked
 
