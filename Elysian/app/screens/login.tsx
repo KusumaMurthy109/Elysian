@@ -50,7 +50,6 @@ const Login = () => {
       });
 
       console.log('Signed in user:', user);
-      Alert.alert('Success', `Welcome back, ${user.email}`);
     } catch (error: any) {
       console.log('Sign-in error:', error.code, error.message);
       Alert.alert('Sign-in Failed', error.message);

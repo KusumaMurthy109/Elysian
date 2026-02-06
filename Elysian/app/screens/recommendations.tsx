@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, ActivityIndicator, Image, Pressable, Modal, Dimensions, PanResponder } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Image, Pressable, Modal, Dimensions, PanResponder, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Button, Card} from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { styles } from './app_styles.styles';
 import { Animated, Easing } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -34,8 +32,6 @@ type City = {
     score: number;
     };
 
-// Define the type for Home screen navigation prop
-type RecommendationScreenProp = NativeStackNavigationProp<RootParamList, 'Recommendations'>;
 
 // Cute spinning globe loader
 const GlobeLoader = () => {
@@ -72,7 +68,6 @@ const GlobeLoader = () => {
 // Home component
 const Recommendations = () => {
   // Initialize navigation with type safety
-  const navigation = useNavigation<RecommendationScreenProp>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<Recommendation | null>(null);
@@ -285,14 +280,6 @@ async function getUserProfileAnswers(userId: string) {
     const json = await res.json();
     return json.city as Recommendation;
   }
-
-  // async function sendSwipe(userId: string, cityId: string, liked: boolean) {
-  //   await fetch('https://capstone-team-generated-group30-project.onrender.com/swipe', {
-  //     method: 'POST',
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: JSON.stringify({ user_id: userId, city_id: cityId, liked }),
-  //   });
-  // }
 
   const swipeFunction = (direction: 'left' | 'right') => {
     if (!currentCityRef.current) return;
