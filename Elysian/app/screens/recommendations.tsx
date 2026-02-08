@@ -71,12 +71,13 @@ const Recommendations = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<Recommendation | null>(null);
   const [cityModalOpen, setCityModalOpen] = useState(false);
-  const screenWidth = Dimensions.get("window").width;
   const position = useRef(new Animated.ValueXY()).current;
   const doubleTap = useRef<number | null>(null);
   const [currentCity, setCurrentCity] = useState<Recommendation | null>(null);
   const currentCityRef = useRef<Recommendation | null>(null);
   const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
+  // Need to get the width and height of screen for the images to fit full page.
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   useEffect(() => {
     currentCityRef.current = currentCity;
@@ -390,28 +391,23 @@ const Recommendations = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.homeContainer}>
-        {/* Title */}
-        <Text variant="headlineLarge" style={styles.homeTitle}>
-          Recommendations
-        </Text>
 
         {/* Loading */}
         {loading && (
-          <Text style={styles.sectionTitle}>Loading recommendation...</Text>
+          <Text style={styles.sectionTitle}>Loading recommendations...</Text>
         )}
 
         {/* Error */}
         {error && !loading && <Text>{error}</Text>}
 
         {/* Current City Card */}
-        {!loading && !error && (
-          <View style={styles.resultsContainer}>
-            {currentCity ? (
+        {!loading && !error && currentCity && (
               <Animated.View
                 style={[
-                  styles.cityCard,
+                  styles.cityCardRecommendation,
                   {
+                    width: screenWidth,
+                    height: screenHeight,
                     transform: [
                       { translateX: position.x },
                       { translateY: position.y },
@@ -436,37 +432,25 @@ const Recommendations = () => {
                     doubleTap.current = now;
                   }}
                 >
-                  <View style={styles.cityCardInner}>
-                    {unsplashImageUrl ? (
+                  {/* This is to make the full-screen image. */}
+                    {unsplashImageUrl || currentCity.image ? (
                       <Image
-                        source={{ uri: unsplashImageUrl }}
-                        style={styles.cityImage}
-                        resizeMode="cover"
-                      />
-                    ) : currentCity.image ? (
-                      <Image
-                        source={{ uri: currentCity.image }}
-                        style={styles.cityImage}
+                        source={{ uri: unsplashImageUrl || currentCity.image }}
+                        style={styles.cityImageRecommendation}
                         resizeMode="cover"
                       />
                     ) : (
-                      <View style={styles.cityImagePlaceholder} />
+                      <View style={styles.cityImagePlaceholderRec} />
                     )}
-
-                    <View style={styles.cityInfo}>
-                      <Text style={styles.cityName}>
+                    {/* Put the city/country name on the image */}
+                    <View style={styles.cityInfoRec}>
+                      <Text style={styles.cityNameRec}>
                         {currentCity.city_name}, {currentCity.country}
                       </Text>
                     </View>
-                  </View>
                 </Pressable>
               </Animated.View>
-            ) : (
-              <Text>No more recommendations!</Text>
             )}
-          </View>
-        )}
-      </View>
 
       {/* City Modal */}
       <Modal

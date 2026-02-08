@@ -177,6 +177,11 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
   },
+  cityCardRecommendation: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
 
   removeIconBtn: {
     position: 'absolute',
@@ -209,23 +214,45 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: 140,
   },
+  cityImageRecommendation: {
+    width: '100%',
+    height: '100%',
+  },
 
   cityImagePlaceholder: {
     width: '100%',
     height: 140,
     backgroundColor: '#E2DDFF',
   },
-
+  cityImagePlaceholderRec: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#333',
+  },
   cityInfo: {
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-
+  cityInfoRec: {
+    position: "absolute",
+    bottom: 60,
+    left: 20,
+    right: 20,
+  },
   cityName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#222',
     marginBottom: 4,
+  },
+  cityNameRec: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: "white",
+    marginBottom: 45,
+    textShadowColor: "rgba(0,0,0,0)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 5,
   },
 
   cityScore: {
