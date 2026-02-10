@@ -4,7 +4,7 @@ Function: Displays users liked places loaded from Firebase userFavorites.
 */
 
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, Image, Pressable } from "react-native";
+import { View, ScrollView, Image, Pressable, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Card, Modal, Button } from "react-native-paper";
 import { styles } from "./app_styles.styles";
@@ -17,10 +17,12 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+
 
 // Same interface as Home ... maybe change ?
-interface Recomendation {
+interface Recommendation {
   city_id: string;
   city_name: string;
   country: string;
@@ -31,11 +33,11 @@ interface Recomendation {
 
 // Favorites component
 const Favorites = () => {
-  const [favorites, setFavorites] = useState<Recomendation[]>([]);
+  const [favorites, setFavorites] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedCity, setSelectedCity] = useState<Recomendation | null>(null);
+  const [selectedCity, setSelectedCity] = useState<Recommendation | null>(null);
   const [cityModalOpen, setCityModalOpen] = useState(false);
 
   // Only uses Wikipedia REST API
@@ -123,7 +125,7 @@ const Favorites = () => {
       return undefined;
     }
   };
-  const removeFavorite = async (city: Recomendation) => {
+  const removeFavorite = async (city: Recommendation) => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -155,6 +157,20 @@ const Favorites = () => {
     }
   };
 
+  // Use navigation system for search bar icon 
+  const navigation = useNavigation();
+
+  // When handleSeachbar is called (search bar icon pressed) it goes to favorites_search.tsx page
+  const handleSearchbar = () => {
+    navigation.navigate("FavoritesSearch" as never);
+  };
+
+  // When handleSeachbar is called (search bar icon pressed) it goes to favorites_search.tsx page
+  const handleItinerary = () => {
+    navigation.navigate("Itinerary" as never);
+  };
+
+
   // Load liked locations from Firestore
   useEffect(() => {
     const auth = getAuth();
@@ -184,7 +200,7 @@ const Favorites = () => {
 
           const cityData = snapshot.data() || {};
 
-          const favoritesArray: Recomendation[] = await Promise.all(
+          const favoritesArray: Recommendation[] = await Promise.all(
             Object.keys(cityData).map(async (key) => {
               const city = cityData[key];
               let image = city.image;
@@ -245,9 +261,19 @@ const Favorites = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <TouchableOpacity style={styles.itineraryIcon}
+        onPress={() => handleItinerary()}>
+        {/* Itinerary icon */}
+        <Ionicons name="list-circle-outline" size={42} color="#000" /> 
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.topRightIcon}
+        onPress={() => handleSearchbar()}>
+        {/* Search bar icon */}
+        <Ionicons name="search-circle-outline" size={45} color="#000" /> 
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.homeContainer}>
-        <Text variant="headlineLarge" style={styles.homeTitle}>
-          Your Favorite Locations!
+        <Text variant="headlineLarge" style={styles.favoritesTitle}>
+          Favorites
         </Text>
 
         {loading && (
@@ -279,7 +305,7 @@ const Favorites = () => {
                           styles.removeIconBtnShadow,
                         ]}
                       >
-                        <MaterialCommunityIcons
+                        <Ionicons
                           name="heart"
                           size={18}
                           color="#fff"

@@ -4,12 +4,15 @@ Function: This is the Navigation Bar component for the Home and Profile screen.
 */
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { inputTheme } from './app_styles.styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Home from './home';
 import Recommendations from './recommendations';
 import Favorites from './favorites';
 import Profile from './profile';
+import FavoritesSearch from "./favorites_search";
+import Itinerary from "./itinerary";
 
 // Define the navigation parameter list
 export type RootTabParamList = {
@@ -21,6 +24,30 @@ export type RootTabParamList = {
 
 // Define the type for Navigation bar screen navigation prop
 const Tab = createBottomTabNavigator<RootTabParamList>();
+
+const FavoritesStack = createNativeStackNavigator();
+
+function FavoritesStackScreen() {
+  return (
+    <FavoritesStack.Navigator>
+      <FavoritesStack.Screen
+        name="FavoritesMain"
+        component={Favorites}
+        options={{ headerShown: false }}
+      />
+      <FavoritesStack.Screen
+        name="FavoritesSearch"
+        component={FavoritesSearch}
+        options={{ headerShown: false }}
+      />
+      <FavoritesStack.Screen
+        name="Itinerary"
+        component={Itinerary}
+        options={{ headerShown: false }}
+      />
+    </FavoritesStack.Navigator>
+  );
+}
 
 export default function NavigationBar() {
   // Dictionary to map page screens to icon names from Ionicons. https://ionic.io/ionicons
@@ -45,7 +72,7 @@ export default function NavigationBar() {
       {/* Define individual tab pages */}
       <Tab.Screen name="Home" component={Home} /> 
       <Tab.Screen name="Recommendations" component={Recommendations} /> 
-      <Tab.Screen name="Favorites" component={Favorites} /> 
+      <Tab.Screen name="Favorites" component={FavoritesStackScreen} /> 
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

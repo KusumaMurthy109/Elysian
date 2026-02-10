@@ -13,7 +13,7 @@ import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { query, where, collection, getDocs } from 'firebase/firestore';
 import { styles, inputTheme } from './app_styles.styles';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // List of questions in questionaire 
 const questions = [
@@ -114,10 +114,10 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ position: 'absolute', top: 60, right: 15, zIndex: 10 }}>
+      <View style={styles.topRightIcon}>
         <TouchableOpacity onPress={() => setQuestionsVisible(true)}>
           {/* Menu button */}
-          <MaterialCommunityIcons name="menu" size={25} color="#000" /> 
+          <Ionicons name="ellipsis-vertical-circle-outline" size={40} color="#000" /> 
         </TouchableOpacity>
       </View>
 
@@ -189,7 +189,7 @@ const Profile = () => {
               <TouchableOpacity style={{ position: 'absolute', top: 10, right: 15, zIndex: 10 }}
                 onPress={() => setQuestionsVisible(false)}
               >
-                <MaterialCommunityIcons name="close" size={28} color="#000" />
+                <Ionicons name="close-circle-outline" size={30} color="#000" />
               </TouchableOpacity>
               <ScrollView style={{ paddingTop: 20 }}>
                 {questions.map((q, index) => {
