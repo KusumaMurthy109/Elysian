@@ -354,13 +354,70 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  modalContent: { // Menu
+  modalContent: { // Menu popup 
     width: '90%',
     maxHeight: '80%',
     backgroundColor: '#fff',
     borderRadius: 22,
     padding: 25,
   },
+  
+  // ---------------------- Used on Favorites, Favorites_search, and Itinerary page ------------------------------
+  favoritesTitle: {
+    textAlign: 'left',
+    fontWeight: '800',
+    fontSize: 35,
+    lineHeight: 34,
+    color: '#000',
+    marginBottom: 20,
+    marginTop: -25,
+  },
+
+  searchContainer: { // Search bar container 
+    padding: 20,
+    marginTop: 30,
+    marginBottom: -38,
+  },
+
+  searchError: { // Error message for invalid city 
+    padding: 20, 
+    marginTop: -30,
+    color: 'red',
+    fontSize: 15, 
+  },
+
+  searchLoading: { // Remove once loading icon created 
+    padding: 20, 
+    marginTop: -30,
+    fontSize: 15, 
+  },
+
+  searchResults: {
+    padding: 20,
+  },
+
+  topRightIcon: { // Search icon and menu icon 
+    position: 'absolute', 
+    top: 60, 
+    right: 15, 
+    zIndex: 10,
+  },
+
+  topLeftIcon: { // Back arrow icon 
+    position: 'absolute', 
+    top: 60, 
+    left: 15, 
+    zIndex: 10,
+  },
+
+  itineraryIcon: { // Itinerary icon
+    position: 'absolute', 
+    top: 62, 
+    right: 60, 
+    zIndex: 10,
+  },
+  
+  // ---------------------- Used on Home page ------------------------------
   floatingUploadButton: {
     position: 'absolute',
     top: 50,

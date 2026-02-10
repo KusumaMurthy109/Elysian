@@ -97,7 +97,7 @@ const Home = () => {
         data={post}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.homeContainer}
-        ListHeaderComponent={<Text style={styles.homeTitle}>Eplore!</Text>}
+        ListHeaderComponent={<Text style={styles.homeTitle}>Explore!</Text>}
         renderItem={({item}) => (
           <View style={styles.cityCard}>
             <Image source={{uri: item.url}} style={styles.cityImage}resizeMode='cover'/>
