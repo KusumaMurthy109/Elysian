@@ -25,7 +25,7 @@ interface Recommendation {
 }
 
 // City API. DO NOT UPLOAD KEY TO GITHUB!
-const API_NINJAS_KEY = "zX9lBEZ93uqFeHqxq9htjYknKfX8ZnhMScvWrMgY"; 
+const API_NINJAS_KEY = ""; 
 
 // Favorites Search component 
 const FavoritesSearch = () => {
