@@ -393,7 +393,7 @@ export const styles = StyleSheet.create({
 
   topRightIcon: { // Search icon and menu icon 
     position: 'absolute', 
-    top: 73,
+    top: 83,
     right: 30,
     zIndex: 11,
   },
@@ -451,22 +451,28 @@ searchOverlay: {
   paddingHorizontal: 15,
   zIndex: 10,
 },
+searchRow: { 
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 20,
+  marginTop: 60,
+},
 
 searchBarExpanded: {
   position: "absolute",
-  top: 72,
-  left: 15,
+  top: 87,
+  left: 30,
   right: 15,
-  height: 52,
+  width: "75%",
+  height: 45,
 
   // Glass look
-  backgroundColor: "rgba(204, 194, 194, 0.12)", // Transparent
   borderRadius: 26, // Rounded
   overflow: "hidden",
 
   // Glass effect border
   borderWidth: 1,
-  borderColor: "rgba(255, 255, 255, 0.35)",
+  borderColor: 'rgba(174, 170, 170, 0.15)',
 
   flexDirection: "row",
   alignItems: "center",
@@ -486,9 +492,9 @@ searchInput: {
 
 searchDropdown: {
   position: "absolute",
-  top: 130,
-  left: 15,
-  right: 15,
+  top: 140,
+  left: 30,
+  right: 30,
   backgroundColor: "#fff",
   borderRadius: 10,
   borderWidth: 1,
@@ -514,6 +520,13 @@ searchBackdrop: {
   bottom: 0,
   zIndex: 5,
 },
+glassButton: {
+    padding: 10,
+    borderRadius: 50,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(174, 170, 170, 0.15)',
+    },
 });
 
 export const inputTheme = {

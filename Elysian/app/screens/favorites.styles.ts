@@ -4,7 +4,7 @@ export const favoritesStyles = StyleSheet.create({
 
     itineraryIcon: {
         position: 'absolute', 
-        top: 73, 
+        top: 83, 
         right: 80, 
         zIndex: 10,
     },
@@ -79,11 +79,6 @@ export const favoritesStyles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 6,
         elevation: 3,
-    },
-    glassButton: {
-        padding: 10,
-        borderRadius: 50,
-        overflow: 'hidden',
     },
 
 

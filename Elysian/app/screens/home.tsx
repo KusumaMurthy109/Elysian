@@ -7,6 +7,7 @@ import { collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firesto
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GlassView } from 'expo-glass-effect';
 
 // this defines what the post object should look like
 type Post = {
@@ -105,9 +106,11 @@ const Home = () => {
           </View>
         )}
       />
-      <TouchableOpacity style={styles.floatingUploadButton} onPress={upload}>
-        <Ionicons name="add" size={28} color='#fff' />
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.topRightIcon} onPress={upload}>
+          <GlassView style={styles.glassButton}>
+            <Ionicons name="add" size={26} color="#000" />
+          </GlassView>
+        </TouchableOpacity>
       {uploading && <ActivityIndicator size="large" color="#0000ff" style={styles.uploadingIndicator} />}
     </SafeAreaView>
   );
