@@ -185,7 +185,7 @@ def next_city(user_vec, liked_idx, disliked_idx):
         "city_id": row["city_id"],
         "city_name": row["city_name"],
         "country": row["country"],
-        "score": float(scores[next_idx])
+        "score": float(scores[next_idx]) # TASK: Decide if score is needed to be saved in Firebase.
     } # Return the city recommendation in format.
 
 @app.route("/next_city", methods=["POST"])
