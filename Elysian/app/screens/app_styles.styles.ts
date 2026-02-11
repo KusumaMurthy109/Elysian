@@ -393,7 +393,7 @@ export const styles = StyleSheet.create({
 
   topRightIcon: { // Search icon and menu icon 
     position: 'absolute', 
-    top: 83,
+    top: 73,
     right: 30,
     zIndex: 11,
   },
@@ -458,14 +458,24 @@ searchBarExpanded: {
   left: 15,
   right: 15,
   height: 52,
-  backgroundColor: "#fff",
-  borderRadius: 26,
-  borderWidth: 1.5,
-  borderColor: "#000",
+
+  // Glass look
+  backgroundColor: "rgba(204, 194, 194, 0.12)", // Transparent
+  borderRadius: 26, // Rounded
+  overflow: "hidden",
+
+  // Glass effect border
+  borderWidth: 1,
+  borderColor: "rgba(255, 255, 255, 0.35)",
+
   flexDirection: "row",
   alignItems: "center",
   paddingHorizontal: 16,
   zIndex: 10,
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
 },
 
 searchInput: {
