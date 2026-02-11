@@ -11,7 +11,6 @@ import Home from './home';
 import Recommendations from './recommendations';
 import Favorites from './favorites';
 import Profile from './profile';
-import FavoritesSearch from "./favorites_search";
 import Itinerary from "./itinerary";
 
 // Define the navigation parameter list
@@ -33,11 +32,6 @@ function FavoritesStackScreen() {
       <FavoritesStack.Screen
         name="FavoritesMain"
         component={Favorites}
-        options={{ headerShown: false }}
-      />
-      <FavoritesStack.Screen
-        name="FavoritesSearch"
-        component={FavoritesSearch}
         options={{ headerShown: false }}
       />
       <FavoritesStack.Screen

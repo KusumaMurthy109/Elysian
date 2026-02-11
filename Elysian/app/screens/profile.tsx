@@ -117,7 +117,7 @@ const Profile = () => {
       <View style={styles.topRightIcon}>
         <TouchableOpacity onPress={() => setQuestionsVisible(true)}>
           {/* Menu button */}
-          <Ionicons name="ellipsis-vertical-circle-outline" size={40} color="#000" /> 
+          <Ionicons name="ellipsis-vertical" size={26} color="#000" /> 
         </TouchableOpacity>
       </View>
 

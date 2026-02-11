@@ -390,59 +390,18 @@ export const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 25,
   },
-  
-  // ---------------------- Used on Favorites, Favorites_search, and Itinerary page ------------------------------
-  favoritesTitle: {
-    textAlign: 'left',
-    fontWeight: '800',
-    fontSize: 35,
-    lineHeight: 34,
-    color: '#000',
-    marginBottom: 20,
-    marginTop: -25,
-  },
-
-  searchContainer: { // Search bar container 
-    padding: 20,
-    marginTop: 30,
-    marginBottom: -38,
-  },
-
-  searchError: { // Error message for invalid city 
-    padding: 20, 
-    marginTop: -30,
-    color: 'red',
-    fontSize: 15, 
-  },
-
-  searchLoading: { // Remove once loading icon created 
-    padding: 20, 
-    marginTop: -30,
-    fontSize: 15, 
-  },
-
-  searchResults: {
-    padding: 20,
-  },
 
   topRightIcon: { // Search icon and menu icon 
     position: 'absolute', 
-    top: 60, 
-    right: 15, 
-    zIndex: 10,
+    top: 83,
+    right: 30,
+    zIndex: 11,
   },
 
   topLeftIcon: { // Back arrow icon 
     position: 'absolute', 
-    top: 60, 
+    top: 83, 
     left: 15, 
-    zIndex: 10,
-  },
-
-  itineraryIcon: { // Itinerary icon
-    position: 'absolute', 
-    top: 62, 
-    right: 60, 
     zIndex: 10,
   },
   
@@ -476,13 +435,75 @@ export const styles = StyleSheet.create({
     color: '#555',
   },
   uploadingIndicator: {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  marginLeft: -25,
-  marginTop: -25,
-  zIndex: 100,
-}
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -25,
+    marginTop: -25,
+    zIndex: 100,
+},
+
+searchOverlay: {
+  position: "absolute",
+  top: 0,              // Align with itinerary icon
+  right: 0,
+  width: "100%",
+  paddingHorizontal: 15,
+  zIndex: 10,
+},
+
+searchBarExpanded: {
+  position: "absolute",
+  top: 72,
+  left: 15,
+  right: 15,
+  height: 52,
+  backgroundColor: "#fff",
+  borderRadius: 26,
+  borderWidth: 1.5,
+  borderColor: "#000",
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  zIndex: 10,
+},
+
+searchInput: {
+  flex: 1,
+  backgroundColor: "transparent",
+  marginRight: 8,
+},
+
+searchDropdown: {
+  position: "absolute",
+  top: 130,
+  left: 15,
+  right: 15,
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  maxHeight: 220,
+  zIndex: 9,
+},
+
+searchResultItem: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+searchBackdrop: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 5,
+},
 });
 
 export const inputTheme = {

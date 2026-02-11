@@ -18,7 +18,7 @@ const Itinerary = () => {
       {/* Top-left back icon */}
       <View style={styles.topLeftIcon}>
         <Pressable onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back-circle-outline" size={40} color="#000" />
+          <Ionicons name="chevron-back" size={26} color="#000" />
         </Pressable>
       </View>
     </SafeAreaView>
