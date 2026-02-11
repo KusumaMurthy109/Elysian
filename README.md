@@ -11,7 +11,7 @@ What is **Elysian**? It is an AI-powered travel app, where you can “find your 
 So that's why we’re Introducing Elysian! Elysian is a mobile app that helps you discover travel destinations that actually match your preferences, using our very own trained model called Soleil AI. It’s quite easy to get started. Just create a simple profile in the app and see your recommendations come to life based on your interests, budget, and travel style.
 <br>
 
-**Team Members - Group 30**
+**Team Members
 - Sophia Jacob
 - Anna Lin
 - Kusuma Murthy
