@@ -318,24 +318,17 @@ const Favorites = () => {
   return (
   <SafeAreaView style={styles.safeArea}>
     {/* Itinerary Icon (hidden when search is open) */}
-    {!searchOpen ? (
+    {!searchOpen && (
       <TouchableOpacity
         style={favoritesStyles.itineraryIcon}
         onPress={() => handleItinerary()}
       >
         <GlassView
-          style={favoritesStyles.glassButton}>
+          style={styles.glassButton}>
         <Ionicons name="list" size={26} color="#000" />
         </GlassView>
       </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-        style={favoritesStyles.itineraryIcon}
-        onPress={() => handleItinerary()}
-      >
-        <Ionicons name="list" size={26} color="#000" />
-        </TouchableOpacity>
-    )}
+      )}
 
     {/* Search Icon and Bar */}
     <View style={styles.searchOverlay}>
@@ -346,7 +339,7 @@ const Favorites = () => {
         onPress={() => setSearchOpen(true)}
       >
         <GlassView
-          style={favoritesStyles.glassButton}>
+          style={styles.glassButton}>
           <Ionicons name="search" size={26} color="#000" />
         </GlassView>
       </TouchableOpacity>
