@@ -249,11 +249,40 @@ export const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: 'bold',
     color: "white",
-    marginBottom: 45,
+    marginBottom: 25,
     textShadowColor: "rgba(0,0,0,0)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 5,
   },
+  cityTagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 2,
+  },
+
+  tag: {
+    backgroundColor: "rgba(111, 106, 106, 0.4)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderColor: "rgba(33, 30, 30, 0.64)",
+    marginRight: 6,
+    marginBottom: 45,
+  },
+
+  tagText: {
+    color: "white",
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+    glassTag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 45,
+  },
+
 
   cityScore: {
     fontSize: 13,

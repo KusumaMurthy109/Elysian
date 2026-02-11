@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
+import { GlassView, GlassStyle, isLiquidGlassAvailable } from 'expo-glass-effect';
 
 
 // Define the navigation parameter list
@@ -76,12 +77,25 @@ const Recommendations = () => {
   const [currentCity, setCurrentCity] = useState<Recommendation | null>(null);
   const currentCityRef = useRef<Recommendation | null>(null);
   const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
+  const [currentCityAttr, setCurrentCityAttr] = useState<string | null>(null);
+  const glassAvailable = isLiquidGlassAvailable();
+ // This will set the tags for the current city.
   // Need to get the width and height of screen for the images to fit full page.
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   useEffect(() => {
     currentCityRef.current = currentCity;
   }, [currentCity]);
+  useEffect(() => {
+  const loadCityAttributes = async () => {
+    if (!currentCity) return;
+
+    const attrs = await getCityAttrs(currentCity.city_id);
+    setCurrentCityAttr(attrs);
+  };
+
+  loadCityAttributes();
+}, [currentCity]);
 
   const fetchWikivoyageIntro = async (
     cityName: string,
@@ -294,6 +308,22 @@ const Recommendations = () => {
     }
   };
 
+  const getCityAttrs = async (cityId: string) => {
+    try {
+      const docRef = doc(FIREBASE_DB, "allCities", cityId);
+      const cityResp = await getDoc(docRef);
+      if (!cityResp.exists()) {
+        console.warn("City not found:", cityId);
+        return null;
+      }
+      const cityData = cityResp.data()
+      return cityData.city_attrs || null;
+    } catch (error) {
+      console.error("Encountered an error while getting city attributes", error);
+      alert("Error, There was an error while getting city attributes");
+    }
+  };
+
   async function getUserProfileAnswers(userId: string) {
     const ref = doc(FIREBASE_DB, "userProfiles", userId);
     const snap = await getDoc(ref);
@@ -391,7 +421,6 @@ const Recommendations = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-
         {/* Loading */}
         {loading && (
           <Text style={styles.sectionTitle}>Loading recommendations...</Text>
@@ -447,6 +476,25 @@ const Recommendations = () => {
                       <Text style={styles.cityNameRec}>
                         {currentCity.city_name}, {currentCity.country}
                       </Text>
+                    {currentCityAttr && (
+                      <View style={styles.cityTagContainer}>
+                        {currentCityAttr.split("|").map((tag, index) => (
+                          glassAvailable ? ( // Check if glass UI is available.
+                            <GlassView
+                              key={index}
+                              style={styles.glassTag}
+                              >
+                                <Text style={styles.tagText}>{tag}</Text>
+                              </GlassView> 
+                              ) : (
+                                // If there is no Glass UI available on the phone, do regular UI.
+                                <View key={index} style={styles.tag}>
+                                  <Text style={styles.tagText}>{tag}</Text>
+                                </View>
+                              )
+                        ))}
+                      </View>
+                    )}
                     </View>
                 </Pressable>
               </Animated.View>
@@ -502,3 +550,4 @@ const Recommendations = () => {
   );
 };
 export default Recommendations;
+
