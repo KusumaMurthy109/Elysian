@@ -416,6 +416,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginLeft: 20,
     marginRight: 20,
+    borderTopWidth: 0,
   },
 
   navBarIcons: {
