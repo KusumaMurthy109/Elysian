@@ -404,6 +404,24 @@ export const styles = StyleSheet.create({
     left: 15, 
     zIndex: 10,
   },
+
+  // ---------------------- Used on Navigation Bar page ------------------------------
+  navBar: {
+    position: "absolute",
+    bottom: 45,
+    width: 350,
+    height: 60,
+    backgroundColor: "#000",
+    borderRadius: 50,
+    marginLeft: 20,
+    marginRight: 20,
+  },
+
+  navBarIcons: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 7,
+  },
   
   // ---------------------- Used on Home page ------------------------------
   floatingUploadButton: {

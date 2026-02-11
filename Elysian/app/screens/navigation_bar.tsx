@@ -5,7 +5,7 @@ Function: This is the Navigation Bar component for the Home and Profile screen.
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { inputTheme } from './app_styles.styles';
+import { styles } from './app_styles.styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Home from './home';
 import Recommendations from './recommendations';
@@ -56,12 +56,20 @@ export default function NavigationBar() {
     // Create the navigation bar 
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color }) => <Icon name={icons[route.name]} size={30} color={color} />, // tabBarIcon looksup what key from icons, sets size, and color. 
-        tabBarActiveTintColor: inputTheme.colors.primary, 
-        tabBarInactiveTintColor: inputTheme.colors.placeholder,
-        headerShown: false, // Remove header 
-        tabBarShowLabel: false, // Remove labels below icon
-      })}
+        tabBarIcon: ({ focused }) => (
+          <Icon
+            name={icons[route.name]}
+            size={30}
+            color={focused ? "#FFFFFF" : "#807f7fff"}
+          />
+        ),
+
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: styles.navBar,
+        tabBarItemStyle: styles.navBarIcons,
+        tabBarBackground: () => null,
+      })}  
     >
       {/* Define individual tab pages */}
       <Tab.Screen name="Home" component={Home} /> 
