@@ -409,10 +409,11 @@ export const styles = StyleSheet.create({
   navBar: {
     position: "absolute",
     bottom: 45,
-    width: 350,
+    width: 353,
     height: 60,
     backgroundColor: "#000",
     borderRadius: 50,
+    paddingHorizontal: 20,
     marginLeft: 20,
     marginRight: 20,
   },
