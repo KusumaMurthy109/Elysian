@@ -10,6 +10,7 @@ export const recommendationStyles = StyleSheet.create({
   cityImageRecommendation: {
     width: "100%",
     height: "100%",
+    borderRadius: 60
   },
 
   cityImagePlaceholderRec: {
@@ -20,7 +21,7 @@ export const recommendationStyles = StyleSheet.create({
 
   cityInfoRec: {
     position: "absolute",
-    bottom: 60,
+    bottom: 150,
     left: 40,
     right: 20,
   },
@@ -36,15 +37,14 @@ export const recommendationStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 2,
+    gap: 12
   },
 
   glassTag: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 100,
-    backgroundColor: "#1c1c1c",
+    backgroundColor: "#616161",
   },
 
   tagText: {
@@ -59,8 +59,6 @@ export const recommendationStyles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
     borderColor: "rgba(33, 30, 30, 0.64)",
-    marginRight: 6,
-    marginBottom: 45,
   },
 
   cityImageContainerRec: {

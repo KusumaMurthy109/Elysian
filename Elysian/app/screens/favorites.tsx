@@ -361,7 +361,7 @@ const Favorites = () => {
 
         <TouchableOpacity
           style={styles.topRightIcon}
-          onPress={() => setSearchOpen(true)}
+          onPress={() => setSearchOpen(prev => !prev)}
         >
           <GlassView style={styles.glassButton}>
             <Ionicons name="search" size={26} color="#000" />
