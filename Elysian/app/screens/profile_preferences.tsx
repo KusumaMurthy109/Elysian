@@ -3,25 +3,27 @@ File: profile_preferences.tsx
 Function: Profile preferences page, displays questionnaire responses and logout.
 */
 
-import React, { useState, useEffect } from 'react';
-import { View, Pressable, Image  } from 'react-native';
-import { Button, Text } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons'; 
-import { useNavigation } from '@react-navigation/native';
-import { GlassView } from 'expo-glass-effect';
+import React, { useState, useEffect } from "react";
+import { View, Pressable, Image } from "react-native";
+import { Button, Text } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { GlassView } from "expo-glass-effect";
 
-import { styles } from './app_styles.styles';
-import { profilePreferencesStyles } from './profile_preferences.styles';
+import { styles } from "./app_styles.styles";
+import { profilePreferencesStyles } from "./profile_preferences.styles";
 
-import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { getDoc, doc } from 'firebase/firestore';
-import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
+import { onAuthStateChanged, User, signOut } from "firebase/auth";
+import { getDoc, doc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 
 const ProfilePreferences = () => {
   const navigation = useNavigation();
 
-  const [responses, setResponses] = useState<{ [key: string]: string[] | string }>({});
+  const [responses, setResponses] = useState<{
+    [key: string]: string[] | string;
+  }>({});
 
   const questions = [
     "Origin Country:",
@@ -29,25 +31,30 @@ const ProfilePreferences = () => {
     "Favorites Season(s)",
     "Budget(s):",
     "Favorite Country Visited:",
-    "Type(s) of Places:"
+    "Type(s) of Places:",
   ];
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
-      if (!currentUser) {
-        console.warn("User not signed in!");
-        return;
-      }
-
-      try {
-        const profileDoc = await getDoc(doc(FIREBASE_DB, 'userProfiles', currentUser.uid));
-        if (profileDoc.exists()) {
-          setResponses(profileDoc.data()?.responses || {});
+    const unsubscribe = onAuthStateChanged(
+      FIREBASE_AUTH,
+      async (currentUser) => {
+        if (!currentUser) {
+          console.warn("User not signed in!");
+          return;
         }
-      } catch (err) {
-        console.error("Error fetching user profile:", err);
-      }
-    });
+
+        try {
+          const profileDoc = await getDoc(
+            doc(FIREBASE_DB, "userProfiles", currentUser.uid),
+          );
+          if (profileDoc.exists()) {
+            setResponses(profileDoc.data()?.responses || {});
+          }
+        } catch (err) {
+          console.error("Error fetching user profile:", err);
+        }
+      },
+    );
 
     return unsubscribe;
   }, []);
@@ -66,7 +73,7 @@ const ProfilePreferences = () => {
       {/* Profile picture top-right */}
       <View style={profilePreferencesStyles.profileHeader}>
         <Image
-          source={require('../../assets/profile_temp.jpg')}
+          source={require("../../assets/profile_temp.jpg")}
           style={profilePreferencesStyles.profileImage}
         />
       </View>
@@ -80,7 +87,9 @@ const ProfilePreferences = () => {
               <Text style={profilePreferencesStyles.questionText}>{q}</Text>
               <View style={profilePreferencesStyles.answerPill}>
                 <Text style={profilePreferencesStyles.answerText}>
-                  {Array.isArray(answer) ? answer.join(', ') : answer || 'No answer yet'}
+                  {Array.isArray(answer)
+                    ? answer.join(", ")
+                    : answer || "No answer yet"}
                 </Text>
               </View>
             </View>

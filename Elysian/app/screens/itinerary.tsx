@@ -3,13 +3,13 @@ File: itinerary.tsx
 Function: 
 */
 
-import React from 'react';
-import { View, Pressable, Text } from 'react-native';
+import React from "react";
+import { View, Pressable, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from '@expo/vector-icons'; 
-import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { styles } from "./app_styles.styles";
-import { GlassView } from 'expo-glass-effect';
+import { GlassView } from "expo-glass-effect";
 
 const Itinerary = () => {
   const navigation = useNavigation();
@@ -19,8 +19,7 @@ const Itinerary = () => {
       {/* Top-left back icon */}
       <View style={styles.topLeftIcon}>
         <Pressable onPress={() => navigation.goBack()}>
-          <GlassView
-            style={styles.glassButton}>
+          <GlassView style={styles.glassButton}>
             <Ionicons name="chevron-back" size={26} color="#000" />
           </GlassView>
         </Pressable>

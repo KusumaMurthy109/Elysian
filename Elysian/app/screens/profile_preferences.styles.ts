@@ -1,28 +1,28 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const profilePreferencesStyles = StyleSheet.create({
   profileHeader: {
-    alignItems: 'flex-end',        // vertically center text with image
+    alignItems: "flex-end", // vertically center text with image
     paddingHorizontal: 40,
     paddingTop: 20,
- },
+  },
 
   profileImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: "#fff",
   },
 
   name: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   username: {
     fontSize: 14,
-    color: '#999',
+    color: "#999",
   },
 
   content: {
@@ -36,37 +36,37 @@ export const profilePreferencesStyles = StyleSheet.create({
 
   questionText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 6,
-    color: '#000',
+    color: "#000",
   },
 
   answerPill: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: 'rgba(174, 170, 170, 0.15)',
+    borderColor: "rgba(174, 170, 170, 0.15)",
     elevation: 2,
   },
 
   answerText: {
     fontSize: 14,
-    color: '#474747',
+    color: "#474747",
   },
 
   logoutButton: {
-    width: '40%',
-    alignSelf: 'center',
+    width: "40%",
+    alignSelf: "center",
     borderRadius: 999,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     paddingVertical: 5,
   },
 
   logoutButtonLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
 });

@@ -1,17 +1,29 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, Image, Pressable, Modal, Dimensions, PanResponder } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Button} from 'react-native-paper';
-import { styles } from './app_styles.styles';
-import { recommendationStyles } from './recommendations.styles';
-import { Animated, Easing } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getAuth } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { FIREBASE_DB } from '../../FirebaseConfig';
-import { GlassView, GlassStyle, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  ScrollView,
+  Image,
+  Pressable,
+  Modal,
+  Dimensions,
+  PanResponder,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, Button } from "react-native-paper";
+import { styles } from "./app_styles.styles";
+import { recommendationStyles } from "./recommendations.styles";
+import { Animated, Easing } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { getAuth } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { FIREBASE_DB } from "../../FirebaseConfig";
+import {
+  GlassView,
+  GlassStyle,
+  isLiquidGlassAvailable,
+} from "expo-glass-effect";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 
 // Define the navigation parameter list
@@ -36,7 +48,6 @@ type City = {
   score: number;
 };
 
-
 // Cute spinning globe loader
 const GlobeLoader = () => {
   const spinAnim = useRef(new Animated.Value(0)).current;
@@ -48,7 +59,7 @@ const GlobeLoader = () => {
         duration: 1200,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     );
     loop.start();
     return () => loop.stop();
@@ -82,7 +93,7 @@ const Recommendations = () => {
   const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
   const [currentCityAttr, setCurrentCityAttr] = useState<string | null>(null);
   const glassAvailable = isLiquidGlassAvailable();
- // This will set the tags for the current city.
+  // This will set the tags for the current city.
   // Need to get the width and height of screen for the images to fit full page.
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -90,19 +101,19 @@ const Recommendations = () => {
     currentCityRef.current = currentCity;
   }, [currentCity]);
   useEffect(() => {
-  const loadCityAttributes = async () => {
-    if (!currentCity) return;
+    const loadCityAttributes = async () => {
+      if (!currentCity) return;
 
-    const attrs = await getCityAttrs(currentCity.city_id);
-    setCurrentCityAttr(attrs);
-  };
+      const attrs = await getCityAttrs(currentCity.city_id);
+      setCurrentCityAttr(attrs);
+    };
 
-  loadCityAttributes();
-}, [currentCity]);
+    loadCityAttributes();
+  }, [currentCity]);
 
   const fetchWikivoyageIntro = async (
     cityName: string,
-    country: string
+    country: string,
   ): Promise<string | null> => {
     const titlesToTry = [
       cityName,
@@ -152,7 +163,7 @@ const Recommendations = () => {
 
   const fetchWikipediaSummary = async (title: string) => {
     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-      title
+      title,
     )}`;
     const res = await fetch(url);
     if (!res.ok) return null;
@@ -197,7 +208,7 @@ const Recommendations = () => {
     try {
       const url =
         `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName
+          cityName,
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
@@ -259,7 +270,7 @@ const Recommendations = () => {
             image: unsplashImageUrl || null,
           },
         },
-        { merge: true }
+        { merge: true },
       );
       // await sendSwipe(user.uid, cityId, true); // Update backend with the swipe
 
@@ -270,7 +281,7 @@ const Recommendations = () => {
 
       const uImg = await fetchUnsplashImage(
         nextCity.city_name,
-        nextCity.country
+        nextCity.country,
       );
       setUnsplashImageUrl(uImg);
 
@@ -300,7 +311,7 @@ const Recommendations = () => {
       setUnsplashImageUrl(null);
       const uImg = await fetchUnsplashImage(
         nextCity.city_name,
-        nextCity.country
+        nextCity.country,
       );
       setUnsplashImageUrl(uImg);
 
@@ -319,10 +330,13 @@ const Recommendations = () => {
         console.warn("City not found:", cityId);
         return null;
       }
-      const cityData = cityResp.data()
+      const cityData = cityResp.data();
       return cityData.city_attrs || null;
     } catch (error) {
-      console.error("Encountered an error while getting city attributes", error);
+      console.error(
+        "Encountered an error while getting city attributes",
+        error,
+      );
       alert("Error, There was an error while getting city attributes");
     }
   };
@@ -362,7 +376,7 @@ const Recommendations = () => {
           user_id: userId,
           ...profile,
         }),
-      }
+      },
     );
 
     if (!res.ok) throw new Error("Failed to fetch next city");
@@ -370,7 +384,7 @@ const Recommendations = () => {
     return json.city as Recommendation;
   }
 
-  const swipeFunction = (direction: 'left' | 'right') => {
+  const swipeFunction = (direction: "left" | "right") => {
     if (!currentCityRef.current) return;
 
     const x = direction === "right" ? screenWidth : -screenWidth;
@@ -419,7 +433,7 @@ const Recommendations = () => {
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   return (
@@ -465,8 +479,8 @@ const Recommendations = () => {
             }}
           >
             {/* This is to make the full-screen image. */}
-              {unsplashImageUrl || currentCity.image ? (
-                <View style={recommendationStyles.cityImageContainerRec}>
+            {unsplashImageUrl || currentCity.image ? (
+              <View style={recommendationStyles.cityImageContainerRec}>
                 <Image
                   source={{ uri: unsplashImageUrl || currentCity.image }}
                   style={recommendationStyles.cityImageRecommendation}
@@ -478,7 +492,7 @@ const Recommendations = () => {
                   <MaskedView
                     maskElement={
                       <LinearGradient
-                        colors={['transparent', 'rgba(255,255,255,0.9)']}
+                        colors={["transparent", "rgba(255,255,255,0.9)"]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
                         style={{ flex: 1 }}
@@ -490,34 +504,35 @@ const Recommendations = () => {
                   </MaskedView>
                 </View>
               </View>
-              ) : (
-                <View style={recommendationStyles.cityImagePlaceholderRec} />
-              )}
-              {/* Put the city/country name on the image */}
-              <View style={recommendationStyles.cityInfoRec}>
-                <Text style={recommendationStyles.cityNameRec}>
-                  {currentCity.city_name}, {"\n"}{currentCity.country}
-                </Text>
+            ) : (
+              <View style={recommendationStyles.cityImagePlaceholderRec} />
+            )}
+            {/* Put the city/country name on the image */}
+            <View style={recommendationStyles.cityInfoRec}>
+              <Text style={recommendationStyles.cityNameRec}>
+                {currentCity.city_name}, {"\n"}
+                {currentCity.country}
+              </Text>
               {currentCityAttr && (
                 <View style={recommendationStyles.cityTagContainer}>
-                  {currentCityAttr.split("|").map((tag, index) => (
+                  {currentCityAttr.split("|").map((tag, index) =>
                     glassAvailable ? ( // Check if glass UI is available.
                       <GlassView
                         key={index}
                         style={recommendationStyles.glassTag}
-                        >
-                          <Text style={recommendationStyles.tagText}>{tag}</Text>
-                        </GlassView> 
-                        ) : (
-                          // If there is no Glass UI available on the phone, do regular UI.
-                          <View key={index} style={recommendationStyles.tag}>
-                            <Text style={recommendationStyles.tagText}>{tag}</Text>
-                          </View>
-                        )
-                  ))}
+                      >
+                        <Text style={recommendationStyles.tagText}>{tag}</Text>
+                      </GlassView>
+                    ) : (
+                      // If there is no Glass UI available on the phone, do regular UI.
+                      <View key={index} style={recommendationStyles.tag}>
+                        <Text style={recommendationStyles.tagText}>{tag}</Text>
+                      </View>
+                    ),
+                  )}
                 </View>
               )}
-              </View>
+            </View>
           </Pressable>
         </Animated.View>
       )}
@@ -574,4 +589,3 @@ const Recommendations = () => {
   );
 };
 export default Recommendations;
-

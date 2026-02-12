@@ -4,21 +4,35 @@ Function: Displays users liked places loaded from Firebase userFavorites.
 */
 
 import React, { useEffect, useState, useCallback } from "react";
-import { View, ScrollView, Image, Pressable, TouchableOpacity } from "react-native";
+import {
+  View,
+  ScrollView,
+  Image,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Modal, Button, TextInput } from "react-native-paper";
 import { styles } from "./app_styles.styles";
 import { favoritesStyles } from "./favorites.styles";
 
 import { getAuth } from "firebase/auth";
-import { doc, onSnapshot, updateDoc, deleteField, setDoc, getDocs, collection } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  updateDoc,
+  deleteField,
+  setDoc,
+  getDocs,
+  collection,
+} from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { GlassView } from 'expo-glass-effect';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
+import { GlassView } from "expo-glass-effect";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 
 interface Recommendation {
@@ -70,17 +84,17 @@ const Favorites = () => {
   };
 
   useFocusEffect(
-  useCallback(() => {
-    // Screen focused → do nothing
+    useCallback(() => {
+      // Screen focused → do nothing
 
-    return () => {
-      // Screen blurred → reset UI state
-      setSearchOpen(false);
-      setSearchQuery('');
-      setDropdownOpen(false);
-    };
-  }, [])
-);
+      return () => {
+        // Screen blurred → reset UI state
+        setSearchOpen(false);
+        setSearchQuery("");
+        setDropdownOpen(false);
+      };
+    }, []),
+  );
 
   // Calls fetchAllCities on page init
   useEffect(() => {
@@ -108,9 +122,8 @@ const Favorites = () => {
             country_name: city.country,
           },
         },
-        { merge: true }
+        { merge: true },
       );
-
     } catch (err) {
       console.error("Error adding to favorites:", err);
     }
@@ -120,7 +133,7 @@ const Favorites = () => {
   const fetchCityImage = async (cityName: string, country: string) => {
     try {
       const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        `${cityName}, ${country}`
+        `${cityName}, ${country}`,
       )}`;
       const res = await fetch(url);
       if (!res.ok) return undefined;
@@ -143,7 +156,7 @@ const Favorites = () => {
     try {
       const url =
         `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName
+          cityName,
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
@@ -185,10 +198,10 @@ const Favorites = () => {
           }
         }
       }
-      
+
       // 2) If Wikivoyage doesn't work then we fallback to Wikipedia (reliable if Wikivoyage has no page)
       const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        `${cityName}, ${country}`
+        `${cityName}, ${country}`,
       )}`;
 
       const wikiRes = await fetch(wikiUrl);
@@ -226,14 +239,14 @@ const Favorites = () => {
             country_name: city.country,
           },
         },
-        { merge: true }
+        { merge: true },
       );
     } catch (err) {
       console.error("Error removing favorite:", err);
     }
   };
 
-  // Use navigation system for search bar icon 
+  // Use navigation system for search bar icon
   const navigation = useNavigation();
 
   // When handleSeachbar is called (search bar icon pressed) it goes to itinerary.tsx page
@@ -279,14 +292,14 @@ const Favorites = () => {
                 // Try Unsplash first
                 image = await fetchUnsplashImage(
                   city.city_name,
-                  city.country_name
+                  city.country_name,
                 );
 
                 // Fallback to Wikipedia if needed
                 if (!image) {
                   image = await fetchCityImage(
                     city.city_name,
-                    city.country_name
+                    city.country_name,
                   );
                 }
 
@@ -298,7 +311,7 @@ const Favorites = () => {
               }
               const description = await fetchCityDescription(
                 city.city_name,
-                city.country_name
+                city.country_name,
               );
 
               return {
@@ -308,7 +321,7 @@ const Favorites = () => {
                 image,
                 description,
               };
-            })
+            }),
           );
 
           setFavorites(favoritesArray);
@@ -323,225 +336,232 @@ const Favorites = () => {
         console.error("onSnapshot error:", err);
         setError("Failed to load liked places.");
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
   }, []);
   return (
-  <SafeAreaView style={styles.safeArea}>
-    {/* Itinerary Icon (hidden when search is open) */}
-    {!searchOpen && (
-      <TouchableOpacity
-        style={favoritesStyles.itineraryIcon}
-        onPress={() => handleItinerary()}
-      >
-        <GlassView
-          style={styles.glassButton}>
-        <Ionicons name="list" size={26} color="#000" />
-        </GlassView>
-      </TouchableOpacity>
-    )}
+    <SafeAreaView style={styles.safeArea}>
+      {/* Itinerary Icon (hidden when search is open) */}
+      {!searchOpen && (
+        <TouchableOpacity
+          style={favoritesStyles.itineraryIcon}
+          onPress={() => handleItinerary()}
+        >
+          <GlassView style={styles.glassButton}>
+            <Ionicons name="list" size={26} color="#000" />
+          </GlassView>
+        </TouchableOpacity>
+      )}
 
-    {/* Search Icon and Bar */}
-    <View style={styles.searchOverlay}>
-      {/* Absolute search icon */}
-      
-      <TouchableOpacity
-        style={styles.topRightIcon}
-        onPress={() => setSearchOpen(true)}
-      >
-        <GlassView
-          style={styles.glassButton}>
-          <Ionicons name="search" size={26} color="#000" />
-        </GlassView>
-      </TouchableOpacity>
+      {/* Search Icon and Bar */}
+      <View style={styles.searchOverlay}>
+        {/* Absolute search icon */}
 
-      {/* Expanded search bar behind the icon */}
+        <TouchableOpacity
+          style={styles.topRightIcon}
+          onPress={() => setSearchOpen(true)}
+        >
+          <GlassView style={styles.glassButton}>
+            <Ionicons name="search" size={26} color="#000" />
+          </GlassView>
+        </TouchableOpacity>
+
+        {/* Expanded search bar behind the icon */}
+        {searchOpen && (
+          <GlassView style={styles.searchBarExpanded}>
+            <TextInput
+              placeholder="Search cities..."
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                setDropdownOpen(true);
+              }}
+              style={styles.searchInput}
+              mode="flat"
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+              autoFocus
+              caretHidden={false}
+              selectionColor="#000"
+            />
+          </GlassView>
+        )}
+      </View>
+
+      {/* Tap outside to close search */}
       {searchOpen && (
-        <GlassView style={styles.searchBarExpanded}>
-          <TextInput
-            placeholder="Search cities..."
-            value={searchQuery}
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              setDropdownOpen(true);
-            }}
-            style={styles.searchInput}
-            mode="flat"
-            underlineColor="transparent"
-            activeUnderlineColor="transparent"
-            autoFocus
-            caretHidden={false}
-            selectionColor="#000"
-          />
+        <Pressable
+          style={styles.searchBackdrop}
+          onPress={() => {
+            setSearchOpen(false);
+            setSearchQuery("");
+            setDropdownOpen(false);
+          }}
+        />
+      )}
+
+      {/* Dropdown Results */}
+      {searchOpen && dropdownOpen && searchQuery.length > 0 && (
+        <GlassView style={styles.searchDropdown}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            {cities.filter((city) =>
+              `${city.name}, ${city.country}`
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()),
+            ).length > 0 ? (
+              cities
+                .filter((city) =>
+                  `${city.name}, ${city.country}`
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()),
+                )
+                .map((city) => (
+                  <TouchableOpacity
+                    key={city.id}
+                    style={styles.searchResultItem}
+                    onPress={() => {
+                      addToFavorites(city); // Add to userFavorites
+                      setSearchOpen(false); // Close search bar
+                      setSearchQuery(""); // Clear text
+                      setDropdownOpen(false); // Close dropdown
+                    }}
+                  >
+                    <Text>
+                      {city.name}, {city.country}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+            ) : (
+              <View style={styles.searchResultItem}>
+                <Text style={{ color: "#888" }}>No Results</Text>
+              </View>
+            )}
+          </ScrollView>
         </GlassView>
       )}
-    </View>
 
-    {/* Tap outside to close search */}
-    {searchOpen && (
-      <Pressable
-        style={styles.searchBackdrop}
-        onPress={() => {
-          setSearchOpen(false);
-          setSearchQuery("");
-          setDropdownOpen(false);
-        }}
-      />
-    )}
+      {/* Favorites list */}
+      {!searchOpen && (
+        <ScrollView contentContainerStyle={styles.homeContainer}>
+          <Text variant="headlineLarge" style={favoritesStyles.title}>
+            Favorites
+          </Text>
 
-    {/* Dropdown Results */}
-    {searchOpen && dropdownOpen && searchQuery.length > 0 && (
-      <GlassView style={styles.searchDropdown}>
-        <ScrollView keyboardShouldPersistTaps="handled">
-          {cities.filter((city) =>
-            `${city.name}, ${city.country}`
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
-          ).length > 0 ? (
-            cities
-              .filter((city) =>
-                `${city.name}, ${city.country}`
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase())
-              )
-              .map((city) => (
-                <TouchableOpacity
-                  key={city.id}
-                  style={styles.searchResultItem}
+          {loading && (
+            <Text style={styles.sectionTitle}>Loading favorites...</Text>
+          )}
+          {error && !loading && <Text>{error}</Text>}
+
+          {!loading && favorites.length > 0 && (
+            <View style={favoritesStyles.resultsContainer}>
+              {favorites.map((city) => (
+                <Pressable
+                  key={city.city_id}
                   onPress={() => {
-                    addToFavorites(city);   // Add to userFavorites
-                    setSearchOpen(false);   // Close search bar
-                    setSearchQuery("");     // Clear text
-                    setDropdownOpen(false); // Close dropdown
+                    setSelectedCity(city);
+                    setCityModalOpen(true);
                   }}
+                  style={favoritesStyles.cityCard}
                 >
-                  <Text>{city.name}, {city.country}</Text>
-                </TouchableOpacity>
-              ))
-          ) : (
-            <View style={styles.searchResultItem}>
-              <Text style={{ color: "#888" }}>No Results</Text>
+                  {city.image ? (
+                    <Image
+                      source={{ uri: city.image }}
+                      style={favoritesStyles.cityCardImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={favoritesStyles.cityCardPlaceholder} />
+                  )}
+
+                  {/* Progressive Blur on bottom 1/3 */}
+                  <View style={favoritesStyles.cityCardBlurContainer}>
+                    <MaskedView
+                      maskElement={
+                        <LinearGradient
+                          colors={["transparent", "rgba(255,255,255,0.9)"]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                          style={{ flex: 1 }}
+                        />
+                      }
+                      style={{ flex: 1 }}
+                    >
+                      <BlurView
+                        intensity={100}
+                        tint="dark"
+                        style={{ flex: 1 }}
+                      />
+                    </MaskedView>
+                  </View>
+
+                  {/* Text on top of blurred area */}
+                  <View style={favoritesStyles.cityCardTextContainer}>
+                    <Text style={favoritesStyles.cityCardText}>
+                      {city.city_name}, {city.country}
+                    </Text>
+                  </View>
+
+                  {/* Remove favorite icon */}
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      removeFavorite(city);
+                    }}
+                    style={[
+                      favoritesStyles.removeIconBtn,
+                      favoritesStyles.removeIconBtnShadow,
+                    ]}
+                  >
+                    <Ionicons name="bookmark" size={18} color="#fff" />
+                  </Pressable>
+                </Pressable>
+              ))}
             </View>
           )}
         </ScrollView>
-      </GlassView>
-    )}
+      )}
 
-    {/* Favorites list */}
-    {!searchOpen && (
-      <ScrollView contentContainerStyle={styles.homeContainer}>
-        <Text variant="headlineLarge" style={favoritesStyles.title}>
-          Favorites
-        </Text>
-
-        {loading && <Text style={styles.sectionTitle}>Loading favorites...</Text>}
-        {error && !loading && <Text>{error}</Text>}
-
-        {!loading && favorites.length > 0 && (
-          <View style={favoritesStyles.resultsContainer}>
-            {favorites.map((city) => (
-              <Pressable
-                key={city.city_id}
-                onPress={() => {
-                  setSelectedCity(city);
-                  setCityModalOpen(true);
-                }}
-                style={favoritesStyles.cityCard}
-              >
-                {city.image ? (
-                  <Image
-                    source={{ uri: city.image }}
-                    style={favoritesStyles.cityCardImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={favoritesStyles.cityCardPlaceholder} />
-                )}
-
-                {/* Progressive Blur on bottom 1/3 */}
-                <View style={favoritesStyles.cityCardBlurContainer}>
-                  <MaskedView
-                    maskElement={
-                      <LinearGradient
-                        colors={['transparent', 'rgba(255,255,255,0.9)']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0, y: 1 }}
-                        style={{ flex: 1 }}
-                      />
-                    }
-                    style={{ flex: 1 }}
-                  >
-                    <BlurView intensity={100} tint="dark" style={{ flex: 1 }} />
-                  </MaskedView>
-                </View>
-                
-                {/* Text on top of blurred area */}
-                <View style={favoritesStyles.cityCardTextContainer}>
-                  <Text style={favoritesStyles.cityCardText}>
-                    {city.city_name}, {city.country}
-                  </Text>
-                </View>
-
-                {/* Remove favorite icon */}
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    removeFavorite(city);
-                  }}
-                  style={[favoritesStyles.removeIconBtn, favoritesStyles.removeIconBtnShadow]}
-                >
-                  <Ionicons name="bookmark" size={18} color="#fff" />
-                </Pressable>
-              </Pressable>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-    )}
-
-    {/* Full-screen dim overlay */}
-    {cityModalOpen && (
-      <Pressable
-        style={styles.cityModalOverlay}
-        onPress={() => setCityModalOpen(false)}
-      />
-    )}
-
-    {/* Modal content on top of overlay */}
-    {cityModalOpen && selectedCity && (
-      <View style={styles.cityModalContainer}>
-        <ScrollView contentContainerStyle={styles.cityModalContent}>
-          <Text style={styles.cityModalTitle}>
-            {selectedCity.city_name}, {selectedCity.country}
-          </Text>
-
-          {selectedCity.image && (
-            <Image
-              source={{ uri: selectedCity.image }}
-              style={styles.cityModalImage}
-              resizeMode="cover"
-            />
-          )}
-
-          <Text style={styles.cityModalDescription}>
-            {selectedCity.description || "No description available."}
-          </Text>
-          </ScrollView>
-        <Button
-          mode="contained"
+      {/* Full-screen dim overlay */}
+      {cityModalOpen && (
+        <Pressable
+          style={styles.cityModalOverlay}
           onPress={() => setCityModalOpen(false)}
-          style={styles.cityModalCloseBtn}
-        >
-          Close
-        </Button>
-      </View>
-    )}
-  </SafeAreaView>
-);
+        />
+      )}
 
+      {/* Modal content on top of overlay */}
+      {cityModalOpen && selectedCity && (
+        <View style={styles.cityModalContainer}>
+          <ScrollView contentContainerStyle={styles.cityModalContent}>
+            <Text style={styles.cityModalTitle}>
+              {selectedCity.city_name}, {selectedCity.country}
+            </Text>
 
+            {selectedCity.image && (
+              <Image
+                source={{ uri: selectedCity.image }}
+                style={styles.cityModalImage}
+                resizeMode="cover"
+              />
+            )}
+
+            <Text style={styles.cityModalDescription}>
+              {selectedCity.description || "No description available."}
+            </Text>
+          </ScrollView>
+          <Button
+            mode="contained"
+            onPress={() => setCityModalOpen(false)}
+            style={styles.cityModalCloseBtn}
+          >
+            Close
+          </Button>
+        </View>
+      )}
+    </SafeAreaView>
+  );
 };
 
 export default Favorites;

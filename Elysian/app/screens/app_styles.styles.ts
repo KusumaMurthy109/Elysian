@@ -1,25 +1,25 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
     paddingHorizontal: 20,
-    backgroundColor: "white"
+    backgroundColor: "white",
   },
 
   title: {
     marginBottom: 24,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#008CFF',
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#008CFF",
   },
 
   subtext: {
     marginBottom: 24,
-    textAlign: 'center',
-    color: '#7D848D',
+    textAlign: "center",
+    color: "#7D848D",
   },
 
   input: {
@@ -34,24 +34,24 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     paddingVertical: 6,
     height: 60,
-    backgroundColor: '#008CFF',
-    justifyContent: 'center',
+    backgroundColor: "#008CFF",
+    justifyContent: "center",
   },
 
   buttonLabel: {
     fontSize: 18,
-    textAlign: 'center',
-    fontWeight: 'bold',
+    textAlign: "center",
+    fontWeight: "bold",
   },
 
   signupContainer: {
     marginTop: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   signupLink: {
-    color: '#95CD00',
-    fontWeight: '600',
+    color: "#95CD00",
+    fontWeight: "600",
   },
 
   image: {
@@ -61,65 +61,65 @@ export const styles = StyleSheet.create({
   },
 
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     rowGap: 10, // Minimal vertical spacing
     columnGap: 10, // Consistent spacing between columns (if RN 0.71+)
   },
 
   answerButton: {
-    flexBasis: '48%', // Two buttons per row
+    flexBasis: "48%", // Two buttons per row
     height: 120,
-    backgroundColor: '#F7F7F9', // Same light gray as input background
-    borderColor: '#E5E5E5',
+    backgroundColor: "#F7F7F9", // Same light gray as input background
+    borderColor: "#E5E5E5",
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 14,
     marginBottom: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000', // Subtle shadow for iOS
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000", // Subtle shadow for iOS
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
 
   answerButtonSelected: {
-    backgroundColor: '#008CFF', // Brand blue when selected
+    backgroundColor: "#008CFF", // Brand blue when selected
     shadowOpacity: 0.2,
   },
 
   answerText: {
-    color: '#1B1E28',
+    color: "#1B1E28",
     fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
 
   answerTextSelected: {
-    color: '#FFFFFF', // White text on blue button
-    fontWeight: '700',
+    color: "#FFFFFF", // White text on blue button
+    fontWeight: "700",
   },
 
   questionText: {
     fontSize: 25,
-    fontWeight: 'bold',
-    color: '#1B1E28',
+    fontWeight: "bold",
+    color: "#1B1E28",
     marginBottom: 24,
     paddingHorizontal: 10,
   },
 
   globeLoaderContainer: {
     marginTop: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  
+
   // --- HOME / RECOMMENDATIONS SCREEN STYLES ---
 
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
 
   homeContainer: {
@@ -127,15 +127,15 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 40,
-    backgroundColor: 'white'
+    backgroundColor: "white",
   },
 
   homeTitle: {
-    textAlign: 'center',
-    fontWeight: '800',
+    textAlign: "center",
+    fontWeight: "800",
     fontSize: 28,
     lineHeight: 34,
-    color: '#008CFF',
+    color: "#008CFF",
     marginBottom: 24,
   },
 
@@ -145,24 +145,24 @@ export const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 12,
-    color: '#1B1E28',
+    color: "#1B1E28",
   },
 
   cityCard: {
     marginBottom: 18,
     borderRadius: 20, // Rounded corners
-    backgroundColor: '#F7F4FF',
-    elevation: 2,  // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
+    backgroundColor: "#F7F4FF",
+    elevation: 2, // Shadow for Android
+    shadowColor: "#000", // Shadow for iOS
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
-  }, 
+  },
 
   cityImage: {
-    width: '100%',
+    width: "100%",
     height: 140,
   },
 
@@ -186,7 +186,7 @@ export const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-  },  
+  },
 
   cityModalContent: {
     flexGrow: 0,
@@ -195,13 +195,13 @@ export const styles = StyleSheet.create({
 
   cityModalTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#1B1E28',
+    fontWeight: "800",
+    color: "#1B1E28",
     marginBottom: 10,
   },
 
   cityModalImage: {
-    width: '100%',
+    width: "100%",
     height: 180,
     borderRadius: 16,
     marginBottom: 12,
@@ -210,13 +210,13 @@ export const styles = StyleSheet.create({
   cityModalDescription: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#333',
+    color: "#333",
     marginBottom: 14,
   },
 
   cityModalCloseBtn: {
     borderRadius: 999,
-    backgroundColor: '#008CFF',
+    backgroundColor: "#008CFF",
     marginTop: 10,
   },
 
@@ -237,17 +237,19 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between", // pushes button to bottom
   },
 
-  topRightIcon: { // Search icon and menu icon 
-    position: 'absolute', 
+  topRightIcon: {
+    // Search icon and menu icon
+    position: "absolute",
     top: 75,
     right: 30,
     zIndex: 10,
   },
 
-  topLeftIcon: { // Back arrow icon 
-    position: 'absolute', 
-    top: 75, 
-    left: 15, 
+  topLeftIcon: {
+    // Back arrow icon
+    position: "absolute",
+    top: 75,
+    left: 15,
     zIndex: 11,
   },
 
@@ -270,145 +272,141 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 7,
   },
-  
+
   // ---------------------- Used on Home page ------------------------------
   floatingUploadButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 50,
     right: 20,
     width: 55,
     height: 55,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    shadowColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 5
+    elevation: 5,
   },
   uploadIcon: {
     fontSize: 32,
-    color: '#000'
+    color: "#000",
   },
-   post: {
+  post: {
     marginBottom: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   uploader: {
     marginTop: 8,
     fontSize: 12,
-    color: '#555',
+    color: "#555",
   },
   uploadingIndicator: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
     marginLeft: -25,
     marginTop: -25,
     zIndex: 100,
-},
+  },
 
-searchOverlay: {
-  position: "absolute",
-  top: 0,              // Align with itinerary icon
-  right: 0,
-  width: "100%",
-  paddingHorizontal: 15,
-  zIndex: 10,
-},
-searchRow: { 
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingHorizontal: 20,
-  marginTop: 60,
-},
+  searchOverlay: {
+    position: "absolute",
+    top: 0, // Align with itinerary icon
+    right: 0,
+    width: "100%",
+    paddingHorizontal: 15,
+    zIndex: 10,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 60,
+  },
 
-searchBarExpanded: {
-  position: "absolute",
-  top: 77,
-  left: 30,
-  right: 15,
-  width: "75%",
-  height: 45,
+  searchBarExpanded: {
+    position: "absolute",
+    top: 77,
+    left: 30,
+    right: 15,
+    width: "75%",
+    height: 45,
 
-  // Glass look
-  borderRadius: 26, // Rounded
-  overflow: "hidden",
+    // Glass look
+    borderRadius: 26, // Rounded
+    overflow: "hidden",
 
-  // Glass effect border
-  borderWidth: 1,
-  borderColor: 'rgba(174, 170, 170, 0.15)',
+    // Glass effect border
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
 
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  zIndex: 10,
-  shadowColor: "#000",
-  shadowOpacity: 0.15,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 4 },
-},
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    zIndex: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
 
-searchInput: {
-  flex: 1,
-  backgroundColor: "transparent",
-  marginRight: 8,
-},
+  searchInput: {
+    flex: 1,
+    backgroundColor: "transparent",
+    marginRight: 8,
+  },
 
-searchDropdown: {
-  position: "absolute",
-  top: 130,
-  left: 30,
-  right: 30,
-  backgroundColor: "#fff",
-  borderRadius: 20,
-  borderWidth: 1,
-  borderColor: "rgba(174, 170, 170, 0.15)",
-  maxHeight: 220,
-  zIndex: 9,
-  overflow: "hidden",
-},
+  searchDropdown: {
+    position: "absolute",
+    top: 130,
+    left: 30,
+    right: 30,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+    maxHeight: 220,
+    zIndex: 9,
+    overflow: "hidden",
+  },
 
-searchResultItem: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: 12,
-  borderBottomWidth: 1,
-  borderBottomColor: "#eee",
-},
+  searchResultItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
 
-searchBackdrop: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 5,
-},
-glassButton: {
+  searchBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 5,
+  },
+  glassButton: {
     padding: 10,
     borderRadius: 50,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: 'rgba(174, 170, 170, 0.15)',
-    },
+    borderColor: "rgba(174, 170, 170, 0.15)",
+  },
 });
 
 export const inputTheme = {
   roundness: 50,
   colors: {
-    primary: '#008CFF', // Underline and label when focused
-    background: '#F7F7F9', // Input background color
-    text: '#1B1E28', // Input text color
-    placeholder: '#807f7fff', // Label/placeholder color
-    outline: 'transparent',
+    primary: "#008CFF", // Underline and label when focused
+    background: "#F7F7F9", // Input background color
+    text: "#1B1E28", // Input text color
+    placeholder: "#807f7fff", // Label/placeholder color
+    outline: "transparent",
   },
 };
 
-export const selectedColors = [
-  '#95CD00',
-  '#F49F9A',
-  '#FBD605',
-];
+export const selectedColors = ["#95CD00", "#F49F9A", "#FBD605"];
