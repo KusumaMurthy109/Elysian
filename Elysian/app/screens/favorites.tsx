@@ -3,7 +3,7 @@ File: favorites.tsx
 Function: Displays users liked places loaded from Firebase userFavorites.
 */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, ScrollView, Image, Pressable, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Modal, Button, TextInput } from "react-native-paper";
@@ -15,7 +15,7 @@ import { doc, onSnapshot, updateDoc, deleteField, setDoc, getDocs, collection } 
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { GlassView } from 'expo-glass-effect';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -68,6 +68,19 @@ const Favorites = () => {
       console.error("Error fetching cities:", err);
     }
   };
+
+  useFocusEffect(
+  useCallback(() => {
+    // Screen focused → do nothing
+
+    return () => {
+      // Screen blurred → reset UI state
+      setSearchOpen(false);
+      setSearchQuery('');
+      setDropdownOpen(false);
+    };
+  }, [])
+);
 
   // Calls fetchAllCities on page init
   useEffect(() => {
@@ -328,7 +341,7 @@ const Favorites = () => {
         <Ionicons name="list" size={26} color="#000" />
         </GlassView>
       </TouchableOpacity>
-      )}
+    )}
 
     {/* Search Icon and Bar */}
     <View style={styles.searchOverlay}>
@@ -380,7 +393,7 @@ const Favorites = () => {
 
     {/* Dropdown Results */}
     {searchOpen && dropdownOpen && searchQuery.length > 0 && (
-      <View style={styles.searchDropdown}>
+      <GlassView style={styles.searchDropdown}>
         <ScrollView keyboardShouldPersistTaps="handled">
           {cities.filter((city) =>
             `${city.name}, ${city.country}`
@@ -413,13 +426,13 @@ const Favorites = () => {
             </View>
           )}
         </ScrollView>
-      </View>
+      </GlassView>
     )}
 
     {/* Favorites list */}
     {!searchOpen && (
       <ScrollView contentContainerStyle={styles.homeContainer}>
-        <Text variant="headlineLarge" style={favoritesStyles.Title}>
+        <Text variant="headlineLarge" style={favoritesStyles.title}>
           Favorites
         </Text>
 
@@ -427,7 +440,7 @@ const Favorites = () => {
         {error && !loading && <Text>{error}</Text>}
 
         {!loading && favorites.length > 0 && (
-          <View style={styles.resultsContainer}>
+          <View style={favoritesStyles.resultsContainer}>
             {favorites.map((city) => (
               <Pressable
                 key={city.city_id}
@@ -479,7 +492,7 @@ const Favorites = () => {
                   }}
                   style={[favoritesStyles.removeIconBtn, favoritesStyles.removeIconBtnShadow]}
                 >
-                  <Ionicons name="heart" size={18} color="#fff" />
+                  <Ionicons name="bookmark" size={18} color="#fff" />
                 </Pressable>
               </Pressable>
             ))}
@@ -488,39 +501,43 @@ const Favorites = () => {
       </ScrollView>
     )}
 
-    <Modal
-      visible={cityModalOpen}
-      onDismiss={() => setCityModalOpen(false)}
-      contentContainerStyle={styles.cityModalContainer}
-    >
-      {selectedCity && (
-        <View>
+    {/* Full-screen dim overlay */}
+    {cityModalOpen && (
+      <Pressable
+        style={styles.cityModalOverlay}
+        onPress={() => setCityModalOpen(false)}
+      />
+    )}
+
+    {/* Modal content on top of overlay */}
+    {cityModalOpen && selectedCity && (
+      <View style={styles.cityModalContainer}>
+        <ScrollView contentContainerStyle={styles.cityModalContent}>
           <Text style={styles.cityModalTitle}>
             {selectedCity.city_name}, {selectedCity.country}
           </Text>
 
-          {selectedCity.image ? (
+          {selectedCity.image && (
             <Image
               source={{ uri: selectedCity.image }}
               style={styles.cityModalImage}
               resizeMode="cover"
             />
-          ) : null}
+          )}
 
           <Text style={styles.cityModalDescription}>
             {selectedCity.description || "No description available."}
           </Text>
-
-          <Button
-            mode="contained"
-            onPress={() => setCityModalOpen(false)}
-            style={styles.cityModalCloseBtn}
-          >
-            Close
-          </Button>
-        </View>
-      )}
-    </Modal>
+          </ScrollView>
+        <Button
+          mode="contained"
+          onPress={() => setCityModalOpen(false)}
+          style={styles.cityModalCloseBtn}
+        >
+          Close
+        </Button>
+      </View>
+    )}
   </SafeAreaView>
 );
 
