@@ -4,26 +4,18 @@ Function: This is the user Profile screen component for the app.
 */
 
 import React, { useEffect, useState } from 'react';
-import { View, Image, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Button, TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { onAuthStateChanged, signOut, User, updateProfile } from 'firebase/auth';
+import { onAuthStateChanged, User, updateProfile } from 'firebase/auth';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { query, where, collection, getDocs } from 'firebase/firestore';
 import { styles, inputTheme } from './app_styles.styles';
+import { profileStyles } from './profile.styles';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-
-// List of questions in questionaire 
-const questions = [
-  "Where are you traveling from?",
-  "What type of vacation are you looking for?",
-  "What seasons do you like?",
-  "What is your budget?",
-  "What has been your favorite country you've visited?",
-  "What type of place do you like?"
-];
+import { GlassView } from 'expo-glass-effect';
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -40,12 +32,10 @@ const Profile = () => {
   const navigation = useNavigation<ProfileScreenProp>();
   const [user, setUser] = useState<User | null>(null); // Stores the user 
   const [username, setUsername] = useState<string | null>(null); // Stores the username 
-  const [responses, setResponses] = useState<{ [key: string]: string[] | string }>({}); // Stores the user responses to the questionnaire 
   const [isEditing, setIsEditing] = useState(false); // False: user is viewing profile and True: user is editing profile 
   const [editedName, setEditedName] = useState(''); // Temporary value for when user is editing 
   const [editedUsername, setEditedUsername] = useState(''); // Temporary value for when user is editing 
   const [error, setError] = useState(''); // Stores error 
-  const [questionsVisible, setQuestionsVisible] = useState(false); // Pop up is open or closed 
 
   // Function to check if username is already taken 
   const isUsernameTaken = async (usernameCheck: string) => { // usernameCheck = username user wants to change to 
@@ -94,7 +84,7 @@ const Profile = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
       if (!currentUser) {
-        navigation.push('Login');
+        console.warn("User not signed in!");
         return;
       }
 
@@ -102,34 +92,46 @@ const Profile = () => {
 
       const userDoc = await getDoc(doc(FIREBASE_DB, 'users', currentUser.uid));
       setUsername(userDoc.exists() ? userDoc.data().username : null);
-
-      const profileDoc = await getDoc(doc(FIREBASE_DB, 'userProfiles', currentUser.uid));
-      if (profileDoc.exists()) {
-        setResponses(profileDoc.data()?.responses || {});
-      }
     });
 
     return unsubscribe;
   }, );
 
+  // When handleViewPrefernces is called (menu icon pressed) it goes to profile_preferences.tsx page
+  const handleViewPreferences = () => {
+    navigation.navigate("ProfilePreferences" as never);
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={styles.homeContainer}>
+      {/* Background image */}
+        <View style={profileStyles.topImageContainer}>
+          <Image
+            source={require('../../assets/profile_background_image.png')}
+            style={profileStyles.topImage}
+            resizeMode="cover"
+          />
+          <View style={profileStyles.halfCircleCutout} />
+        </View>
       <View style={styles.topRightIcon}>
-        <TouchableOpacity onPress={() => setQuestionsVisible(true)}>
+        <TouchableOpacity onPress={() => handleViewPreferences()}>
           {/* Menu button */}
-          <Ionicons name="ellipsis-vertical" size={26} color="#000" /> 
+          <GlassView
+              style={styles.glassButton}>
+            <Ionicons name="ellipsis-vertical" size={26} color="#000" />
+          </GlassView>
         </TouchableOpacity>
       </View>
 
       <ScrollView>
         {/* Profile image and edit button */}
-        <View style={styles.profileImageContainer}>
+        <View style={profileStyles.profileImageContainer}>
           <Image
-            source={require('../../assets/profile.jpg')}
-            style={styles.profileImage}
+            source={require('../../assets/profile_temp.jpg')}
+            style={profileStyles.profileImage}
           />
           <TouchableOpacity
-            style={styles.editIconContainer}
+            style={profileStyles.editIconContainer}
             onPress={handleEditProfile}
           >
             <MaterialCommunityIcons name="pencil" size={18} color="#fff" />
@@ -137,19 +139,19 @@ const Profile = () => {
         </View>
 
         {/* Name and username */}
-        <View style={styles.nameContainer}>
-          <Text style={styles.name}>{user?.displayName}</Text>
-          <Text style={styles.username}>@{username}</Text>
+        <View style={profileStyles.nameContainer}>
+          <Text style={profileStyles.name}>{user?.displayName}</Text>
+          <Text style={profileStyles.username}>@{username}</Text>
         </View>
 
         {/* Name and username edit fields */}
         {isEditing && (
-          <View style={styles.container}>
+          <View style={profileStyles.container}>
             <TextInput
               value={editedName}
               onChangeText={setEditedName}
               style={styles.input}
-              placeholder="Name"
+              label="New Name"
               theme={inputTheme}
               mode='outlined'
             />
@@ -158,65 +160,26 @@ const Profile = () => {
               value={editedUsername}
               onChangeText={setEditedUsername}
               style={styles.input}
-              placeholder="Username"
+              label="New Username"
               autoCapitalize="none"
               theme={inputTheme}
               mode="outlined"
             />
 
             {error ? (
-              <Text style={styles.editError}>{error}</Text>
+              <Text style={profileStyles.editError}>{error}</Text>
             ) : null}
 
             <Button
               mode="contained" 
               onPress={handleSaveProfile} 
-              style={styles.button} 
-              labelStyle={styles.buttonLabel}
+              style={profileStyles.saveButton} 
+              labelStyle={profileStyles.saveButtonLabel}
             >
               Save
             </Button>
           </View>
         )}
-
-        {/* Menu pop up */} 
-        <Modal 
-          visible={questionsVisible}
-          onRequestClose={() => setQuestionsVisible(false)} 
-        >
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity style={{ position: 'absolute', top: 10, right: 15, zIndex: 10 }}
-                onPress={() => setQuestionsVisible(false)}
-              >
-                <Ionicons name="close-circle-outline" size={30} color="#000" />
-              </TouchableOpacity>
-              <ScrollView style={{ paddingTop: 20 }}>
-                {questions.map((q, index) => {
-                  const answer = responses[index] ?? responses[index.toString()];
-                  return (
-                    <View key={index} style={styles.answerButton}>
-                      <Text style={styles.answerText}>{q}</Text>
-                      <Text>
-                        {Array.isArray(answer) ? answer.join('\n') : answer || 'No answer yet'}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </ScrollView>
-              
-              {/* Logout button */} 
-              <Button
-                mode="contained"
-                onPress={() => signOut(FIREBASE_AUTH)}
-                style={[styles.button]}
-                labelStyle={styles.buttonLabel}
-              >
-                Logout
-              </Button>
-            </View>
-          </View>
-        </Modal>
       </ScrollView>
     </View>
   );

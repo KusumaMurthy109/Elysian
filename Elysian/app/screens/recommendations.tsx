@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, ActivityIndicator, Image, Pressable, Modal, Dimensions, PanResponder, StatusBar } from 'react-native';
+import { View, ScrollView, Image, Pressable, Modal, Dimensions, PanResponder } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Button, Card} from 'react-native-paper';
+import { Text, Button} from 'react-native-paper';
 import { styles } from './app_styles.styles';
+import { recommendationStyles } from './recommendations.styles';
 import { Animated, Easing } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../../FirebaseConfig';
 import { GlassView, GlassStyle, isLiquidGlassAvailable } from 'expo-glass-effect';
-
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from "@react-native-masked-view/masked-view";
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -421,84 +424,103 @@ const Recommendations = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-        {/* Loading */}
-        {loading && (
-          <Text style={styles.sectionTitle}>Loading recommendations...</Text>
-        )}
+      {/* Loading */}
+      {loading && (
+        <Text style={styles.sectionTitle}>Loading recommendations...</Text>
+      )}
 
-        {/* Error */}
-        {error && !loading && <Text>{error}</Text>}
+      {/* Error */}
+      {error && !loading && <Text>{error}</Text>}
 
-        {/* Current City Card */}
-        {!loading && !error && currentCity && (
-              <Animated.View
-                style={[
-                  styles.cityCardRecommendation,
-                  {
-                    width: screenWidth,
-                    height: screenHeight,
-                    transform: [
-                      { translateX: position.x },
-                      { translateY: position.y },
-                      {
-                        rotate: position.x.interpolate({
-                          inputRange: [-screenWidth, 0, screenWidth],
-                          outputRange: ["-15deg", "0deg", "15deg"],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-                {...swipeAction.panHandlers}
-              >
-                <Pressable
-                  onPress={() => {
-                    const now = Date.now();
-                    if (doubleTap.current && now - doubleTap.current < 300) {
-                      setSelectedCity(currentCity);
-                      setCityModalOpen(true);
-                    }
-                    doubleTap.current = now;
-                  }}
-                >
-                  {/* This is to make the full-screen image. */}
-                    {unsplashImageUrl || currentCity.image ? (
-                      <Image
-                        source={{ uri: unsplashImageUrl || currentCity.image }}
-                        style={styles.cityImageRecommendation}
-                        resizeMode="cover"
+      {/* Current City Card */}
+      {!loading && !error && currentCity && (
+        <Animated.View
+          style={[
+            recommendationStyles.cityCardRecommendation,
+            {
+              width: screenWidth,
+              height: screenHeight,
+              transform: [
+                { translateX: position.x },
+                { translateY: position.y },
+                {
+                  rotate: position.x.interpolate({
+                    inputRange: [-screenWidth, 0, screenWidth],
+                    outputRange: ["-15deg", "0deg", "15deg"],
+                  }),
+                },
+              ],
+            },
+          ]}
+          {...swipeAction.panHandlers}
+        >
+          <Pressable
+            onPress={() => {
+              const now = Date.now();
+              if (doubleTap.current && now - doubleTap.current < 300) {
+                setSelectedCity(currentCity);
+                setCityModalOpen(true);
+              }
+              doubleTap.current = now;
+            }}
+          >
+            {/* This is to make the full-screen image. */}
+              {unsplashImageUrl || currentCity.image ? (
+                <View style={recommendationStyles.cityImageContainerRec}>
+                <Image
+                  source={{ uri: unsplashImageUrl || currentCity.image }}
+                  style={recommendationStyles.cityImageRecommendation}
+                  resizeMode="cover"
+                />
+
+                {/* Dark blur overlay on bottom 1/3 */}
+                <View style={recommendationStyles.bottomBlurOverlay}>
+                  <MaskedView
+                    maskElement={
+                      <LinearGradient
+                        colors={['transparent', 'rgba(255,255,255,0.9)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={{ flex: 1 }}
                       />
-                    ) : (
-                      <View style={styles.cityImagePlaceholderRec} />
-                    )}
-                    {/* Put the city/country name on the image */}
-                    <View style={styles.cityInfoRec}>
-                      <Text style={styles.cityNameRec}>
-                        {currentCity.city_name}, {currentCity.country}
-                      </Text>
-                    {currentCityAttr && (
-                      <View style={styles.cityTagContainer}>
-                        {currentCityAttr.split("|").map((tag, index) => (
-                          glassAvailable ? ( // Check if glass UI is available.
-                            <GlassView
-                              key={index}
-                              style={styles.glassTag}
-                              >
-                                <Text style={styles.tagText}>{tag}</Text>
-                              </GlassView> 
-                              ) : (
-                                // If there is no Glass UI available on the phone, do regular UI.
-                                <View key={index} style={styles.tag}>
-                                  <Text style={styles.tagText}>{tag}</Text>
-                                </View>
-                              )
-                        ))}
-                      </View>
-                    )}
-                    </View>
-                </Pressable>
-              </Animated.View>
-            )}
+                    }
+                    style={{ flex: 1 }}
+                  >
+                    <BlurView intensity={100} tint="dark" style={{ flex: 1 }} />
+                  </MaskedView>
+                </View>
+              </View>
+              ) : (
+                <View style={recommendationStyles.cityImagePlaceholderRec} />
+              )}
+              {/* Put the city/country name on the image */}
+              <View style={recommendationStyles.cityInfoRec}>
+                <Text style={recommendationStyles.cityNameRec}>
+                  {currentCity.city_name}, {"\n"}{currentCity.country}
+                </Text>
+              {currentCityAttr && (
+                <View style={recommendationStyles.cityTagContainer}>
+                  {currentCityAttr.split("|").map((tag, index) => (
+                    glassAvailable ? ( // Check if glass UI is available.
+                      <GlassView
+                        key={index}
+                        style={recommendationStyles.glassTag}
+                        >
+                          <Text style={recommendationStyles.tagText}>{tag}</Text>
+                        </GlassView> 
+                        ) : (
+                          // If there is no Glass UI available on the phone, do regular UI.
+                          <View key={index} style={recommendationStyles.tag}>
+                            <Text style={recommendationStyles.tagText}>{tag}</Text>
+                          </View>
+                        )
+                  ))}
+                </View>
+              )}
+              </View>
+          </Pressable>
+        </Animated.View>
+      )}
 
       {/* City Modal */}
       <Modal
@@ -507,33 +529,35 @@ const Recommendations = () => {
         animationType="slide"
         onRequestClose={() => setCityModalOpen(false)}
       >
+        {/* Full-screen dim overlay */}
         <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            justifyContent: "center",
-          }}
+          style={styles.cityModalOverlay}
           onPress={() => setCityModalOpen(false)}
         >
+          {/* Stop propagation so modal content doesn't close when tapped */}
           <Pressable style={styles.cityModalContainer}>
             {selectedCity && (
-              <View>
-                <Text style={styles.cityModalTitle}>
-                  {selectedCity.city_name}, {selectedCity.country}
-                </Text>
+              <View style={styles.cityModalInner}>
+                {/* Scrollable content */}
+                <ScrollView contentContainerStyle={styles.cityModalContent}>
+                  <Text style={styles.cityModalTitle}>
+                    {selectedCity.city_name}, {selectedCity.country}
+                  </Text>
 
-                {selectedCity.image && (
-                  <Image
-                    source={{ uri: selectedCity.image }}
-                    style={styles.cityModalImage}
-                    resizeMode="cover"
-                  />
-                )}
+                  {selectedCity.image && (
+                    <Image
+                      source={{ uri: selectedCity.image }}
+                      style={styles.cityModalImage}
+                      resizeMode="cover"
+                    />
+                  )}
 
-                <Text style={styles.cityModalDescription}>
-                  {selectedCity.description || "No description available."}
-                </Text>
+                  <Text style={styles.cityModalDescription}>
+                    {selectedCity.description || "No description available."}
+                  </Text>
+                </ScrollView>
 
+                {/* Close button pinned at bottom */}
                 <Button
                   mode="contained"
                   onPress={() => setCityModalOpen(false)}

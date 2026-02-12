@@ -1,17 +1,18 @@
 import { StyleSheet } from 'react-native';
 
 export const favoritesStyles = StyleSheet.create({
-
     itineraryIcon: {
         position: 'absolute', 
-        top: 83, 
-        right: 80, 
+        top: 75, 
+        right: 90, 
         zIndex: 10,
     },
-    resultsContainer: {
 
+    resultsContainer: {
+        marginTop: 8,
     },
-    Title: {
+
+    title: {
         textAlign: 'left',
         fontWeight: '800',
         fontSize: 40,
@@ -20,6 +21,7 @@ export const favoritesStyles = StyleSheet.create({
         marginBottom: 20,
         marginTop: -20,
     },
+
     cityCard: {
         width: '100%',
         height: 180,
@@ -80,6 +82,5 @@ export const favoritesStyles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 3,
     },
-
 
 })
