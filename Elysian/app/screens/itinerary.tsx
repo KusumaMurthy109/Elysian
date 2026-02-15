@@ -1,6 +1,8 @@
 /*
 File: itinerary.tsx
-Function: 
+Function: This file renders the Itinerary page where users can view
+ their travel plans based on the cities they liked and activities 
+ they can choose from a list.
 */
 
 import React from "react";

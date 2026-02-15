@@ -1,3 +1,9 @@
+"""
+This script reads user preference data from the userProfiles collection
+in Firestore and writes it to a structured CSV file for analysis,
+model training, or record keeping.
+"""
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 import csv

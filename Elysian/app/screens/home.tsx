@@ -1,3 +1,11 @@
+/**
+ * file: home.tsx
+ *
+ * This file renders the main Explore page where users can browse
+ * images shared by others and upload their own travel photos.
+ *
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -49,7 +57,7 @@ const Home = () => {
   useEffect(() => {
     const q = query(
       collection(FIREBASE_DB, "images"),
-      orderBy("timestamp", "desc"),
+      orderBy("timestamp", "desc")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // store the function that stops listening into the variable unsubscribe
@@ -67,7 +75,7 @@ const Home = () => {
     if (status !== "granted") {
       Alert.alert(
         "Permission denied",
-        "Need access to photos in order to upload images",
+        "Need access to photos in order to upload images"
       );
       return;
     }
@@ -89,7 +97,7 @@ const Home = () => {
       const filename = localUri.split("/").pop();
       //call the AWS Lambda API which returns a temporary S3 uplaod link
       const response = await fetch(
-        `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`,
+        `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
       );
       const data = await response.json();
       const { uploadUrl, fileUrl } = data;

@@ -1,3 +1,14 @@
+/**
+ * Recommendation Styles
+ *
+ * This file contains the styles for the Recommendation screen.
+ * It controls the layout of city images, text overlays, and tags
+ * to highlight suggested destinations in a clear + visually
+ * engaging way.
+ *
+ * Used in recommendation related components.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const recommendationStyles = StyleSheet.create({
@@ -10,7 +21,7 @@ export const recommendationStyles = StyleSheet.create({
   cityImageRecommendation: {
     width: "100%",
     height: "100%",
-    borderRadius: 60
+    borderRadius: 60,
   },
 
   cityImagePlaceholderRec: {
@@ -37,7 +48,7 @@ export const recommendationStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 2,
-    gap: 12
+    gap: 12,
   },
 
   glassTag: {

@@ -1,3 +1,12 @@
+/**
+ * This file contains the styles for the Profile screen.
+ * It defines the layout for the header image, profile photo,
+ * user details, and edit actions to create a clean and
+ * visually balanced profile page.
+ *
+ * Used in profile related components across the app.
+ */
+
 import { StyleSheet } from "react-native";
 
 export const profileStyles = StyleSheet.create({

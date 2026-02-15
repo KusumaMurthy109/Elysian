@@ -1,3 +1,13 @@
+"""
+File: app.py
+Function: Runs the Flask backend for city recommendations.
+
+This API takes a user profile, builds a user embedding using a TFLite model,
+and returns the next best city recommendation while factoring in the users
+likes and dislikes stored in Firebase. It also includes a helper endpoint
+to fetch a city image for the app.
+"""
+
 from flask import Flask, request, jsonify
 import numpy as np
 import pandas as pd

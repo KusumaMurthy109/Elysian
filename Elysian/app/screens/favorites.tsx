@@ -1,7 +1,13 @@
-/*
-File: favorites.tsx
-Function: Displays users liked places loaded from Firebase userFavorites.
-*/
+/**
+ * File: favorites.tsx
+ *
+ * This file renders the Favorites page where users can view, add,
+ * and remove cities they have liked. Favorite cities are loaded
+ * from Firebase in real time so the screen stays updated.
+ *
+ * Users can search for new cities to favorite, open a city to see
+ * more details and manage their saved places.
+ */
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
@@ -93,7 +99,7 @@ const Favorites = () => {
         setSearchQuery("");
         setDropdownOpen(false);
       };
-    }, []),
+    }, [])
   );
 
   // Calls fetchAllCities on page init
@@ -122,7 +128,7 @@ const Favorites = () => {
             country_name: city.country,
           },
         },
-        { merge: true },
+        { merge: true }
       );
     } catch (err) {
       console.error("Error adding to favorites:", err);
@@ -133,7 +139,7 @@ const Favorites = () => {
   const fetchCityImage = async (cityName: string, country: string) => {
     try {
       const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        `${cityName}, ${country}`,
+        `${cityName}, ${country}`
       )}`;
       const res = await fetch(url);
       if (!res.ok) return undefined;
@@ -156,7 +162,7 @@ const Favorites = () => {
     try {
       const url =
         `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName,
+          cityName
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
@@ -201,7 +207,7 @@ const Favorites = () => {
 
       // 2) If Wikivoyage doesn't work then we fallback to Wikipedia (reliable if Wikivoyage has no page)
       const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        `${cityName}, ${country}`,
+        `${cityName}, ${country}`
       )}`;
 
       const wikiRes = await fetch(wikiUrl);
@@ -239,7 +245,7 @@ const Favorites = () => {
             country_name: city.country,
           },
         },
-        { merge: true },
+        { merge: true }
       );
     } catch (err) {
       console.error("Error removing favorite:", err);
@@ -292,14 +298,14 @@ const Favorites = () => {
                 // Try Unsplash first
                 image = await fetchUnsplashImage(
                   city.city_name,
-                  city.country_name,
+                  city.country_name
                 );
 
                 // Fallback to Wikipedia if needed
                 if (!image) {
                   image = await fetchCityImage(
                     city.city_name,
-                    city.country_name,
+                    city.country_name
                   );
                 }
 
@@ -311,7 +317,7 @@ const Favorites = () => {
               }
               const description = await fetchCityDescription(
                 city.city_name,
-                city.country_name,
+                city.country_name
               );
 
               return {
@@ -321,7 +327,7 @@ const Favorites = () => {
                 image,
                 description,
               };
-            }),
+            })
           );
 
           setFavorites(favoritesArray);
@@ -336,7 +342,7 @@ const Favorites = () => {
         console.error("onSnapshot error:", err);
         setError("Failed to load liked places.");
         setLoading(false);
-      },
+      }
     );
 
     return () => unsubscribe();
@@ -361,7 +367,7 @@ const Favorites = () => {
 
         <TouchableOpacity
           style={styles.topRightIcon}
-          onPress={() => setSearchOpen(prev => !prev)}
+          onPress={() => setSearchOpen((prev) => !prev)}
         >
           <GlassView style={styles.glassButton}>
             <Ionicons name="search" size={26} color="#000" />
@@ -409,13 +415,13 @@ const Favorites = () => {
             {cities.filter((city) =>
               `${city.name}, ${city.country}`
                 .toLowerCase()
-                .includes(searchQuery.toLowerCase()),
+                .includes(searchQuery.toLowerCase())
             ).length > 0 ? (
               cities
                 .filter((city) =>
                   `${city.name}, ${city.country}`
                     .toLowerCase()
-                    .includes(searchQuery.toLowerCase()),
+                    .includes(searchQuery.toLowerCase())
                 )
                 .map((city) => (
                   <TouchableOpacity

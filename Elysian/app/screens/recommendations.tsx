@@ -1,3 +1,11 @@
+/*
+File: recommendations.tsx
+Function: Shows one recommended city at a time based on the user’s recommendations page.
+Users can swipe right to like or swipe left to skip. The app saves likes
+and dislikes to Firebase, loads the next city from the backend, and lets
+users double tap a city to open more details in a modal.
+*/
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -59,7 +67,7 @@ const GlobeLoader = () => {
         duration: 1200,
         easing: Easing.linear,
         useNativeDriver: true,
-      }),
+      })
     );
     loop.start();
     return () => loop.stop();
@@ -113,7 +121,7 @@ const Recommendations = () => {
 
   const fetchWikivoyageIntro = async (
     cityName: string,
-    country: string,
+    country: string
   ): Promise<string | null> => {
     const titlesToTry = [
       cityName,
@@ -163,7 +171,7 @@ const Recommendations = () => {
 
   const fetchWikipediaSummary = async (title: string) => {
     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-      title,
+      title
     )}`;
     const res = await fetch(url);
     if (!res.ok) return null;
@@ -208,7 +216,7 @@ const Recommendations = () => {
     try {
       const url =
         `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName,
+          cityName
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
@@ -270,7 +278,7 @@ const Recommendations = () => {
             image: unsplashImageUrl || null,
           },
         },
-        { merge: true },
+        { merge: true }
       );
       // await sendSwipe(user.uid, cityId, true); // Update backend with the swipe
 
@@ -281,7 +289,7 @@ const Recommendations = () => {
 
       const uImg = await fetchUnsplashImage(
         nextCity.city_name,
-        nextCity.country,
+        nextCity.country
       );
       setUnsplashImageUrl(uImg);
 
@@ -311,7 +319,7 @@ const Recommendations = () => {
       setUnsplashImageUrl(null);
       const uImg = await fetchUnsplashImage(
         nextCity.city_name,
-        nextCity.country,
+        nextCity.country
       );
       setUnsplashImageUrl(uImg);
 
@@ -335,7 +343,7 @@ const Recommendations = () => {
     } catch (error) {
       console.error(
         "Encountered an error while getting city attributes",
-        error,
+        error
       );
       alert("Error, There was an error while getting city attributes");
     }
@@ -376,7 +384,7 @@ const Recommendations = () => {
           user_id: userId,
           ...profile,
         }),
-      },
+      }
     );
 
     if (!res.ok) throw new Error("Failed to fetch next city");
@@ -433,7 +441,7 @@ const Recommendations = () => {
           }).start();
         }
       },
-    }),
+    })
   ).current;
 
   return (
@@ -528,7 +536,7 @@ const Recommendations = () => {
                       <View key={index} style={recommendationStyles.tag}>
                         <Text style={recommendationStyles.tagText}>{tag}</Text>
                       </View>
-                    ),
+                    )
                   )}
                 </View>
               )}
