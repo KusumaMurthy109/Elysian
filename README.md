@@ -11,7 +11,7 @@ What is **Elysian**? It is an AI-powered travel app, where you can “find your 
 So that's why we’re Introducing Elysian! Elysian is a mobile app that helps you discover travel destinations that actually match your preferences, using our very own trained model called Soleil AI. It’s quite easy to get started. Just create a simple profile in the app and see your recommendations come to life based on your interests, budget, and travel style.
 <br>
 
-**Team Members
+**Team Members**
 - Sophia Jacob
 - Anna Lin
 - Kusuma Murthy
@@ -35,11 +35,15 @@ So that's why we’re Introducing Elysian! Elysian is a mobile app that helps yo
 
 **Note:** We have also created all the tickets done for the previous Sprint and all the upcoming tickets for the next Sprint in our Projects page in our GitHub.
 
-Reference them here:
+Reference them here (Semester 1):
 - [Sprint 1](https://github.com/users/SAJacob7/projects/5)
 - [Sprint 2](https://github.com/users/SAJacob7/projects/7/views/1)
 - [Sprint 3](https://github.com/users/SAJacob7/projects/8)
 - [Final Sprint](https://github.com/users/SAJacob7/projects/9/views/1)
+
+Reference them here (Semester 2):
+- [Sprint 1](https://github.com/users/SAJacob7/projects/10)
+- [Sprint 2](https://github.com/users/SAJacob7/projects/11/views/1)
 - [**Meeting Logs**](https://github.com/SAJacob7/Capstone_Team_Generated_Group30_Project/wiki)
 
 # User Manual
