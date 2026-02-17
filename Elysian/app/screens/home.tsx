@@ -70,7 +70,39 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  const upload = async () => {
+  const uploadMethod = () => {
+    Alert.alert(
+      "Create a Post",
+      "Choose Upload Options:",
+      [
+        {text: "Take Photo", onPress: takePhoto},
+        {text: "Choose from Album", onPress: fromAlbum},
+        {text: "Cancel", style: "cancel"}
+      ]
+
+    );
+  };
+
+  const takePhoto = async() => {
+    // Request for access to the camera.
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "Camera access is required."
+      );
+      return;
+    }
+    // If granted permission, then wait for the camera picture and get result.
+    const selectedImage = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+    });
+    if (!selectedImage.canceled) {
+      upload(selectedImage.assets[0].uri); // Upload the picture taken.
+    }
+  }
+
+  const fromAlbum = async() => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
@@ -81,17 +113,17 @@ const Home = () => {
     }
 
     const selectedImage = await ImagePicker.launchImageLibraryAsync({
-      //open phone gallery and compress images for faster upload
+      // Open phone gallery and compress images for faster upload
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
 
-    if (selectedImage.canceled) {
-      return;
+    if (!selectedImage.canceled) {
+      upload(selectedImage.assets[0].uri);
     }
+  };
 
-    const localUri = selectedImage.assets[0].uri;
-
+  const upload = async (localUri: string) => {
     try {
       setUploading(true);
       const filename = localUri.split("/").pop();
@@ -117,7 +149,7 @@ const Home = () => {
       Alert.alert("Upload sucessful");
     } catch (error) {
       console.error(error);
-      Alert.alert("Failed to upload image", "Pplease try again.");
+      Alert.alert("Failed to upload image", "Please try again.");
     } finally {
       setUploading(false);
     }
@@ -140,7 +172,7 @@ const Home = () => {
           </View>
         )}
       />
-      <TouchableOpacity style={styles.topRightIcon} onPress={upload}>
+      <TouchableOpacity style={styles.topRightIcon} onPress={uploadMethod}>
         <GlassView style={styles.glassButton}>
           <Ionicons name="add" size={26} color="#000" />
         </GlassView>
