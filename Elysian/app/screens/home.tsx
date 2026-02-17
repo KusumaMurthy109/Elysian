@@ -34,7 +34,7 @@ import { GlassView } from "expo-glass-effect";
 // this defines what the post object should look like
 type Post = {
   id: string;
-  url: string;
+  urls: string[]; // Allow users to upload multiple pictures.
   uploader: string;
   timestamp: number;
 };
@@ -75,15 +75,15 @@ const Home = () => {
       "Create a Post",
       "Choose Upload Options:",
       [
-        {text: "Take Photo", onPress: takePhoto},
-        {text: "Choose from Album", onPress: fromAlbum},
-        {text: "Cancel", style: "cancel"}
+        { text: "Take Photo", onPress: takePhoto },
+        { text: "Choose from Album", onPress: fromAlbum },
+        { text: "Cancel", style: "cancel" }
       ]
 
     );
   };
 
-  const takePhoto = async() => {
+  const takePhoto = async () => {
     // Request for access to the camera.
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -98,11 +98,11 @@ const Home = () => {
       quality: 0.8,
     });
     if (!selectedImage.canceled) {
-      upload(selectedImage.assets[0].uri); // Upload the picture taken.
+      upload([selectedImage.assets[0].uri]); // Upload the picture taken.
     }
   }
 
-  const fromAlbum = async() => {
+  const fromAlbum = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
@@ -115,34 +115,43 @@ const Home = () => {
     const selectedImage = await ImagePicker.launchImageLibraryAsync({
       // Open phone gallery and compress images for faster upload
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
       quality: 0.8,
     });
 
     if (!selectedImage.canceled) {
-      upload(selectedImage.assets[0].uri);
+      const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
+      upload(uris);
     }
   };
 
-  const upload = async (localUri: string) => {
+  const upload = async (localUris: string[]) => {
     try {
       setUploading(true);
-      const filename = localUri.split("/").pop();
-      //call the AWS Lambda API which returns a temporary S3 uplaod link
-      const response = await fetch(
-        `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
-      );
-      const data = await response.json();
-      const { uploadUrl, fileUrl } = data;
+      const allUploadUrls: string[] = [];
+      // Go through each URI to upload.
+      for (const uri of localUris) {
+        const filename = uri.split("/").pop();
+        // Call the AWS Lambda API which returns a temporary S3 uplaod link
+        const response = await fetch(
+          `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
+        );
+        const data = await response.json();
+        const { uploadUrl, fileUrl } = data;
 
-      const image = await fetch(localUri);
-      const blob = await image.blob();
-      await fetch(uploadUrl, {
-        method: "PUT",
-        body: blob,
-      });
+        const image = await fetch(uri);
+        const blob = await image.blob();
+        await fetch(uploadUrl, {
+          method: "PUT",
+          body: blob,
+        });
+        // This stores all the upload URLs for each image.
+        allUploadUrls.push(fileUrl);
+      }
 
       await addDoc(collection(FIREBASE_DB, "images"), {
-        url: fileUrl,
+        urls: allUploadUrls,
         uploader: userName,
         timestamp: Date.now(),
       });
@@ -163,10 +172,19 @@ const Home = () => {
         ListHeaderComponent={<Text style={styles.homeTitle}>Explore!</Text>}
         renderItem={({ item }) => (
           <View style={styles.cityCard}>
-            <Image
-              source={{ uri: item.url }}
-              style={styles.cityImage}
-              resizeMode="cover"
+            <FlatList
+              data={item.urls}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(uri, index) => uri + index}
+              renderItem={({ item: uri }) => (
+                <Image
+                  source={{ uri }}
+                  style={styles.cityImage}
+                  resizeMode="cover"
+                />
+              )}
             />
             <Text style={styles.uploader}>Uploaded by: {item.uploader}</Text>
           </View>
