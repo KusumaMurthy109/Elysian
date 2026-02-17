@@ -1,4 +1,6 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const CARD_WIDTH = SCREEN_WIDTH - 32;
 
 export const styles = StyleSheet.create({
   container: {
@@ -151,6 +153,7 @@ export const styles = StyleSheet.create({
   },
 
   cityCard: {
+    width: CARD_WIDTH,
     marginBottom: 18,
     borderRadius: 20, // Rounded corners
     backgroundColor: "#F7F4FF",
@@ -162,8 +165,9 @@ export const styles = StyleSheet.create({
   },
 
   cityImage: {
-    width: "100%",
+    width: CARD_WIDTH,
     height: 140,
+    resizeMode: "cover"
   },
 
   // --- CITY INFO MODAL ---
