@@ -24,6 +24,8 @@ const ProfilePreferences = () => {
   const [responses, setResponses] = useState<{
     [key: string]: string[] | string;
   }>({});
+  const [profileImage, setProfileImage ] = useState<string | null>(null);
+  const [loadingUser, setLoadingUser ] = useState(true);
 
   const questions = [
     "Origin Country:",
@@ -50,6 +52,14 @@ const ProfilePreferences = () => {
           if (profileDoc.exists()) {
             setResponses(profileDoc.data()?.responses || {});
           }
+
+          const userRef = await getDoc (
+            doc(FIREBASE_DB, "users", currentUser.uid),
+          );
+          if (userRef.exists()){
+            setProfileImage(userRef.data()?.profileImage || null)
+          }
+          setLoadingUser(false)
         } catch (err) {
           console.error("Error fetching user profile:", err);
         }
@@ -73,7 +83,9 @@ const ProfilePreferences = () => {
       {/* Profile picture top-right */}
       <View style={profilePreferencesStyles.profileHeader}>
         <Image
-          source={require("../../assets/profile_temp.jpg")}
+          source={
+            profileImage ? {uri : profileImage } : require("../../assets/profile_temp.jpg")
+          }
           style={profilePreferencesStyles.profileImage}
         />
       </View>
