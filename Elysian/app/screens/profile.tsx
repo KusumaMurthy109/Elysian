@@ -262,19 +262,20 @@ const Profile = () => {
             ) : null}
 
             <Button
+              mode = "outlined"
+              onPress={handleUploadProfileImage}
+              style={{ marginBottom: 10 }}
+            >
+              Change Profile Picture
+            </Button>
+
+            <Button
               mode="contained"
               onPress={handleSaveProfile}
               style={profileStyles.saveButton}
               labelStyle={profileStyles.saveButtonLabel}
             >
               Save
-            </Button>
-            <Button
-            mode = "outlined"
-            onPress={handleUploadProfileImage}
-            style={{ marginBottom: 10 }}
-            >
-              Change Profile Picture
             </Button>
           </View>
         )}
