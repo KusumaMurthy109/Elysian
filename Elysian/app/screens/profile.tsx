@@ -174,6 +174,8 @@ const Profile = () => {
         {merge: true}
       );
 
+      setProfileImage(`${fileUrl}?t=${Date.now()}`);
+
       Alert.alert("Profile picture updated!");
     }
     catch (error) {
