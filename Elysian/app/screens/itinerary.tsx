@@ -22,7 +22,7 @@ const Itinerary = () => {
       <View style={styles.topLeftIcon}>
         <Pressable onPress={() => navigation.goBack()}>
           <GlassView style={styles.glassButton}>
-            <Ionicons name="chevron-back" size={26} color="#000" />
+            <Ionicons name="return-up-back-outline" size={26} color="#000" />
           </GlassView>
         </Pressable>
       </View>

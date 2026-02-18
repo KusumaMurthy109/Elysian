@@ -126,9 +126,10 @@ export const styles = StyleSheet.create({
 
   homeContainer: {
     flexGrow: 1,
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
     paddingTop: 40,
-    paddingBottom: 40,
+    paddingBottom: 0, // Remove extra bottom space
     backgroundColor: "white",
   },
 
@@ -253,7 +254,7 @@ export const styles = StyleSheet.create({
     // Back arrow icon
     position: "absolute",
     top: 75,
-    left: 15,
+    left: 30,
     zIndex: 11,
   },
 

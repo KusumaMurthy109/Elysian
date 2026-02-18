@@ -1,5 +1,5 @@
 /**
- *This file contains the styles for the Profile Preferences screen.
+ * This file contains the styles for the Profile Preferences screen.
  * It controls the layout for the profile header, user details,
  * question sections, and action buttons to keep the screen organized
  * and easy to read.
