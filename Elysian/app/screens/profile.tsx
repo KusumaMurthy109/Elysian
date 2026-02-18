@@ -16,6 +16,9 @@ import { styles, inputTheme } from "./app_styles.styles";
 import { profileStyles } from "./profile.styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
+import * as ImagePicker from "expo-image-picker";
+import { setDoc, onSnapshot } from "firebase/firestore";
+import { Alert } from "react-native"
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -36,6 +39,10 @@ const Profile = () => {
   const [editedName, setEditedName] = useState(""); // Temporary value for when user is editing
   const [editedUsername, setEditedUsername] = useState(""); // Temporary value for when user is editing
   const [error, setError] = useState(""); // Stores error
+  const [profileImage, setProfileImage ] = useState<string | null>(null);
+  const [uloading, setUploading ] = useState(true);
+  const [loadingUser, setLoadingUser ] = useState (true);
+  
 
   // Function to check if username is already taken
   const isUsernameTaken = async (usernameCheck: string) => {
@@ -101,15 +108,84 @@ const Profile = () => {
 
         setUser(currentUser);
 
-        const userDoc = await getDoc(
-          doc(FIREBASE_DB, "users", currentUser.uid),
-        );
-        setUsername(userDoc.exists() ? userDoc.data().username : null);
+        const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
+        const unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setUsername (data.username);
+            setProfileImage(data.profileImage || null);
+          }
+          setLoadingUser(false);
+        });
+        return unsubscribeSnapshot;
       },
     );
 
     return unsubscribe;
-  });
+  }, []);
+
+  const handleUploadProfileImage = async () => {
+    if (!user){
+      return;
+    }
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert("Permission denied");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+
+    if (result.canceled){
+      return;
+    }
+
+    const localUri = result.assets[0].uri;
+
+    try {
+      const response = await fetch(
+        "https://9151a7q1kc.execute-api.us-east-1.amazonaws.com/default/GenerateProfileUploadUrl",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({uid: user.uid}),
+        }
+      );
+
+      const { uploadUrl, fileUrl } = await response.json();
+      const image = await fetch(localUri);
+      const blob = await image.blob();
+
+      await fetch(uploadUrl, {
+        method: "PUT",
+        body: blob,
+      });
+
+      await setDoc(
+        doc(FIREBASE_DB, "users", user.uid),
+        {profileImage: fileUrl},
+        {merge: true}
+      );
+
+      setProfileImage(`${fileUrl}?t=${Date.now()}`);
+
+      Alert.alert("Profile picture updated!");
+    }
+    catch (error) {
+      console.error(error);
+      Alert.alert("Upload failed");
+    }
+    finally {
+      setUploading(false);
+    }
+  };
 
   // When handleViewPrefernces is called (menu icon pressed) it goes to profile_preferences.tsx page
   const handleViewPreferences = () => {
@@ -140,7 +216,9 @@ const Profile = () => {
         {/* Profile image and edit button */}
         <View style={profileStyles.profileImageContainer}>
           <Image
-            source={require("../../assets/profile_temp.jpg")}
+            source={
+              profileImage ? {uri : profileImage } : require("../../assets/profile_temp.jpg")
+            }
             style={profileStyles.profileImage}
           />
           <TouchableOpacity
@@ -182,6 +260,14 @@ const Profile = () => {
             {error ? (
               <Text style={profileStyles.editError}>{error}</Text>
             ) : null}
+
+            <Button
+              mode = "outlined"
+              onPress={handleUploadProfileImage}
+              style={{ marginBottom: 10 }}
+            >
+              Change Profile Picture
+            </Button>
 
             <Button
               mode="contained"
