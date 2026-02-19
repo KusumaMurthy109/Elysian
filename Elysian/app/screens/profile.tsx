@@ -4,7 +4,7 @@ Function: This is the user Profile screen component for the app.
 */
 
 import React, { useEffect, useState } from "react";
-import { View, Image, ScrollView, TouchableOpacity } from "react-native";
+import { View, Image, ScrollView, TouchableOpacity, Modal } from "react-native";
 import { Text, Button, TextInput } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -39,10 +39,10 @@ const Profile = () => {
   const [editedName, setEditedName] = useState(""); // Temporary value for when user is editing
   const [editedUsername, setEditedUsername] = useState(""); // Temporary value for when user is editing
   const [error, setError] = useState(""); // Stores error
-  const [profileImage, setProfileImage ] = useState<string | null>(null);
-  const [uloading, setUploading ] = useState(true);
-  const [loadingUser, setLoadingUser ] = useState (true);
-  
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uloading, setUploading] = useState(true);
+  const [loadingUser, setLoadingUser] = useState(true);
+
 
   // Function to check if username is already taken
   const isUsernameTaken = async (usernameCheck: string) => {
@@ -112,7 +112,7 @@ const Profile = () => {
         const unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setUsername (data.username);
+            setUsername(data.username);
             setProfileImage(data.profileImage || null);
           }
           setLoadingUser(false);
@@ -125,7 +125,7 @@ const Profile = () => {
   }, []);
 
   const handleUploadProfileImage = async () => {
-    if (!user){
+    if (!user) {
       return;
     }
 
@@ -141,7 +141,7 @@ const Profile = () => {
       quality: 0.8,
     });
 
-    if (result.canceled){
+    if (result.canceled) {
       return;
     }
 
@@ -155,7 +155,7 @@ const Profile = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({uid: user.uid}),
+          body: JSON.stringify({ uid: user.uid }),
         }
       );
 
@@ -170,8 +170,8 @@ const Profile = () => {
 
       await setDoc(
         doc(FIREBASE_DB, "users", user.uid),
-        {profileImage: fileUrl},
-        {merge: true}
+        { profileImage: fileUrl },
+        { merge: true }
       );
 
       setProfileImage(`${fileUrl}?t=${Date.now()}`);
@@ -217,7 +217,7 @@ const Profile = () => {
         <View style={profileStyles.profileImageContainer}>
           <Image
             source={
-              profileImage ? {uri : profileImage } : require("../../assets/profile_temp.jpg")
+              profileImage ? { uri: profileImage } : require("../../assets/profile_temp.jpg")
             }
             style={profileStyles.profileImage}
           />
@@ -237,48 +237,61 @@ const Profile = () => {
 
         {/* Name and username edit fields */}
         {isEditing && (
-          <View style={profileStyles.container}>
-            <TextInput
-              value={editedName}
-              onChangeText={setEditedName}
-              style={styles.input}
-              label="New Name"
-              theme={inputTheme}
-              mode="outlined"
-            />
+          <Modal visible={isEditing} transparent animationType="fade" >
+            <View style={profileStyles.editModalOverlay}>
+              <View style={profileStyles.editModalContent}>
+                <Text style={profileStyles.editModalTitle}>Edit Profile</Text>
+                <TouchableOpacity
+                  style={profileStyles.closeButton}
+                  onPress={() => setIsEditing(false)}
+                >
+                  <MaterialCommunityIcons name="close" size={24} color="#333" />
+                </TouchableOpacity>
 
-            <TextInput
-              value={editedUsername}
-              onChangeText={setEditedUsername}
-              style={styles.input}
-              label="New Username"
-              autoCapitalize="none"
-              theme={inputTheme}
-              mode="outlined"
-            />
+                <TextInput
+                  value={editedName}
+                  onChangeText={setEditedName}
+                  style={styles.input}
+                  label="New Name"
+                  theme={inputTheme}
+                  mode="outlined"
+                />
 
-            {error ? (
-              <Text style={profileStyles.editError}>{error}</Text>
-            ) : null}
+                <TextInput
+                  value={editedUsername}
+                  onChangeText={setEditedUsername}
+                  style={styles.input}
+                  label="New Username"
+                  autoCapitalize="none"
+                  theme={inputTheme}
+                  mode="outlined"
+                />
 
-            <Button
-              mode = "outlined"
-              onPress={handleUploadProfileImage}
-              style={{ marginBottom: 10 }}
-            >
-              Change Profile Picture
-            </Button>
+                {error ? (
+                  <Text style={profileStyles.editError}>{error}</Text>
+                ) : null}
 
-            <Button
-              mode="contained"
-              onPress={handleSaveProfile}
-              style={profileStyles.saveButton}
-              labelStyle={profileStyles.saveButtonLabel}
-            >
-              Save
-            </Button>
-          </View>
+                <Button
+                  mode="outlined"
+                  onPress={handleUploadProfileImage}
+                  style={{ marginBottom: 10 }}
+                >
+                  Change Profile Picture
+                </Button>
+
+                <Button
+                  mode="contained"
+                  onPress={handleSaveProfile}
+                  style={profileStyles.saveButton}
+                  labelStyle={profileStyles.saveButtonLabel}
+                >
+                  Save
+                </Button>
+              </View>
+            </View>
+          </Modal>
         )}
+
       </ScrollView>
     </View>
   );
