@@ -20,16 +20,6 @@ export const favoritesStyles = StyleSheet.create({
     marginTop: 8,
   },
 
-  title: {
-    textAlign: "left",
-    fontWeight: "800",
-    fontSize: 40,
-    lineHeight: 40,
-    color: "#000",
-    marginBottom: 20,
-    marginTop: -20,
-  },
-
   cityCard: {
     width: "100%",
     height: 180,

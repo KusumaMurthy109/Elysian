@@ -451,7 +451,7 @@ const Favorites = () => {
       {/* Favorites list */}
       {!searchOpen && (
         <ScrollView contentContainerStyle={styles.homeContainer}>
-          <Text variant="headlineLarge" style={favoritesStyles.title}>
+          <Text variant="headlineLarge" style={styles.pageTitle}>
             Favorites
           </Text>
 

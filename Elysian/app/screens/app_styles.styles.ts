@@ -1,6 +1,4 @@
-import { StyleSheet, Dimensions } from "react-native";
-const SCREEN_WIDTH = Dimensions.get("window").width;
-const CARD_WIDTH = SCREEN_WIDTH - 32;
+import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
@@ -117,13 +115,11 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  // --- HOME / RECOMMENDATIONS SCREEN STYLES ---
-
   safeArea: {
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-
+  
   homeContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
@@ -133,19 +129,6 @@ export const styles = StyleSheet.create({
     backgroundColor: "white",
   },
 
-  homeTitle: {
-    textAlign: "center",
-    fontWeight: "800",
-    fontSize: 28,
-    lineHeight: 34,
-    color: "#008CFF",
-    marginBottom: 24,
-  },
-
-  loader: {
-    marginTop: 20,
-  },
-
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -153,24 +136,19 @@ export const styles = StyleSheet.create({
     color: "#1B1E28",
   },
 
-  cityCard: {
-    width: CARD_WIDTH,
-    marginBottom: 18,
-    borderRadius: 20, // Rounded corners
-    backgroundColor: "#F7F4FF",
-    elevation: 2, // Shadow for Android
-    shadowColor: "#000", // Shadow for iOS
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
+  pageTitle: {
+    textAlign: "left",
+    fontWeight: "800",
+    fontSize: 40,
+    lineHeight: 40,
+    color: "#000",
+    marginBottom: 20,
+    marginTop: -20,
   },
 
-  cityImage: {
-    width: CARD_WIDTH,
-    height: 140,
-    resizeMode: "cover"
+  loader: {
+    marginTop: 20,
   },
-
   // --- CITY INFO MODAL ---
 
   cityModalContainer: {
@@ -302,11 +280,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: "center",
   },
-  uploader: {
-    marginTop: 8,
-    fontSize: 12,
-    color: "#555",
-  },
+
   uploadingIndicator: {
     position: "absolute",
     top: "50%",
@@ -324,6 +298,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 15,
     zIndex: 10,
   },
+  
   searchRow: {
     flexDirection: "row",
     alignItems: "center",

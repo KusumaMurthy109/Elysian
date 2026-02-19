@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { styles } from "./app_styles.styles";
+import { homeStyles } from "./home.styles";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import {
   collection,
@@ -29,7 +30,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons} from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
 
@@ -182,29 +183,57 @@ const Home = () => {
     }
   };
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={["top"]}>
       <FlatList
         data={post}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.homeContainer}
-        ListHeaderComponent={<Text style={styles.homeTitle}>Explore!</Text>}
+        contentContainerStyle={homeStyles.homeContainer}
+        ListHeaderComponent={<Text style={styles.pageTitle}>Explore{"\n"}with Us</Text>}
         renderItem={({ item }) => (
-          <View style={styles.cityCard}>
-            <FlatList
-              data={item.urls}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(uri, index) => uri + index}
-              renderItem={({ item: uri }) => (
-                <Image
-                  source={{ uri }}
-                  style={styles.cityImage}
-                  resizeMode="cover"
-                />
-              )}
-            />
-            <Text style={styles.uploader}>Uploaded by: {item.uploader}</Text>
+          <View style={homeStyles.postCard}>
+
+            {/* IMAGE SECTION */}
+            <View style={homeStyles.imageContainer}>
+              <FlatList
+                data={item.urls}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(uri, index) => uri + index}
+                renderItem={({ item: uri }) => (
+                  <Image
+                    source={{ uri }}
+                    style={[homeStyles.cityImage]}
+                    resizeMode="cover"
+                  />
+                )}
+              />
+              <View style={homeStyles.cityOverlay}>
+                <Text style={homeStyles.cityFont}>City</Text>
+                {/* Row for pin + country */}
+                <View style={homeStyles.pinIcon}>
+                  <MaterialCommunityIcons name="map-marker-outline" size={22} color="white" />
+                  <Text style={homeStyles.countryFont}>Country</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* CONTENT SECTION */}
+            <View style={homeStyles.contentContainer}>
+              <View>
+                <Text style={homeStyles.uploader}>@{item.uploader}</Text>
+              </View>
+
+              <View style={homeStyles.postIcons}>
+                <TouchableOpacity>
+                  <Ionicons name="heart-outline" size={28} color="#000" />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Ionicons name="bookmark-outline" size={28} color="#000" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
           </View>
         )}
       />
