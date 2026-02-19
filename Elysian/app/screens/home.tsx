@@ -25,6 +25,8 @@ import {
   query,
   orderBy,
   onSnapshot,
+  doc, 
+  getDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Ionicons } from "@expo/vector-icons";
@@ -43,12 +45,27 @@ const Home = () => {
   const [post, setPosts] = useState<Post[]>([]); //initializes post as an empty array which is then updated by setPosts
   const [uploading, setUploading] = useState(false); //tracks whether an image is currently uploading
   const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const auth = getAuth();
-    const user = onAuthStateChanged(auth, (user) => {
+    const user = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setUserName(user.displayName);
+        setUserId(user.uid);
+        
+        try {
+          const userDocRef = doc(FIREBASE_DB, "users", user.uid);
+          const userSnap = await getDoc(userDocRef);
+
+          if (userSnap.exists()){
+            const userData = userSnap.data();
+            setUserName(userData.username);
+          }
+        }
+        catch (error) {
+          console.error("Error fetching username: ", error);
+        }
       }
     });
     return user;
@@ -56,7 +73,7 @@ const Home = () => {
 
   useEffect(() => {
     const q = query(
-      collection(FIREBASE_DB, "images"),
+      collection(FIREBASE_DB, "posts"),
       orderBy("timestamp", "desc")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -150,9 +167,10 @@ const Home = () => {
         allUploadUrls.push(fileUrl);
       }
 
-      await addDoc(collection(FIREBASE_DB, "images"), {
+      await addDoc(collection(FIREBASE_DB, "posts"), {
         urls: allUploadUrls,
         uploader: userName,
+        uid: userId,
         timestamp: Date.now(),
       });
       Alert.alert("Upload sucessful");
