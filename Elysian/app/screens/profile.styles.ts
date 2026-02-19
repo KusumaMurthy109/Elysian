@@ -106,4 +106,35 @@ export const profileStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
+  editModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  editModalContent: {
+    width: "90%",
+    height: "45%",
+    padding: 40,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    justifyContent: "center",
+  },
+  editModalTitle: {
+    fontSize: 25,
+    fontWeight: "800",
+    color: "#1B1E28",
+    marginBottom: 25,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: 6,
+    zIndex: 10,
+  },
+
+
+
 });
