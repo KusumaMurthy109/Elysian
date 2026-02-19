@@ -62,6 +62,7 @@ const SignUp = () => {
         username: username,
         createdAt: new Date(),
         accountCreationComplete: false,
+        name: user.displayName,
       });
 
       // Below line should remember user name in session, but not sure if working.
