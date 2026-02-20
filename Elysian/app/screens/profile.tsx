@@ -44,7 +44,7 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uloading, setUploading] = useState(true);
   const [loadingUser, setLoadingUser] = useState(true);
-  const Tab = createMaterialTopTabNavigator();
+  const subTab = createMaterialTopTabNavigator();
 
 
 
@@ -195,13 +195,13 @@ const Profile = () => {
   const handleViewPreferences = () => {
     navigation.navigate("ProfilePreferences" as never);
   };
-  const UserPosts = () => (
+  const userPosts = () => (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Text style={{ textAlign: "center", marginTop: 20 }}>User Posts</Text>
     </View>
   );
 
-  const UserItineraries = () => (
+  const userItineraries = () => (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Text style={{ textAlign: "center", marginTop: 20 }}>User Itineraries</Text>
     </View>
@@ -310,16 +310,16 @@ const Profile = () => {
 
       </ScrollView>
       <View style={{ flex: 1, marginTop: -500 }}>
-        <Tab.Navigator
+        <subTab.Navigator
           screenOptions={{
             tabBarIndicatorStyle: { backgroundColor: "#000" },
             tabBarLabelStyle: { fontSize: 14, fontWeight: "600" },
             tabBarStyle: { backgroundColor: "transparent" },
           }}
         >
-          <Tab.Screen name="Posts" component={UserPosts} />
-          <Tab.Screen name="Itineraries" component={UserItineraries} />
-        </Tab.Navigator>
+          <subTab.Screen name="Posts" component={userPosts} />
+          <subTab.Screen name="Itineraries" component={userItineraries} />
+        </subTab.Navigator>
       </View>
     </View>
   );
