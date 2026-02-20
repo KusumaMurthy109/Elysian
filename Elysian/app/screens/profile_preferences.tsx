@@ -112,8 +112,8 @@ const ProfilePreferences = () => {
         <Button
           mode="contained"
           onPress={() => signOut(FIREBASE_AUTH)}
-          style={profilePreferencesStyles.logoutButton}
-          labelStyle={profilePreferencesStyles.logoutButtonLabel}
+          style={styles.button}
+          labelStyle={styles.buttonLabel}
         >
           Logout
         </Button>

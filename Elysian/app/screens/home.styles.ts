@@ -17,23 +17,18 @@ export const homeStyles = StyleSheet.create({
     justifyContent: "flex-start",
   },
 
-  postCard: {
+  postContainer: {
     width: "100%",
     backgroundColor: "#fff",
     borderRadius: 35,
     marginBottom: 18,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-    elevation: 4,
   },
 
   imageContainer: {
     width: IMG_WIDTH,
     height: 225,
     borderRadius: 25,
-    marginTop: 20,
+    marginTop: 18,
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
@@ -43,12 +38,6 @@ export const homeStyles = StyleSheet.create({
   cityImage: {
     width: IMG_WIDTH,
     height: "100%",
-  },
-
-  contentContainer: {
-    height: 90,
-    paddingHorizontal: 20,
-    marginBottom: 20,
   },
 
   cityOverlay: {
@@ -70,14 +59,49 @@ export const homeStyles = StyleSheet.create({
     color: "white",
   },
 
+  pinIcon: {
+    flexDirection: "row",
+  },
+
+  ratingOverlay: {
+    position: "absolute",
+    top: 15,
+    right: 15,
+  },
+
+  ratingTag: {
+    backgroundColor: "white",
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 20,
+    borderColor: "white",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 3,
+  },
+
+  ratingFont: {
+    color: "black",
+    fontSize: 18,
+  },
+
+  contentContainer: {
+    height: 90,
+    paddingHorizontal: 20,
+    marginBottom: 18,
+  },
+
   uploader: {
     marginTop: 10,
     fontSize: 15,
     color: "black",
   },
 
-  pinIcon: {
-    flexDirection: "row",
+  date: {
+    alignSelf: "flex-end",
+    marginTop: 45,
+    fontSize: 15,
+    color: "black",
   },
 
   postIcons: {
@@ -87,13 +111,4 @@ export const homeStyles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
   },
-
-  ratingOverlay: {
-
-  },
-
-  ratingFont: {
-
-  },
-
 }); 

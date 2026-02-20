@@ -93,19 +93,6 @@ export const profileStyles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  saveButton: {
-    width: "40%",
-    alignSelf: "center",
-    borderRadius: 999,
-    backgroundColor: "#000",
-    paddingVertical: 5,
-  },
-
-  saveButtonLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-  },
   editModalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -121,12 +108,14 @@ export const profileStyles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: "center",
   },
+
   editModalTitle: {
     fontSize: 25,
     fontWeight: "800",
     color: "#1B1E28",
     marginBottom: 25,
   },
+  
   closeButton: {
     position: "absolute",
     top: 10,

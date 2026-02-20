@@ -82,7 +82,7 @@ const SignUp = () => {
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium" style={styles.title}>
-        Sign Up Now
+        Create Account Now
       </Text>
       <Text variant="bodyLarge" style={styles.subtext}>
         Fill in the details and create account.
@@ -146,7 +146,7 @@ const SignUp = () => {
         style={styles.button}
         labelStyle={styles.buttonLabel}
       >
-        {loading ? "Creating Account..." : "Create Account"}
+        {loading ? "Creating Account..." : "Sign Up"}
       </Button>
 
       <View style={styles.signupContainer}>

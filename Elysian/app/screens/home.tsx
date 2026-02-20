@@ -48,7 +48,6 @@ const Home = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-
   useEffect(() => {
     const auth = getAuth();
     const user = onAuthStateChanged(auth, async (user) => {
@@ -190,7 +189,7 @@ const Home = () => {
         contentContainerStyle={homeStyles.homeContainer}
         ListHeaderComponent={<Text style={styles.pageTitle}>Explore{"\n"}with Us</Text>}
         renderItem={({ item }) => (
-          <View style={homeStyles.postCard}>
+          <View style={homeStyles.postContainer}>
 
             {/* IMAGE SECTION */}
             <View style={homeStyles.imageContainer}>
@@ -216,12 +215,20 @@ const Home = () => {
                   <Text style={homeStyles.countryFont}>Country</Text>
                 </View>
               </View>
+              <View style={homeStyles.ratingOverlay}>
+                  <View style={homeStyles.ratingTag}>
+                    <Text style={homeStyles.ratingFont}>3</Text>
+                    <MaterialCommunityIcons name="star-face" size={20} color="#000" />
+                  </View>
+              </View>
             </View>
+
 
             {/* CONTENT SECTION */}
             <View style={homeStyles.contentContainer}>
               <View>
                 <Text style={homeStyles.uploader}>@{item.uploader}</Text>
+                <Text style={homeStyles.date}>date</Text>
               </View>
 
               <View style={homeStyles.postIcons}>

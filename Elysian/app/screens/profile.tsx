@@ -195,13 +195,13 @@ const Profile = () => {
   const handleViewPreferences = () => {
     navigation.navigate("ProfilePreferences" as never);
   };
-  const userPosts = () => (
+  const UserPosts = () => (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Text style={{ textAlign: "center", marginTop: 20 }}>User Posts</Text>
     </View>
   );
 
-  const userItineraries = () => (
+  const UserItineraries = () => (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Text style={{ textAlign: "center", marginTop: 20 }}>User Itineraries</Text>
     </View>
@@ -298,8 +298,8 @@ const Profile = () => {
                 <Button
                   mode="contained"
                   onPress={handleSaveProfile}
-                  style={profileStyles.saveButton}
-                  labelStyle={profileStyles.saveButtonLabel}
+                  style={styles.button}
+                  labelStyle={styles.buttonLabel}
                 >
                   Save
                 </Button>
@@ -317,8 +317,8 @@ const Profile = () => {
             tabBarStyle: { backgroundColor: "transparent" },
           }}
         >
-          <subTab.Screen name="Posts" component={userPosts} />
-          <subTab.Screen name="Itineraries" component={userItineraries} />
+          <subTab.Screen name="Posts" component={UserPosts} />
+          <subTab.Screen name="Itineraries" component={UserItineraries} />
         </subTab.Navigator>
       </View>
     </View>
