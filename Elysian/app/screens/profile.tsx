@@ -18,7 +18,9 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import * as ImagePicker from "expo-image-picker";
 import { setDoc, onSnapshot } from "firebase/firestore";
-import { Alert } from "react-native"
+import { Alert } from "react-native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -42,6 +44,8 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uloading, setUploading] = useState(true);
   const [loadingUser, setLoadingUser] = useState(true);
+  const subTab = createMaterialTopTabNavigator();
+
 
 
   // Function to check if username is already taken
@@ -191,6 +195,18 @@ const Profile = () => {
   const handleViewPreferences = () => {
     navigation.navigate("ProfilePreferences" as never);
   };
+  const userPosts = () => (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Text style={{ textAlign: "center", marginTop: 20 }}>User Posts</Text>
+    </View>
+  );
+
+  const userItineraries = () => (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Text style={{ textAlign: "center", marginTop: 20 }}>User Itineraries</Text>
+    </View>
+  );
+
 
   return (
     <View style={styles.homeContainer}>
@@ -293,6 +309,18 @@ const Profile = () => {
         )}
 
       </ScrollView>
+      <View style={{ flex: 1, marginTop: -500 }}>
+        <subTab.Navigator
+          screenOptions={{
+            tabBarIndicatorStyle: { backgroundColor: "#000" },
+            tabBarLabelStyle: { fontSize: 14, fontWeight: "600" },
+            tabBarStyle: { backgroundColor: "transparent" },
+          }}
+        >
+          <subTab.Screen name="Posts" component={userPosts} />
+          <subTab.Screen name="Itineraries" component={userItineraries} />
+        </subTab.Navigator>
+      </View>
     </View>
   );
 };
