@@ -9,11 +9,25 @@ export const styles = StyleSheet.create({
     backgroundColor: "white",
   },
 
+  button: {
+    width: "40%",
+    alignSelf: "center",
+    borderRadius: 999,
+    backgroundColor: "#000",
+    paddingVertical: 5,
+  },
+
+  buttonLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+
   title: {
     marginBottom: 24,
     textAlign: "center",
     fontWeight: "bold",
-    color: "#008CFF",
+    color: "black",
   },
 
   subtext: {
@@ -27,21 +41,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 60,
     fontSize: 18,
-  },
-
-  button: {
-    borderRadius: 50,
-    marginTop: 8,
-    paddingVertical: 6,
-    height: 60,
-    backgroundColor: "#008CFF",
-    justifyContent: "center",
-  },
-
-  buttonLabel: {
-    fontSize: 18,
-    textAlign: "center",
-    fontWeight: "bold",
   },
 
   signupContainer: {
