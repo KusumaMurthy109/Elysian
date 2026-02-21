@@ -14,23 +14,13 @@ import pandas as pd
 import tensorflow as tf
 import joblib
 from numpy.linalg import norm
-import firebase_admin
-from firebase_admin import credentials, firestore
 from unsplash_service import fetch_city_image
 import os
 import json
+import rate_cities
+from firebase_config import db
 
 app = Flask(__name__)
-
-# ---------------------------------------------------------
-# Firebase init
-# ---------------------------------------------------------
-
-service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
-
-cred = credentials.Certificate(service_account_info)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
 
 
 # ---------------------------------------------------------
@@ -239,6 +229,29 @@ def city_image():
         return jsonify({"ok": False, "message": "No image found (or missing UNSPLASH_ACCESS_KEY)"}), 404
 
     return jsonify({"ok": True, "data": img})
+
+@app.post("/rate-city")
+def rate_city():
+    data = request.json
+
+    response = rate_cities.start_rating(
+        user_id = data["user_id"],
+        city_id = data["city_id"],
+        feedback = data["feedback"]
+    )
+
+    return jsonify(response)
+
+@app.post("/compare-cities")
+def compare_cities():
+    data = request.json
+
+    response = rate_cities.submit_comparison(
+        user_id = data["user_id"],
+        preferred = data["preferred"]
+    )
+
+    return jsonify(response)
 
 @app.route("/")
 def home():

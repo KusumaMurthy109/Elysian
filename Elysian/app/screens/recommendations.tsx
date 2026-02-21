@@ -220,9 +220,12 @@ const Recommendations = () => {
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
+      console.log("Res:")
+      console.log(res);
       if (!res.ok) return null;
 
       const json = await res.json();
+      console.log(json?.data?.imageUrl)
       return json?.data?.imageUrl ?? null;
     } catch (e) {
       console.error("Unsplash fetch error:", e);

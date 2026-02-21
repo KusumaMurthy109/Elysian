@@ -13,7 +13,6 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -22,17 +21,16 @@ import { homeStyles } from "./home.styles";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import {
   collection,
-  addDoc,
   query,
   orderBy,
-  onSnapshot,
-  doc, 
-  getDoc,
+  onSnapshot
 } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Ionicons, MaterialCommunityIcons} from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { HomeStackParamList } from "./navigation_bar"; // adjust path
 
 // this defines what the post object should look like
 type Post = {
@@ -42,34 +40,12 @@ type Post = {
   timestamp: number;
 };
 
+type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
+
 const Home = () => {
   const [post, setPosts] = useState<Post[]>([]); //initializes post as an empty array which is then updated by setPosts
-  const [uploading, setUploading] = useState(false); //tracks whether an image is currently uploading
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const auth = getAuth();
-    const user = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUserId(user.uid);
-        
-        try {
-          const userDocRef = doc(FIREBASE_DB, "users", user.uid);
-          const userSnap = await getDoc(userDocRef);
-
-          if (userSnap.exists()){
-            const userData = userSnap.data();
-            setUserName(userData.username);
-          }
-        }
-        catch (error) {
-          console.error("Error fetching username: ", error);
-        }
-      }
-    });
-    return user;
-  }, []);
+  const navigation = useNavigation<HomeNavigationProp>();
 
   useEffect(() => {
     const q = query(
@@ -115,7 +91,7 @@ const Home = () => {
       quality: 0.8,
     });
     if (!selectedImage.canceled) {
-      upload([selectedImage.assets[0].uri]); // Upload the picture taken.
+      createPost([selectedImage.assets[0].uri]); // Upload the picture taken.
     }
   }
 
@@ -139,48 +115,14 @@ const Home = () => {
 
     if (!selectedImage.canceled) {
       const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
-      upload(uris);
+      createPost(uris);
     }
   };
 
-  const upload = async (localUris: string[]) => {
-    try {
-      setUploading(true);
-      const allUploadUrls: string[] = [];
-      // Go through each URI to upload.
-      for (const uri of localUris) {
-        const filename = uri.split("/").pop();
-        // Call the AWS Lambda API which returns a temporary S3 uplaod link
-        const response = await fetch(
-          `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
-        );
-        const data = await response.json();
-        const { uploadUrl, fileUrl } = data;
-
-        const image = await fetch(uri);
-        const blob = await image.blob();
-        await fetch(uploadUrl, {
-          method: "PUT",
-          body: blob,
-        });
-        // This stores all the upload URLs for each image.
-        allUploadUrls.push(fileUrl);
-      }
-
-      await addDoc(collection(FIREBASE_DB, "posts"), {
-        urls: allUploadUrls,
-        uploader: userName,
-        uid: userId,
-        timestamp: Date.now(),
-      });
-      Alert.alert("Upload sucessful");
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Failed to upload image", "Please try again.");
-    } finally {
-      setUploading(false);
-    }
+  const createPost = async (localURIs: string[]) => {
+    navigation.navigate("CreatePost", {imageURIs: localURIs});
   };
+
   return (
     <SafeAreaView edges={["top"]}>
       <FlatList
@@ -249,13 +191,6 @@ const Home = () => {
           <Ionicons name="add" size={26} color="#000" />
         </GlassView>
       </TouchableOpacity>
-      {uploading && (
-        <ActivityIndicator
-          size="large"
-          color="#0000ff"
-          style={styles.uploadingIndicator}
-        />
-      )}
     </SafeAreaView>
   );
 };
