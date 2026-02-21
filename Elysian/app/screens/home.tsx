@@ -13,7 +13,6 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -184,13 +183,6 @@ const Home = () => {
           <Ionicons name="add" size={26} color="#000" />
         </GlassView>
       </TouchableOpacity>
-      {/* {uploading && (
-        <ActivityIndicator
-          size="large"
-          color="#0000ff"
-          style={styles.uploadingIndicator}
-        />
-      )} */}
     </SafeAreaView>
   );
 };
