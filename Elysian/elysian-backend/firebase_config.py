@@ -7,11 +7,14 @@ This is needed for app.py and rate_cities.py since Firebase can only be intializ
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
+import os
 
 # Initialize Firebase ONLY if not already initialized
 if not firebase_admin._apps:
 
-    cred = credentials.Certificate("elysianproject-2b9ce-firebase-adminsdk-fbsvc-542db33246.json package-lock.json")
+    service_account_info = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
+    cred = credentials.Certificate(service_account_info)
 
     firebase_admin.initialize_app(cred)
 
