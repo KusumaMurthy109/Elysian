@@ -15,6 +15,7 @@ import Favorites from "./favorites";
 import Profile from "./profile";
 import Itinerary from "./itinerary";
 import ProfilePreferences from "./profile_preferences";
+import CreatePost from "./create_post";
 
 type FavoritesStackParamList = {
   FavoritesMain: undefined;
@@ -26,9 +27,14 @@ type ProfileStackParamList = {
   ProfilePreferences: undefined;
 };
 
+export type HomeStackParamList = {
+  HomeMain: undefined;
+  CreatePost: {imageURIs: string[]};
+}
+
 // Define the navigation parameter list
 export type RootTabParamList = {
-  Home: undefined;
+  Home: NavigatorScreenParams<HomeStackParamList>;
   Recommendations: undefined;
   Favorites: NavigatorScreenParams<FavoritesStackParamList>;
   Profile: NavigatorScreenParams<ProfileStackParamList>;
@@ -39,6 +45,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 const FavoritesStack = createNativeStackNavigator();
 const ProfilesStack = createNativeStackNavigator();
+const HomeStack = createNativeStackNavigator();
 
 function FavoritesStackScreen() {
   return (
@@ -74,6 +81,23 @@ function ProfileStackScreen() {
   );
 }
 
+function HomeStackScreen() {
+  return (
+    <HomeStack.Navigator>
+      <HomeStack.Screen
+        name="HomeMain"
+        component={Home}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="CreatePost"
+        component={CreatePost}
+        options={{ headerShown: false }}
+      />
+    </HomeStack.Navigator>
+  );
+}
+
 export default function NavigationBar() {
   // Dictionary to map page screens to icon names from Ionicons. https://ionic.io/ionicons
   const icons: { [key: string]: string } = {
@@ -103,8 +127,22 @@ export default function NavigationBar() {
       })}
     >
       {/* Define individual tab pages */}
-      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStackScreen}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+
+            navigation.navigate("Home", {
+              screen: "HomeMain",
+            });
+          },
+        })}
+      />
+
       <Tab.Screen name="Recommendations" component={Recommendations} />
+      
       <Tab.Screen
         name="Favorites"
         component={FavoritesStackScreen}
