@@ -25,41 +25,54 @@ import {
   orderBy,
   onSnapshot
 } from "firebase/firestore";
-import { Ionicons, MaterialCommunityIcons} from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { HomeStackParamList } from "./navigation_bar"; // adjust path
+import type { HomeStackParamList } from "./navigation_bar";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import MaskedView from "@react-native-masked-view/masked-view";
 
-// this defines what the post object should look like
+// Post type now matches create post 
 type Post = {
   id: string;
-  urls: string[]; // Allow users to upload multiple pictures.
+  urls: string[];
   uploader: string;
+  uid: string;
+  city: {
+    id: string;
+    name: string;
+    country: string;
+  };
+  review: string;
+  ratingValue: number;
   timestamp: number;
 };
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 const Home = () => {
-  const [post, setPosts] = useState<Post[]>([]); //initializes post as an empty array which is then updated by setPosts
-
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [expandedReview, setExpandedReview] = useState<{ [key: string]: boolean }>({});
   const navigation = useNavigation<HomeNavigationProp>();
 
+  // Sync Firestore 
   useEffect(() => {
     const q = query(
       collection(FIREBASE_DB, "posts"),
       orderBy("timestamp", "desc")
     );
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      // store the function that stops listening into the variable unsubscribe
       const data: Post[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...(doc.data() as Omit<Post, "id">),
       }));
       setPosts(data);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -72,28 +85,24 @@ const Home = () => {
         { text: "Choose from Album", onPress: fromAlbum },
         { text: "Cancel", style: "cancel" }
       ]
-
     );
   };
 
   const takePhoto = async () => {
-    // Request for access to the camera.
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission denied",
-        "Camera access is required."
-      );
+      Alert.alert("Permission denied", "Camera access is required.");
       return;
     }
-    // If granted permission, then wait for the camera picture and get result.
+
     const selectedImage = await ImagePicker.launchCameraAsync({
       quality: 0.8,
     });
+
     if (!selectedImage.canceled) {
-      createPost([selectedImage.assets[0].uri]); // Upload the picture taken.
+      createPost([selectedImage.assets[0].uri]);
     }
-  }
+  };
 
   const fromAlbum = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -106,7 +115,6 @@ const Home = () => {
     }
 
     const selectedImage = await ImagePicker.launchImageLibraryAsync({
-      // Open phone gallery and compress images for faster upload
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
       selectionLimit: 10,
@@ -119,21 +127,32 @@ const Home = () => {
     }
   };
 
-  const createPost = async (localURIs: string[]) => {
-    navigation.navigate("CreatePost", {imageURIs: localURIs});
+  const createPost = (localURIs: string[]) => {
+    navigation.navigate("CreatePost", { imageURIs: localURIs });
+  };
+
+  const handleReview = (postId: string) => {
+    setExpandedReview(prev => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
   };
 
   return (
     <SafeAreaView edges={["top"]}>
       <FlatList
-        data={post}
+        data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={homeStyles.homeContainer}
-        ListHeaderComponent={<Text style={styles.pageTitle}>Explore{"\n"}with Us</Text>}
+        ListHeaderComponent={
+          <Text style={styles.pageTitle}>
+            Explore{"\n"}with Us
+          </Text>
+        }
         renderItem={({ item }) => (
           <View style={homeStyles.postContainer}>
 
-            {/* IMAGE SECTION */}
+            {/* Image */}
             <View style={homeStyles.imageContainer}>
               <FlatList
                 data={item.urls}
@@ -144,33 +163,88 @@ const Home = () => {
                 renderItem={({ item: uri }) => (
                   <Image
                     source={{ uri }}
-                    style={[homeStyles.cityImage]}
+                    style={homeStyles.cityImage}
                     resizeMode="cover"
                   />
                 )}
               />
-              <View style={homeStyles.cityOverlay}>
-                <Text style={homeStyles.cityFont}>City</Text>
-                {/* Row for pin + country */}
-                <View style={homeStyles.pinIcon}>
-                  <MaterialCommunityIcons name="map-marker-outline" size={22} color="white" />
-                  <Text style={homeStyles.countryFont}>Country</Text>
-                </View>
+
+              {/* Progressive Blur on bottom */}
+              <View style={homeStyles.postBlurContainer}>
+                <MaskedView
+                  maskElement={
+                    <LinearGradient
+                      colors={["transparent", "rgba(255,255,255,0.9)"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
+                      style={{ flex: 1 }}
+                    />
+                  }
+                  style={{ flex: 1 }}
+                >
+                  <BlurView
+                    intensity={100}
+                    tint="dark"
+                    style={{ flex: 1 }}
+                  />
+                </MaskedView>
               </View>
-              <View style={homeStyles.ratingOverlay}>
-                  <View style={homeStyles.ratingTag}>
-                    <Text style={homeStyles.ratingFont}>3</Text>
-                    <MaterialCommunityIcons name="star-face" size={20} color="#000" />
+
+              {/* City, Country */}
+              {item.city && (
+                <View style={homeStyles.cityOverlay}>
+                  <Text style={homeStyles.cityFont}>
+                    {item.city.name}
+                  </Text>
+
+                  <View style={homeStyles.pinIcon}>
+                    <MaterialCommunityIcons
+                      name="map-marker-outline"
+                      size={22}
+                      color="white"
+                    />
+                    <Text style={homeStyles.countryFont}>
+                      {item.city.country}
+                    </Text>
                   </View>
-              </View>
+                </View>
+              )}
+
+              {/* Rating */}
+              {item.ratingValue !== undefined && (
+                <View style={homeStyles.ratingOverlay}>
+                  <View style={homeStyles.ratingTag}>
+                    <Text style={homeStyles.ratingFont}>
+                      {item.ratingValue.toFixed(1)}
+                    </Text>
+                    <MaterialCommunityIcons
+                      name="star-face"
+                      size={20}
+                      color="#000"
+                    />
+                  </View>
+                </View>
+              )}
             </View>
 
-
-            {/* CONTENT SECTION */}
+            {/* Uploader, review, date */}
             <View style={homeStyles.contentContainer}>
               <View>
-                <Text style={homeStyles.uploader}>@{item.uploader}</Text>
-                <Text style={homeStyles.date}>date</Text>
+                <Text style={homeStyles.uploader}>
+                  @{item.uploader}
+                </Text>
+                 <TouchableOpacity onPress={() => handleReview(item.id)}>
+                  <Text
+                    style={homeStyles.reviewFont}
+                    numberOfLines={expandedReview[item.id] ? undefined : 2}
+                    ellipsizeMode="tail"
+                  >
+                    {item.review}
+                  </Text>
+                 </TouchableOpacity>
+                <Text style={homeStyles.date}>
+                  {new Date(item.timestamp).toLocaleDateString()}
+                </Text>
               </View>
 
               <View style={homeStyles.postIcons}>
@@ -182,11 +256,15 @@ const Home = () => {
                 </TouchableOpacity>
               </View>
             </View>
-
           </View>
         )}
       />
-      <TouchableOpacity style={styles.topRightIcon} onPress={uploadMethod}>
+
+      {/* Upload button */}
+      <TouchableOpacity
+        style={styles.topRightIcon}
+        onPress={uploadMethod}
+      >
         <GlassView style={styles.glassButton}>
           <Ionicons name="add" size={26} color="#000" />
         </GlassView>

@@ -22,6 +22,8 @@ export const homeStyles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 35,
     marginBottom: 18,
+    position: "relative",
+    paddingBottom: 5,
   },
 
   imageContainer: {
@@ -65,19 +67,20 @@ export const homeStyles = StyleSheet.create({
 
   ratingOverlay: {
     position: "absolute",
+    alignItems: "center",
     top: 15,
     right: 15,
   },
 
   ratingTag: {
     backgroundColor: "white",
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 20,
     borderColor: "white",
     borderWidth: 1,
     flexDirection: "row",
-    gap: 3,
+    gap: 2,
   },
 
   ratingFont: {
@@ -86,9 +89,10 @@ export const homeStyles = StyleSheet.create({
   },
 
   contentContainer: {
-    height: 90,
-    paddingHorizontal: 20,
+    minHeight: 90,
     marginBottom: 18,
+    paddingHorizontal: 20,
+    paddingBottom: 15,
   },
 
   uploader: {
@@ -97,18 +101,34 @@ export const homeStyles = StyleSheet.create({
     color: "black",
   },
 
-  date: {
-    alignSelf: "flex-end",
-    marginTop: 45,
+  reviewFont: {
+    top: 10,
     fontSize: 15,
     color: "black",
+    marginBottom: 10,
+  },
+
+  date: { 
+    fontSize: 15,
+    color: "black",
+    alignSelf: "flex-end",    
+    top: 20,
   },
 
   postIcons: {
     position: "absolute",
-    marginTop: 10,
+    marginTop: 5,
     right: 15,
     flexDirection: "row",
     gap: 5,
   },
+
+  postBlurContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "45%",
+  },
+
 }); 
