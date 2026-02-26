@@ -127,9 +127,14 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-    
   },
-  
+
+  readMoreText: {
+    color: "#008CFF",
+    marginTop: 6,
+    fontWeight: "500",
+  },
+
   homeContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
@@ -308,7 +313,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 15,
     zIndex: 10,
   },
-  
+
   searchRow: {
     flexDirection: "row",
     alignItems: "center",

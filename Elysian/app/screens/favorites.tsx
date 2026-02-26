@@ -136,29 +136,6 @@ const Favorites = () => {
     }
   };
 
-  // Only uses Wikipedia REST API
-  const fetchCityImage = async (cityName: string, country: string) => {
-    try {
-      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        `${cityName}, ${country}`
-      )}`;
-      const res = await fetch(url);
-      if (!res.ok) return undefined;
-      const data = await res.json();
-
-      // Avoid flag images
-      const rawImage = data.originalimage?.source || data.thumbnail?.source;
-      if (!rawImage) return undefined;
-      const lower = rawImage.toLowerCase();
-      if (lower.includes("flag") || lower.includes("flag_of")) return undefined;
-
-      return rawImage;
-    } catch (err) {
-      console.error("Error fetching city image:", err);
-      return undefined;
-    }
-  };
-
   const fetchUnsplashImage = async (cityName: string, country: string) => {
     try {
       const url =
@@ -177,50 +154,72 @@ const Favorites = () => {
     }
   };
 
-  const fetchCityDescription = async (cityName: string, country: string) => {
-    try {
-      // 1) We try the Wikivoyage first (it's more travel/aesthetic)
-      const tryTitles = [
-        cityName,
-        `${cityName} (${country})`,
-        `${cityName}, ${country}`,
-      ];
+  // const fetchWikivoyageIntro = async (cityName: string, country: string) => {
+  //   const tryTitles = [
+  //     cityName,
+  //     `${cityName}, ${country}`,
+  //     `${cityName} (${country})`,
+  //   ];
 
-      for (const title of tryTitles) {
-        const voyageUrl =
-          `https://en.wikivoyage.org/w/api.php` +
-          `?action=query&prop=extracts&exintro=1&explaintext=1` +
-          `&titles=${encodeURIComponent(title)}` +
-          `&format=json&origin=*`;
+  //   for (const title of tryTitles) {
+  //     try {
+  //       const url =
+  //         `https://en.wikivoyage.org/w/api.php` +
+  //         `?action=query&format=json&origin=*` +
+  //         `&prop=extracts&exintro=1&explaintext=1&redirects=1` +
+  //         `&titles=${encodeURIComponent(title)}`;
 
-        const voyageRes = await fetch(voyageUrl);
-        if (voyageRes.ok) {
-          const voyageData = await voyageRes.json();
-          const pages = voyageData?.query?.pages;
-          const firstPage = pages ? pages[Object.keys(pages)[0]] : null;
-          const extract = firstPage?.extract;
+  //       const res = await fetch(url);
+  //       if (!res.ok) continue;
 
-          if (extract && extract.trim().length > 0) {
-            return extract;
-          }
-        }
-      }
+  //       const data = await res.json();
+  //       const pages = data?.query?.pages;
+  //       if (!pages) continue;
 
-      // 2) If Wikivoyage doesn't work then we fallback to Wikipedia (reliable if Wikivoyage has no page)
-      const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        `${cityName}, ${country}`
-      )}`;
+  //       const page = pages[Object.keys(pages)[0]];
+  //       const extract = page?.extract;
 
-      const wikiRes = await fetch(wikiUrl);
-      if (!wikiRes.ok) return undefined;
+  //       if (extract && extract.trim().length > 0) return extract;
+  //     } catch {
+  //       continue;
+  //     }
+  //   }
 
-      const wikiData = await wikiRes.json();
-      return wikiData.extract || undefined;
-    } catch (err) {
-      console.error("Error fetching city description:", err);
-      return undefined;
-    }
-  };
+  //   return null;
+  // };
+
+  // const makeTravelBlurb = (raw: string, cityName: string) => {
+  //   const cleaned = raw
+  //     .replace(/\s+/g, " ")
+  //     .replace(/\[[^\]]*\]/g, "")
+  //     .trim();
+
+  //   const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
+
+  //   const good = sentences
+  //     .filter((s) => s.length >= 60 && s.length <= 160)
+  //     .slice(0, 2)
+  //     .join(" ");
+
+  //   let out = (good || sentences.slice(0, 1).join(" ") || "").trim();
+
+  //   const maxChars = 240;
+  //   if (out.length > maxChars) {
+  //     out =
+  //       out
+  //         .slice(0, maxChars)
+  //         .replace(/\s+\S*$/, "")
+  //         .trimEnd() + "...";
+  //   }
+
+  //   return out || "No description available.";
+  // };
+
+  // const fetchCityDescription = async (cityName: string, country: string) => {
+  //   const raw = await fetchWikivoyageIntro(cityName, country);
+  //   if (!raw) return undefined;
+  //   return makeTravelBlurb(raw, cityName);
+  // };
 
   // Removes city from Favorites.
   const removeFavorite = async (city: Recommendation) => {
@@ -289,44 +288,60 @@ const Favorites = () => {
           setError(null);
 
           const cityData = snapshot.data() || {};
-
           const favoritesArray: Recommendation[] = await Promise.all(
             Object.keys(cityData).map(async (key) => {
               const city = cityData[key];
-              let image = city.image;
 
+              // --- IMAGE (Unsplash only) ---
+              let image = city.image;
               if (!image) {
-                // Try Unsplash first
                 image = await fetchUnsplashImage(
                   city.city_name,
                   city.country_name
                 );
 
-                // Fallback to Wikipedia if needed
-                if (!image) {
-                  image = await fetchCityImage(
-                    city.city_name,
-                    city.country_name
-                  );
-                }
-
-                if (image && image.includes("images.unsplash.com")) {
+                // Persist if we got one
+                if (image) {
                   await updateDoc(favoritesRef, {
                     [`${key}.image`]: image,
                   });
                 }
               }
-              const description = await fetchCityDescription(
-                city.city_name,
-                city.country_name
-              );
+
+              // --- DESCRIPTION (Wikivoyage only, travel blurb) ---
+              //let description = city.description;
+
+              // if old descriptions exist, they block the new pipeline
+              // const looksOld =
+              //   typeof description === "string" &&
+              //   (description.length > 260 || // usually too long
+              //     description.includes("population") ||
+              //     description.includes("Founded in") ||
+              //     description.includes("capital of"));
+
+              // // fetch if missing OR looks old
+              // if (!description || looksOld) {
+              //   const fresh = await fetchCityDescription(
+              //     city.city_name,
+              //     city.country_name
+              //   );
+              // const description = city.description;
+              //   if (fresh) {
+              //     description = fresh;
+              //     await updateDoc(favoritesRef, {
+              //       [`${key}.description`]: fresh,
+              //     });
+              //   }
+              // }
+
+              const description = city.description;
 
               return {
                 city_id: key,
                 city_name: city.city_name,
                 country: city.country_name,
-                image,
-                description,
+                image: image || undefined,
+                description: description || undefined,
               };
             })
           );
@@ -456,9 +471,7 @@ const Favorites = () => {
             Favorites
           </Text>
 
-          {loading && (
-            <PenguinLoader text="Loading your favorite cities!" />
-          )}
+          {loading && <PenguinLoader text="Loading your favorite cities!" />}
           {error && !loading && <Text>{error}</Text>}
 
           {!loading && favorites.length > 0 && (

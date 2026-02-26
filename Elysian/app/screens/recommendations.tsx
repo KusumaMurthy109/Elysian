@@ -25,10 +25,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
-import {
-  GlassView,
-  isLiquidGlassAvailable,
-} from "expo-glass-effect";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
@@ -70,6 +67,10 @@ const Recommendations = () => {
   const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
   const [currentCityAttr, setCurrentCityAttr] = useState<string | null>(null);
   const glassAvailable = isLiquidGlassAvailable();
+  const [descExpanded, setDescExpanded] = useState(false);
+  const COLLAPSED_LINES = 5;
+  const MIN_EXTRA_LINES_FOR_TOGGLE = 3; // only show toggle if 3+ lines are hidden
+  const [descLineCount, setDescLineCount] = useState(0);
   // This will set the tags for the current city.
   // Need to get the width and height of screen for the images to fit full page.
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -130,12 +131,38 @@ const Recommendations = () => {
     return null;
   };
 
-  const shorten = (text: string, sentences = 3) => {
+  // const shorten = (text: string, sentences = 3) => {
+  //   const cleaned = text.replace(/\s+/g, " ").trim();
+  //   if (!cleaned) return "";
+  //   const parts = cleaned.split(". ");
+  //   const sliced = parts.slice(0, sentences).join(". ");
+  //   return sliced.endsWith(".") ? sliced : sliced + ".";
+  // };
+
+  const shorten = (text: string, sentences = 2, maxChars = 240) => {
     const cleaned = text.replace(/\s+/g, " ").trim();
     if (!cleaned) return "";
+
+    // Take N sentences first
     const parts = cleaned.split(". ");
-    const sliced = parts.slice(0, sentences).join(". ");
-    return sliced.endsWith(".") ? sliced : sliced + ".";
+    let out = parts.slice(0, sentences).join(". ");
+    if (!out.endsWith(".")) out += ".";
+
+    // If still too long, hard cap, but end cleanly
+    if (out.length > maxChars) {
+      out = out.slice(0, maxChars).trimEnd();
+      out = out.replace(/\s+\S*$/, ""); // drop partial last word
+      // Prefer ending on sentence punctuation if we can
+      const lastPunct = Math.max(
+        out.lastIndexOf("."),
+        out.lastIndexOf("!"),
+        out.lastIndexOf("?")
+      );
+      if (lastPunct > 60) out = out.slice(0, lastPunct + 1);
+      else out += "...";
+    }
+
+    return out;
   };
 
   const fetchWikipediaSummary = async (title: string) => {
@@ -155,30 +182,56 @@ const Recommendations = () => {
 
   const fetchCityInfo = async (cityName: string, country: string) => {
     try {
-      // 1) Travel-style text first from Wikivoyage
+      // Wikivoyage only (text)
       const voyText = await fetchWikivoyageIntro(cityName, country);
-      // 2) Wikipedia fallback
-      let wikiData = await fetchWikipediaSummary(cityName);
-      if (!wikiData) {
-        wikiData = await fetchWikipediaSummary(`${cityName}, ${country}`);
-      }
 
-      const wikiText: string | null = wikiData?.extract || null;
-      const rawImage =
-        wikiData?.originalimage?.source || wikiData?.thumbnail?.source;
-
-      const image = isFlagImage(rawImage) ? undefined : rawImage;
-
-      const descriptionRaw = voyText || wikiText || "";
+      const descriptionRaw = voyText || "";
       const description = descriptionRaw
-        ? shorten(descriptionRaw, 3)
+        ? makeTravelBlurb(descriptionRaw, cityName)
         : "No description available.";
 
-      return { description, image };
+      // IMPORTANT: no wikipedia image fallback at all
+      return { description, image: undefined };
     } catch (err) {
       console.error("Error fetching city info:", err);
       return { description: "No description available.", image: undefined };
     }
+  };
+
+  const makeTravelBlurb = (raw: string, cityName: string) => {
+    const cleaned = raw
+      .replace(/\s+/g, " ")
+      .replace(/\[[^\]]*\]/g, "") // remove [1], [2]
+      .trim();
+
+    // pull 1–2 best sentences (shorter ones)
+    const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
+
+    const good = sentences
+      .filter((s) => s.length >= 60 && s.length <= 160)
+      .slice(0, 2)
+      .join(" ");
+
+    const fallback = sentences.slice(0, 1).join(" ");
+
+    let out = (good || fallback || "").trim();
+
+    // if it's still long, cut cleanly
+    const maxChars = 240;
+    if (out.length > maxChars) {
+      out =
+        out
+          .slice(0, maxChars)
+          .replace(/\s+\S*$/, "")
+          .trimEnd() + ".";
+    }
+
+    // avoid super dry openings
+    if (out.toLowerCase().startsWith(cityName.toLowerCase() + " is")) {
+      // keep it, but it’s okay
+    }
+
+    return out || "No description available.";
   };
 
   const fetchUnsplashImage = async (cityName: string, country: string) => {
@@ -189,12 +242,12 @@ const Recommendations = () => {
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
-      console.log("Res:")
+      console.log("Res:");
       console.log(res);
       if (!res.ok) return null;
 
       const json = await res.json();
-      console.log(json?.data?.imageUrl)
+      console.log(json?.data?.imageUrl);
       return json?.data?.imageUrl ?? null;
     } catch (e) {
       console.error("Unsplash fetch error:", e);
@@ -248,6 +301,7 @@ const Recommendations = () => {
           [`${cityId}`]: {
             ...city,
             image: unsplashImageUrl || null,
+            description: currentCityRef.current?.description || null,
           },
         },
         { merge: true }
@@ -419,9 +473,7 @@ const Recommendations = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Loading */}
-      {loading && (
-        <PenguinLoader text="Finding your perfect destination..." />
-      )}
+      {loading && <PenguinLoader text="Finding your perfect destination..." />}
 
       {/* Error */}
       {error && !loading && <Text>{error}</Text>}
@@ -452,7 +504,12 @@ const Recommendations = () => {
             onPress={() => {
               const now = Date.now();
               if (doubleTap.current && now - doubleTap.current < 300) {
-                setSelectedCity(currentCity);
+                setSelectedCity({
+                  ...currentCity,
+                  image: unsplashImageUrl || undefined,
+                });
+                setDescExpanded(false);
+                setDescLineCount(0);
                 setCityModalOpen(true);
               }
               doubleTap.current = now;
@@ -527,7 +584,10 @@ const Recommendations = () => {
         {/* Full-screen dim overlay */}
         <Pressable
           style={styles.cityModalOverlay}
-          onPress={() => setCityModalOpen(false)}
+          onPress={() => {
+            setCityModalOpen(false);
+            setDescExpanded(false);
+          }}
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
           <Pressable style={styles.cityModalContainer}>
@@ -546,16 +606,43 @@ const Recommendations = () => {
                       resizeMode="cover"
                     />
                   )}
+                  {/* Hidden measurement text (so we know the full line count) */}
+                  <View
+                    style={{
+                      position: "absolute",
+                      opacity: 0,
+                      left: -9999,
+                      right: 0,
+                    }}
+                  >
+                    <Text style={styles.cityModalDescription}>
+                      {selectedCity.description || "No description available."}
+                    </Text>
+                  </View>
 
+                  {/* Visible description */}
                   <Text style={styles.cityModalDescription}>
                     {selectedCity.description || "No description available."}
                   </Text>
+
+                  {/* Toggle ONLY if significantly truncated */}
+                  {descLineCount >
+                    COLLAPSED_LINES + MIN_EXTRA_LINES_FOR_TOGGLE && (
+                    <Pressable onPress={() => setDescExpanded((prev) => !prev)}>
+                      <Text style={styles.readMoreText}>
+                        {descExpanded ? "Show less" : "Read more"}
+                      </Text>
+                    </Pressable>
+                  )}
                 </ScrollView>
 
                 {/* Close button pinned at bottom */}
                 <Button
                   mode="contained"
-                  onPress={() => setCityModalOpen(false)}
+                  onPress={() => {
+                    setCityModalOpen(false);
+                    setDescExpanded(false);
+                  }}
                   style={styles.cityModalCloseBtn}
                 >
                   Close
