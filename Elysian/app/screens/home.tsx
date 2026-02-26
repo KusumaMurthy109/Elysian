@@ -23,7 +23,8 @@ import {
   collection,
   query,
   orderBy,
-  onSnapshot
+  onSnapshot,
+  increment, 
 } from "firebase/firestore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,13 +36,13 @@ import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { getAuth } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { deleteField } from "firebase/firestore";
 
-// Post type now matches create post 
+// This defines what the post object should look like
 type Post = {
   id: string;
-  urls: string[];
+  urls: string[]; // Allow users to upload multiple pictures.
   uploader: string;
   uid: string;
   city: {
@@ -52,25 +53,28 @@ type Post = {
   review: string;
   ratingValue: number;
   timestamp: number;
+  likeCount?: number;
 };
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 const Home = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);  // Initializes post as an empty array which is then updated by setPosts
   const [expandedReview, setExpandedReview] = useState<{ [key: string]: boolean }>({});
   const [userFavorites, setUserFavorites] = useState<{ [key: string]: boolean }>({});
   const navigation = useNavigation<HomeNavigationProp>();
   const [postImageIndices, setPostImageIndices] = useState<{ [postId: string]: number }>({});
+  const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
 
   // Sync posts from Firestore
   useEffect(() => {
     const q = query(
       collection(FIREBASE_DB, "posts"),
       orderBy("timestamp", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    );  
+    
+    // Store the function that stops listening into the variable unsubscribe
+    const unsubscribe = onSnapshot(q, (snapshot) => { 
       const data: Post[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...(doc.data() as Omit<Post, "id">),
@@ -101,6 +105,56 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
+  // onSnapshot to listen for user likes 
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const unsubscribeFunctions: (() => void)[] = [];
+
+    posts.forEach((post) => {
+      const likeRef = doc(FIREBASE_DB, "posts", post.id, "likes", user.uid);
+
+      const unsubscribe = onSnapshot(likeRef, (snapshot) => {
+        setUserLikes(prev => ({
+          ...prev,
+          [post.id]: snapshot.exists(), // If document exist, the user liked the post, otherwise does not exist
+        }));
+      });
+
+      unsubscribeFunctions.push(unsubscribe);
+    });
+
+    return () => unsubscribeFunctions.forEach(unsub => unsub()); // Stops listening to Firestore 
+  }, [posts]); // Runs when posts update 
+
+  // Updates likeCount on posts database
+  const likesOnPost = async (postId: string) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const postRef = doc(FIREBASE_DB, "posts", postId);
+      const likeRef = doc(FIREBASE_DB, "posts", postId, "likes", user.uid);
+
+      if (userLikes[postId]) { // Check if user already liked, then unlike 
+        await deleteDoc(likeRef);
+        await updateDoc(postRef, {
+          likeCount: increment(-1),
+        });
+      } else { // Otherwise post is liked 
+        await setDoc(likeRef, { liked: true }); // Create like document 
+        await updateDoc(postRef, {
+          likeCount: increment(1),
+        });
+      }
+    } catch (error) {
+      console.error("Error liking:", error);
+    }
+  };
+
   const uploadMethod = () => {
     Alert.alert(
       "Create a Post",
@@ -113,19 +167,20 @@ const Home = () => {
     );
   };
 
+  // Request for access to the camera.
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission denied", "Camera access is required.");
       return;
     }
-
+    // If granted permission, then wait for the camera picture and get result.
     const selectedImage = await ImagePicker.launchCameraAsync({
       quality: 0.8,
     });
 
     if (!selectedImage.canceled) {
-      createPost([selectedImage.assets[0].uri]);
+      createPost([selectedImage.assets[0].uri]); // Upload the picture taken.
     }
   };
 
@@ -138,7 +193,7 @@ const Home = () => {
       );
       return;
     }
-
+    // Open phone gallery and compress images for faster upload
     const selectedImage = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
@@ -148,7 +203,7 @@ const Home = () => {
 
     if (!selectedImage.canceled) {
       const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
-      createPost(uris);
+      createPost(uris);  
     }
   };
 
@@ -350,8 +405,12 @@ const Home = () => {
                 </View>
 
                 <View style={homeStyles.postIcons}>
-                  <TouchableOpacity>
-                    <Ionicons name="heart-outline" size={28} color="#000" />
+                  <TouchableOpacity onPress={() => likesOnPost(item.id)}>
+                    <Ionicons
+                      name={userLikes[item.id] ? "heart" : "heart-outline"}
+                      size={28}
+                      color={userLikes[item.id] ? "red" : "#000"}
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
