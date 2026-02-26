@@ -127,9 +127,8 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#white", // -> Change to transparent for background image to show
-    
   },
-  
+
   homeContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",
@@ -308,7 +307,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 15,
     zIndex: 10,
   },
-  
+
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
