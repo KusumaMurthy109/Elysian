@@ -129,12 +129,6 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
 
-  readMoreText: {
-    color: "#008CFF",
-    marginTop: 6,
-    fontWeight: "500",
-  },
-
   homeContainer: {
     flexGrow: 1,
     justifyContent: "flex-start",

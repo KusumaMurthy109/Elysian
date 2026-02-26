@@ -67,10 +67,6 @@ const Recommendations = () => {
   const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
   const [currentCityAttr, setCurrentCityAttr] = useState<string | null>(null);
   const glassAvailable = isLiquidGlassAvailable();
-  const [descExpanded, setDescExpanded] = useState(false);
-  const COLLAPSED_LINES = 5;
-  const MIN_EXTRA_LINES_FOR_TOGGLE = 3; // only show toggle if 3+ lines are hidden
-  const [descLineCount, setDescLineCount] = useState(0);
   // This will set the tags for the current city.
   // Need to get the width and height of screen for the images to fit full page.
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -508,8 +504,6 @@ const Recommendations = () => {
                   ...currentCity,
                   image: unsplashImageUrl || undefined,
                 });
-                setDescExpanded(false);
-                setDescLineCount(0);
                 setCityModalOpen(true);
               }
               doubleTap.current = now;
@@ -586,7 +580,6 @@ const Recommendations = () => {
           style={styles.cityModalOverlay}
           onPress={() => {
             setCityModalOpen(false);
-            setDescExpanded(false);
           }}
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
@@ -606,34 +599,12 @@ const Recommendations = () => {
                       resizeMode="cover"
                     />
                   )}
-                  {/* Hidden measurement text (so we know the full line count) */}
-                  <View
-                    style={{
-                      position: "absolute",
-                      opacity: 0,
-                      left: -9999,
-                      right: 0,
-                    }}
-                  >
-                    <Text style={styles.cityModalDescription}>
-                      {selectedCity.description || "No description available."}
-                    </Text>
-                  </View>
 
                   {/* Visible description */}
                   <Text style={styles.cityModalDescription}>
                     {selectedCity.description || "No description available."}
                   </Text>
 
-                  {/* Toggle ONLY if significantly truncated */}
-                  {descLineCount >
-                    COLLAPSED_LINES + MIN_EXTRA_LINES_FOR_TOGGLE && (
-                    <Pressable onPress={() => setDescExpanded((prev) => !prev)}>
-                      <Text style={styles.readMoreText}>
-                        {descExpanded ? "Show less" : "Read more"}
-                      </Text>
-                    </Pressable>
-                  )}
                 </ScrollView>
 
                 {/* Close button pinned at bottom */}
@@ -641,7 +612,6 @@ const Recommendations = () => {
                   mode="contained"
                   onPress={() => {
                     setCityModalOpen(false);
-                    setDescExpanded(false);
                   }}
                   style={styles.cityModalCloseBtn}
                 >

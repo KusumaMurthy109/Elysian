@@ -114,13 +114,11 @@ const Favorites = () => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
-      if (!user) {
-        console.warn("User not signed in!");
-        return;
-      }
+      if (!user) return;
 
       const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
 
+      // 1) Save basic info immediately
       await setDoc(
         userFavoritesRef,
         {
@@ -131,6 +129,27 @@ const Favorites = () => {
         },
         { merge: true }
       );
+
+      // 2) Fetch image + description in background
+      const [image, description] = await Promise.all([
+        fetchUnsplashImage(city.name, city.country),
+        fetchCityInfo(city.name, city.country),
+      ]);
+
+      const patch: any = {};
+      if (image) patch.image = image;
+      if (description) patch.description = description;
+
+      // 3️) Save extras if they exist
+      if (Object.keys(patch).length > 0) {
+        await setDoc(
+          userFavoritesRef,
+          {
+            [city.id]: patch,
+          },
+          { merge: true }
+        );
+      }
     } catch (err) {
       console.error("Error adding to favorites:", err);
     }
@@ -153,73 +172,86 @@ const Favorites = () => {
       return null;
     }
   };
+  const fetchWikivoyageIntro = async (
+    cityName: string,
+    country: string
+  ): Promise<string | null> => {
+    const titlesToTry = [
+      cityName,
+      `${cityName}, ${country}`,
+      `${cityName} (${country})`,
+    ];
 
-  // const fetchWikivoyageIntro = async (cityName: string, country: string) => {
-  //   const tryTitles = [
-  //     cityName,
-  //     `${cityName}, ${country}`,
-  //     `${cityName} (${country})`,
-  //   ];
+    for (const title of titlesToTry) {
+      try {
+        const url =
+          `https://en.wikivoyage.org/w/api.php` +
+          `?action=query&format=json&origin=*` +
+          `&prop=extracts&exintro=1&explaintext=1&redirects=1` +
+          `&titles=${encodeURIComponent(title)}`;
 
-  //   for (const title of tryTitles) {
-  //     try {
-  //       const url =
-  //         `https://en.wikivoyage.org/w/api.php` +
-  //         `?action=query&format=json&origin=*` +
-  //         `&prop=extracts&exintro=1&explaintext=1&redirects=1` +
-  //         `&titles=${encodeURIComponent(title)}`;
+        const res = await fetch(url);
+        if (!res.ok) continue;
 
-  //       const res = await fetch(url);
-  //       if (!res.ok) continue;
+        const data = await res.json();
+        const pages = data?.query?.pages;
+        if (!pages) continue;
 
-  //       const data = await res.json();
-  //       const pages = data?.query?.pages;
-  //       if (!pages) continue;
+        const page = pages[Object.keys(pages)[0]];
+        const extract = page?.extract;
 
-  //       const page = pages[Object.keys(pages)[0]];
-  //       const extract = page?.extract;
+        if (
+          extract &&
+          !extract.toLowerCase().includes("more than one place") &&
+          !extract.toLowerCase().includes("may refer to")
+        ) {
+          return extract;
+        }
+      } catch {
+        continue;
+      }
+    }
 
-  //       if (extract && extract.trim().length > 0) return extract;
-  //     } catch {
-  //       continue;
-  //     }
-  //   }
+    return null;
+  };
 
-  //   return null;
-  // };
+  const makeTravelBlurb = (raw: string) => {
+    const cleaned = raw
+      .replace(/\s+/g, " ")
+      .replace(/\[[^\]]*\]/g, "")
+      .trim();
 
-  // const makeTravelBlurb = (raw: string, cityName: string) => {
-  //   const cleaned = raw
-  //     .replace(/\s+/g, " ")
-  //     .replace(/\[[^\]]*\]/g, "")
-  //     .trim();
+    const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
 
-  //   const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
+    const good = sentences
+      .filter((s) => s.length >= 60 && s.length <= 160)
+      .slice(0, 2)
+      .join(" ");
 
-  //   const good = sentences
-  //     .filter((s) => s.length >= 60 && s.length <= 160)
-  //     .slice(0, 2)
-  //     .join(" ");
+    const fallback = sentences.slice(0, 1).join(" ");
 
-  //   let out = (good || sentences.slice(0, 1).join(" ") || "").trim();
+    let out = (good || fallback || "").trim();
 
-  //   const maxChars = 240;
-  //   if (out.length > maxChars) {
-  //     out =
-  //       out
-  //         .slice(0, maxChars)
-  //         .replace(/\s+\S*$/, "")
-  //         .trimEnd() + "...";
-  //   }
+    if (out.length > 240) {
+      out =
+        out
+          .slice(0, 240)
+          .replace(/\s+\S*$/, "")
+          .trimEnd() + "...";
+    }
 
-  //   return out || "No description available.";
-  // };
+    return out || "No description available.";
+  };
 
-  // const fetchCityDescription = async (cityName: string, country: string) => {
-  //   const raw = await fetchWikivoyageIntro(cityName, country);
-  //   if (!raw) return undefined;
-  //   return makeTravelBlurb(raw, cityName);
-  // };
+  const fetchCityInfo = async (cityName: string, country: string) => {
+    try {
+      const raw = await fetchWikivoyageIntro(cityName, country);
+      if (!raw) return undefined;
+      return makeTravelBlurb(raw);
+    } catch {
+      return undefined;
+    }
+  };
 
   // Removes city from Favorites.
   const removeFavorite = async (city: Recommendation) => {
