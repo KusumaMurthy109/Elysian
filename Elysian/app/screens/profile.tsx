@@ -4,7 +4,7 @@ Function: This is the user Profile screen component for the app.
 */
 
 import React, { useEffect, useRef, useState } from "react";
-import { View, Image, ScrollView, TouchableOpacity, Modal, Pressable, ImageBackground } from "react-native";
+import { View, Image, ScrollView, TouchableOpacity, Modal, Pressable, ImageBackground, Dimensions } from "react-native";
 import { Text, Button, TextInput, ActivityIndicator } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -855,33 +855,62 @@ const Profile = () => {
       )}
 
       {openPost && (
-        <View style={styles.cityModalContainer}>
-          <ScrollView contentContainerStyle={styles.cityModalContent}>
-            {openPost.urls?.[0] && (
-              <Image
-                source={{ uri: openPost.urls[0] }}
-                style={styles.cityModalImage}
-                resizeMode="cover"
+        <Modal visible={true} transparent animationType = "slide">
+          <View style = {{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+            <View style = {{
+              width: "90%",
+              maxHeight: "80%",
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}>
+              <FlatList
+                data= {openPost.urls}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(uri, index) => uri + index}
+                renderItem={({item}) => (
+                  <Image
+                    source = {{uri: item}}
+                    style={{width: Dimensions.get("window").width*0.9, height: 300}}
+                    resizeMode= "cover"
+                  />
+                )}
               />
-            )}
-            <Text style={styles.cityModalTitle}>
-              {openPost.city?.name}, {openPost.city?.country}
-            </Text>
-            <Text style={{ marginTop: 10 }}>
-              {openPost.review}
-            </Text>
-            <Text style={{ marginTop: 10 }}>
-              Rating: {openPost.ratingValue?.toFixed(1)}
-            </Text>
-          </ScrollView>
-          <Button
-            mode="contained"
-            onPress={() => setOpenPost(null)}
-            style={styles.cityModalCloseBtn}
-          >
-            Close
-          </Button>
+              <FlatList
+                data={[openPost]}
+                keyExtractor={item => item.id}
+                contentContainerStyle={{padding: 10}}
+                renderItem={({item}) => (
+                  <>
+                    <Text style = {styles.cityModalTitle}>
+                      {openPost.city?.name}, {openPost.city?.country}
+                    </Text>
+                    <Text style={{marginTop:10}}>
+                      {openPost.review}
+                    </Text>
+                      <Text style={{marginTop:10}}>
+                        Ratng: {openPost.ratingValue?.toFixed(1)}
+                      </Text>
+                    <Button
+                      mode="contained"
+                      onPress={() => setOpenPost(null)}
+                      style={styles.cityModalCloseBtn}
+                    >
+                      Close
+                    </Button>
+                  </>
+                )}
+              />
+            </View>
         </View>
+      </Modal>
       )}
 
     </View>
