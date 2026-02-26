@@ -127,7 +127,6 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#white", // -> Change to transparent for background image to show
-    
   },
 
   homeContainer: {

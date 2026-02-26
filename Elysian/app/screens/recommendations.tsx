@@ -604,7 +604,6 @@ const Recommendations = () => {
                   <Text style={styles.cityModalDescription}>
                     {selectedCity.description || "No description available."}
                   </Text>
-
                 </ScrollView>
 
                 {/* Close button pinned at bottom */}
