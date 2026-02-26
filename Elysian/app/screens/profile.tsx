@@ -545,19 +545,20 @@ const Profile = () => {
   let sharedWithSentence = "no one yet";
 
   if (openItinerary && currentUser) {
-    const isOwner = currentUser.uid === openItinerary.ownerId;
+    // Find all the shared users to put in a string.
+    const allParticipants = [
+      ownerUsername, // Include the owner.
+      ...sharedUsernames
+    ].filter(Boolean); // Remove nulls.
+    // This is the concatenation of all the users.
+    sharedWithSentence =
+      allParticipants.length > 0
+        ? allParticipants.join(", ")
+        : "no one yet";
 
-    if (isOwner) {
-      // Owner view - show who they shared with.
-      sharedWithSentence =
-        sharedUsernames.length > 0
-          ? sharedUsernames.join(", ")
-          : "no one yet";
-    } else {
-      // Show owner.
-      sharedWithSentence = ownerUsername ?? "the owner";
-    }
   }
+
+
 
 
 
@@ -722,7 +723,7 @@ const Profile = () => {
             </Text>
 
             <Text style={itinerarySubTabStyles.sharedWithText}>
-              Shared with: <Text style={itinerarySubTabStyles.sharedWithNames}>{sharedWithSentence}</Text>
+              Planning Group: <Text style={itinerarySubTabStyles.sharedWithNames}>{sharedWithSentence}</Text>
             </Text>
 
             <View style={itinerarySubTabStyles.activitiesContainer}>
@@ -855,14 +856,14 @@ const Profile = () => {
       )}
 
       {openPost && (
-        <Modal visible={true} transparent animationType = "slide">
-          <View style = {{
+        <Modal visible={true} transparent animationType="slide">
+          <View style={{
             flex: 1,
             backgroundColor: "rgba(0,0,0,0.7)",
             justifyContent: "center",
             alignItems: "center",
           }}>
-            <View style = {{
+            <View style={{
               width: "90%",
               maxHeight: "80%",
               backgroundColor: "#fff",
@@ -870,34 +871,34 @@ const Profile = () => {
               overflow: "hidden",
             }}>
               <FlatList
-                data= {openPost.urls}
+                data={openPost.urls}
                 horizontal
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(uri, index) => uri + index}
-                renderItem={({item}) => (
+                renderItem={({ item }) => (
                   <Image
-                    source = {{uri: item}}
-                    style={{width: Dimensions.get("window").width*0.9, height: 300}}
-                    resizeMode= "cover"
+                    source={{ uri: item }}
+                    style={{ width: Dimensions.get("window").width * 0.9, height: 300 }}
+                    resizeMode="cover"
                   />
                 )}
               />
               <FlatList
                 data={[openPost]}
                 keyExtractor={item => item.id}
-                contentContainerStyle={{padding: 10}}
-                renderItem={({item}) => (
+                contentContainerStyle={{ padding: 10 }}
+                renderItem={({ item }) => (
                   <>
-                    <Text style = {styles.cityModalTitle}>
+                    <Text style={styles.cityModalTitle}>
                       {openPost.city?.name}, {openPost.city?.country}
                     </Text>
-                    <Text style={{marginTop:10}}>
+                    <Text style={{ marginTop: 10 }}>
                       {openPost.review}
                     </Text>
-                      <Text style={{marginTop:10}}>
-                        Ratng: {openPost.ratingValue?.toFixed(1)}
-                      </Text>
+                    <Text style={{ marginTop: 10 }}>
+                      Ratng: {openPost.ratingValue?.toFixed(1)}
+                    </Text>
                     <Button
                       mode="contained"
                       onPress={() => setOpenPost(null)}
@@ -909,8 +910,8 @@ const Profile = () => {
                 )}
               />
             </View>
-        </View>
-      </Modal>
+          </View>
+        </Modal>
       )}
 
     </View>
