@@ -70,6 +70,11 @@ const Itinerary = () => {
 
   const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>([]);
 
+  const showActivitiesUI =
+    !activitiesLoading &&
+    !activitiesError &&
+    activityOptions.length > 0;
+
   // Reset search UI when leaving screen
   useFocusEffect(
     useCallback(() => {
@@ -150,6 +155,8 @@ const Itinerary = () => {
 
     // Switch to itinerary list mode
     setSelectedCity(city);
+    setSelectedActivities([]); // Clear old selections
+    setSelectedFilters([]); // Clear filters
     getActivities(city);
 
   };
@@ -172,17 +179,6 @@ const Itinerary = () => {
 
   const toggleInArray = (arr: string[], value: string) =>
     arr.includes(value) ? arr.filter((x) => x !== value) : [...arr, value];
-
-  // Reset search UI when leaving screen (matches Favorites behavior)
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setSearchOpen(false);
-        setSearchQuery("");
-        setDropdownOpen(false);
-      };
-    }, [])
-  );
 
   const visibleActivities = useMemo(() => {
     if (selectedFilters.length === 0) return activityOptions; // no filters = show all
@@ -250,7 +246,6 @@ const Itinerary = () => {
     }
 
   };
-
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -351,14 +346,14 @@ const Itinerary = () => {
                   style={styles.searchResultItem}
                   onPress={() => handleSelectCity(city)}
                 >
-                  <Text>
+                  <Text style={styles.searchResultItemText}>
                     {city.name}, {city.country}
                   </Text>
                 </TouchableOpacity>
               ))
             ) : (
               <View style={styles.searchResultItem}>
-                <Text>No Results</Text>
+                <Text style={styles.searchResultNoneText}>No Results</Text>
               </View>
             )}
           </ScrollView>
@@ -388,87 +383,90 @@ const Itinerary = () => {
               </Text>
             </View>
 
-            {/* Category pills */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={itineraryStyles.itineraryPillsRow}
-              contentContainerStyle={itineraryStyles.itineraryPillsContent}
-            >
-              {FILTER_OPTIONS.map((f) => {
-                const selected = selectedFilters.includes(f.value);
+            {showActivitiesUI && (
+              <>
+                {/* Category pills */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={itineraryStyles.itineraryPillsRow}
+                  contentContainerStyle={itineraryStyles.itineraryPillsContent}
+                >
+                  {FILTER_OPTIONS.map((f) => {
+                    const selected = selectedFilters.includes(f.value);
 
-                return (
-                  <TouchableOpacity
-                    key={f.value}
-                    onPress={() =>
-                      setSelectedFilters(
-                        (prev) =>
-                          toggleInArray(prev, f.value) as ActivityCategory[]
-                      )
-                    }
-                    style={[
-                      itineraryStyles.itineraryPill,
-                      selected && itineraryStyles.itineraryPillSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        itineraryStyles.itineraryPillText,
-                        selected && itineraryStyles.itineraryPillTextSelected,
-                      ]}
-                    >
-                      {f.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-
-            <View style={[itineraryStyles.itineraryActivitiesWrap, { flex: 1 }]}>
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{ paddingBottom: 200 }}
-              >
-                {!activitiesLoading && !activitiesError && activityOptions.length > 0 && (
-                  visibleActivities.map((a) => {
-                    const checked = selectedActivities.includes(a.name);
                     return (
                       <TouchableOpacity
-                        key={a.name}
+                        key={f.value}
                         onPress={() =>
-                          setSelectedActivities((prev) => toggleInArray(prev, a.name))
+                          setSelectedFilters(
+                            (prev) =>
+                              toggleInArray(prev, f.value) as ActivityCategory[]
+                          )
                         }
-                        style={itineraryStyles.itineraryActivityRow}
+                        style={[
+                          itineraryStyles.itineraryPill,
+                          selected && itineraryStyles.itineraryPillSelected,
+                        ]}
                       >
-                        <View
+                        <Text
                           style={[
-                            itineraryStyles.itineraryCheckbox,
-                            checked && itineraryStyles.itineraryCheckboxChecked,
+                            itineraryStyles.itineraryPillText,
+                            selected && itineraryStyles.itineraryPillTextSelected,
                           ]}
-                        />
-                        <Text style={itineraryStyles.itineraryActivityText}>
-                          {a.name}
+                        >
+                          {f.label}
                         </Text>
                       </TouchableOpacity>
                     );
-                  })
-                )}
+                  })}
+                </ScrollView>
 
-                {/* Save button */}
-                {selectedCity && selectedActivities.length > 0 && (
-                  <Button
-                    mode="contained"
-                    onPress={saveItinerary}
-                    style={[styles.button, { marginTop: 35 }]}
-                    labelStyle={styles.buttonLabel}
+                <View style={[itineraryStyles.itineraryActivitiesWrap, { flex: 1 }]}>
+                  <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{ paddingBottom: 200 }}
                   >
-                    Save
-                  </Button>
-                )}
-              </ScrollView>
-            </View>
+                    {visibleActivities.map((a) => {
+                      const checked = selectedActivities.includes(a.name);
+                      return (
+                        <TouchableOpacity
+                          key={a.name}
+                          onPress={() =>
+                            setSelectedActivities((prev) =>
+                              toggleInArray(prev, a.name)
+                            )
+                          }
+                          style={itineraryStyles.itineraryActivityRow}
+                        >
+                          <View
+                            style={[
+                              itineraryStyles.itineraryCheckbox,
+                              checked && itineraryStyles.itineraryCheckboxChecked,
+                            ]}
+                          />
+                          <Text style={itineraryStyles.itineraryActivityText}>
+                            {a.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+
+                    {selectedCity && selectedActivities.length > 0 && (
+                      <Button
+                        mode="contained"
+                        onPress={saveItinerary}
+                        style={[styles.button, { marginTop: 35 }]}
+                        labelStyle={styles.buttonLabel}
+                      >
+                        Save
+                      </Button>
+                    )}
+                  </ScrollView>
+                </View>
+              </>
+            )}
           </View>
         </>
       )}

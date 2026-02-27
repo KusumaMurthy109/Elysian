@@ -11,6 +11,7 @@ import {
   View,
   Text,
   Image,
+  ImageBackground,
   FlatList,
   TouchableOpacity,
   Alert,
@@ -277,135 +278,140 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView edges={["top"]}>
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={homeStyles.homeContainer}
-        ListHeaderComponent={
-          <Text style={styles.pageTitle}>
-            Explore{"\n"}Together
-          </Text>
-        }
-        renderItem={({ item }) => {
-          // Get current image index from parent state
-          const currentIndex = postImageIndices[item.id] || 0;
+    <ImageBackground
+          source={require("../../assets/new_background1.png")}
+          style={{ flex: 1 }}
+          resizeMode="cover"
+        >
+      <SafeAreaView edges={["top"]}>
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={homeStyles.homeContainer}
+          ListHeaderComponent={
+            <Text style={styles.pageTitle}>
+              Explore{"\n"}Together
+            </Text>
+          }
+          renderItem={({ item }) => {
+            // Get current image index from parent state
+            const currentIndex = postImageIndices[item.id] || 0;
 
-          return (
-            <View style={homeStyles.postContainer}>
-              {/* Image */}
-              <View style={homeStyles.imageContainer}>
-                <FlatList
-                  data={item.urls}
-                  horizontal={item.urls.length > 1}
-                  pagingEnabled={item.urls.length > 1}
-                  showsHorizontalScrollIndicator={false}
-                  bounces={false}
-                  keyExtractor={(uri, index) => uri + index}
-                  onScroll={item.urls.length > 1 ? event =>
-                    onScrollImage(
-                      item.id,
-                      event.nativeEvent.contentOffset.x,
-                      homeStyles.cityImage.width
-                    ) : undefined
-                  }
-                  scrollEventThrottle={16}
-                  renderItem={({ item: uri }) => (
-                    <Image
-                      source={{ uri }}
-                      style={homeStyles.cityImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                />
+            return (
+              <View style={homeStyles.postContainer}>
+                {/* Image */}
+                <View style={homeStyles.imageContainer}>
+                  <FlatList
+                    data={item.urls}
+                    horizontal={item.urls.length > 1}
+                    pagingEnabled={item.urls.length > 1}
+                    showsHorizontalScrollIndicator={false}
+                    bounces={false}
+                    keyExtractor={(uri, index) => uri + index}
+                    onScroll={item.urls.length > 1 ? event =>
+                      onScrollImage(
+                        item.id,
+                        event.nativeEvent.contentOffset.x,
+                        homeStyles.cityImage.width
+                      ) : undefined
+                    }
+                    scrollEventThrottle={16}
+                    renderItem={({ item: uri }) => (
+                      <Image
+                        source={{ uri }}
+                        style={homeStyles.cityImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                  />
 
-                {/* Progressive Blur on bottom */}
-                <View style={homeStyles.postBlurContainer}>
-                  <MaskedView
-                    maskElement={
-                      <LinearGradient
-                        colors={["transparent", "rgba(255,255,255,0.9)"]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0, y: 1 }}
+                  {/* Progressive Blur on bottom */}
+                  <View style={homeStyles.postBlurContainer}>
+                    <MaskedView
+                      maskElement={
+                        <LinearGradient
+                          colors={["transparent", "rgba(255,255,255,0.9)"]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                          style={{ flex: 1 }}
+                        />
+                      }
+                      style={{ flex: 1 }}
+                    >
+                      <BlurView
+                        intensity={100}
+                        tint="dark"
                         style={{ flex: 1 }}
                       />
-                    }
-                    style={{ flex: 1 }}
-                  >
-                    <BlurView
-                      intensity={100}
-                      tint="dark"
-                      style={{ flex: 1 }}
-                    />
-                  </MaskedView>
+                    </MaskedView>
+                  </View>
+
+                  {/* Scroll indicators (only if multiple images) */}
+                  {item.urls.length > 1 && (
+                    <View style={homeStyles.scrollIndicatorContainer}>
+                      {item.urls.map((_, i) => (
+                        <View
+                          key={i}
+                          style={[
+                            homeStyles.scrollDot,
+                            i === currentIndex && homeStyles.activeScrollDot,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  )}
+
+                  {/* City, Country overlay - hide if not first image */}
+                  {currentIndex === 0 && item.city && (
+                    <View style={homeStyles.cityOverlay}>
+                      <Text style={homeStyles.cityFont}>{item.city.name}</Text>
+                      <View style={homeStyles.pinIcon}>
+                        <MaterialCommunityIcons
+                          name="map-marker-outline"
+                          size={22}
+                          color="white"
+                        />
+                        <Text style={homeStyles.countryFont}>{item.city.country}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Rating */}
+                  {item.ratingValue !== undefined && (
+                    <View style={homeStyles.ratingOverlay}>
+                      <View style={homeStyles.ratingTag}>
+                        <Text style={homeStyles.ratingFont}>
+                          {item.ratingValue.toFixed(1)}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name="star-face"
+                          size={20}
+                          color="#000"
+                        />
+                      </View>
+                    </View>
+                  )}
                 </View>
 
-                {/* Scroll indicators (only if multiple images) */}
-                {item.urls.length > 1 && (
-                  <View style={homeStyles.scrollIndicatorContainer}>
-                    {item.urls.map((_, i) => (
-                      <View
-                        key={i}
-                        style={[
-                          homeStyles.scrollDot,
-                          i === currentIndex && homeStyles.activeScrollDot,
-                        ]}
-                      />
-                    ))}
-                  </View>
-                )}
-
-                {/* City, Country overlay - hide if not first image */}
-                {currentIndex === 0 && item.city && (
-                  <View style={homeStyles.cityOverlay}>
-                    <Text style={homeStyles.cityFont}>{item.city.name}</Text>
-                    <View style={homeStyles.pinIcon}>
-                      <MaterialCommunityIcons
-                        name="map-marker-outline"
-                        size={22}
-                        color="white"
-                      />
-                      <Text style={homeStyles.countryFont}>{item.city.country}</Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* Rating */}
-                {item.ratingValue !== undefined && (
-                  <View style={homeStyles.ratingOverlay}>
-                    <View style={homeStyles.ratingTag}>
-                      <Text style={homeStyles.ratingFont}>
-                        {item.ratingValue.toFixed(1)}
-                      </Text>
-                      <MaterialCommunityIcons
-                        name="star-face"
-                        size={20}
-                        color="#000"
-                      />
-                    </View>
-                  </View>
-                )}
-              </View>
-
-              {/* Uploader, review, date */}
-              <View style={homeStyles.contentContainer}>
-                <View>
-                  <Text style={homeStyles.uploader}>
-                    @{item.uploader}
-                  </Text>
-                  <TouchableOpacity activeOpacity={1} onPress={() => handleReview(item.id)}>
-                    <Text
-                      style={homeStyles.reviewFont}
-                      numberOfLines={expandedReview[item.id] ? undefined : 2}
-                      ellipsizeMode="tail"
-                    >
-                      {item.review}
+                {/* Uploader, review, date */}
+                <View style={homeStyles.contentContainer}>
+                  <View>
+                    <Text style={homeStyles.uploader}>
+                      @{item.uploader}
                     </Text>
-                  </TouchableOpacity>
-                  <Text style={homeStyles.date}>
-                    {new Date(item.timestamp).toLocaleDateString()}
-                  </Text>
-                </View>
+                    <TouchableOpacity activeOpacity={1} onPress={() => handleReview(item.id)}>
+                      <Text
+                        style={homeStyles.reviewFont}
+                        numberOfLines={expandedReview[item.id] ? undefined : 2}
+                        ellipsizeMode="tail"
+                      >
+                        {item.review}
+                      </Text>
+                    </TouchableOpacity>
+                    <Text style={homeStyles.date}>
+                      {new Date(item.timestamp).toLocaleDateString()}
+                    </Text>
+                  </View>
 
                 <View style={homeStyles.postIcons}>
                   <TouchableOpacity onPress={() => likesOnPost(item.id)}>
@@ -419,11 +425,11 @@ const Home = () => {
                     onPress={() => {
                       if (!item.city) return;
 
-                      const postCity = {
-                        id: item.city.id,
-                        name: item.city.name,
-                        country: item.city.country,
-                      };
+                        const postCity = {
+                          id: item.city.id,
+                          name: item.city.name,
+                          country: item.city.country,
+                        };
 
                       if (userFavorites[item.city.id]) {
                         removeCity(postCity);
@@ -435,7 +441,7 @@ const Home = () => {
                     <Ionicons
                       name={item.city && userFavorites[item.city.id] ? "bookmark" : "bookmark-outline"}
                       size={28}
-                      color={item.city && userFavorites[item.city.id] ? "#474540" : "#000"}
+                      color={"#000"}
                     />
                   </TouchableOpacity>
                 </View>
@@ -445,16 +451,17 @@ const Home = () => {
         }}
       />
 
-      {/* Upload button */}
-      <TouchableOpacity
-        style={styles.topRightIcon}
-        onPress={uploadMethod}
-      >
-        <GlassView style={styles.glassButton}>
-          <Ionicons name="add" size={26} color="#000" />
-        </GlassView>
-      </TouchableOpacity>
-    </SafeAreaView>
+        {/* Upload button */}
+        <TouchableOpacity
+          style={styles.topRightIcon}
+          onPress={uploadMethod}
+        >
+          <GlassView style={styles.glassButton}>
+            <Ionicons name="add" size={26} color="#000" />
+          </GlassView>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 

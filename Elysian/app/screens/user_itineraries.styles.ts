@@ -11,13 +11,13 @@ export const itinerarySubTabStyles = StyleSheet.create({
 
     searchModalContainer: {
         position: "absolute",
-        top: "35%",
-        bottom: "35%",
+        top: "30%",
+        bottom: "30%",
         left: "5%",
         right: "5%",
         backgroundColor: "#fff",
         padding: 20,
-        borderRadius: 20,
+        borderRadius: 40,
         zIndex: 1001, // above overlay
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -28,47 +28,19 @@ export const itinerarySubTabStyles = StyleSheet.create({
         flexDirection: "column",
         justifyContent: "space-between",
     },
+
     itineraryLoading: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center"
     },
+
     itineraryEmpty: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center"
     },
-    itineraryGrid: {
-        width: "50%",
-        padding: 10,
-    },
-    itineraryCard: {
-        aspectRatio: 1,
-        height: 140,
-        borderRadius: 12,
-        overflow: "hidden",
-        justifyContent: "flex-end",
-        padding: 10,
-        backgroundColor: "#e0e0e0",
-    },
-    itineraryCityText: {
-        color: "#fff",
-        fontSize: 15,
-        fontWeight: "bold",
-    },
-    itineraryCardTextContainer: {
-        position: "absolute",
-        bottom: 10,
-        left: 16,
-        right: 16,
-    },
-    itineraryCardBlurContainer: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: "70%",
-    },
+
     itineraryActivityText: {
         marginTop: 4,
         fontSize: 14,
@@ -76,21 +48,19 @@ export const itinerarySubTabStyles = StyleSheet.create({
         color: "#333",
         marginBottom: 14,
     },
-    shareIcon: {
-        position: "absolute",
-        top: 5,
-        right: 1,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-        zIndex: 10,
-    },
+
     shareTitle: {
+        fontSize: 25,
+        fontWeight: "700",
+        textAlign: "center",
+    },
+
+    shareCitySubtitle: {
         fontSize: 18,
         fontWeight: "600",
-        marginTop: 12,
-        marginBottom: 12,
+        marginVertical: 12,
         textAlign: "center",
+        color: "#333"
     },
 
     searchInput: {
@@ -99,10 +69,8 @@ export const itinerarySubTabStyles = StyleSheet.create({
         marginRight: 8,
     },
 
-
     searchResultRow: {
-        paddingVertical: 12,
-        paddingHorizontal: 10,
+        padding: 12,
         borderBottomWidth: 1,
         borderBottomColor: "#eee",
         justifyContent: "space-between",
@@ -112,50 +80,90 @@ export const itinerarySubTabStyles = StyleSheet.create({
     searchResultUsername: {
         fontSize: 16,
         fontWeight: "500",
+        color: "#000",
     },
 
-    activityInput: {
-        width: "100%",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        fontSize: 16,
-        backgroundColor: "#fff",
+    addActivityContainer: {
+        flexDirection: "row",
+        alignItems: "center",
         marginTop: 15,
-        marginBottom: 10,
     },
+
+    activityInputBar: {
+        flex: 1,
+        paddingVertical: 10,
+        height: 45,
+        overflow: "hidden",
+        // Glass look
+        borderRadius: 26, // Rounded
+
+        // Glass effect border
+        borderWidth: 1,
+        borderColor: "rgba(174, 170, 170, 0.15)",
+
+        flexDirection: "row",
+        alignItems: "center",
+        zIndex: 10,
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+    },
+
     shareOverlay: {
         position: "absolute",
         alignItems: "center",
-        top: 7,
-        right: 7,
+        top: 8,
+        right: 8,
     },
 
     shareTag: {
+        width: 30,
+        height: 30,
         backgroundColor: "white",
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 20,
+        borderRadius: 15,
         borderColor: "white",
         borderWidth: 1,
-        flexDirection: "row",
-        gap: 2,
+        justifyContent: "center",
+        alignItems: "center"
     },
+
     sharedWithText: {
-        marginTop: 6,
-        fontSize: 14,
+        marginVertical: 6,
+        fontSize: 16,
+        fontWeight: "600",
         color: "#666",
     },
 
     sharedWithNames: {
-        fontWeight: "600",
-        color: "#333",
+        fontSize: 16,
+        fontWeight: "400",
+        color: "#666",
+    },
+
+    sharedInputBar: {
+        marginVertical: 10,
+        paddingVertical: 10,
+        height: 45,
+        overflow: "hidden",
+        // Glass look
+        borderRadius: 26, // Rounded
+
+        // Glass effect border
+        borderWidth: 1,
+        borderColor: "rgba(174, 170, 170, 0.15)",
+
+        flexDirection: "row",
+        alignItems: "center",
+        zIndex: 10,
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
     },
 
     activitiesContainer: {
-        marginTop: 16,
+        marginTop: 10,
     },
 
     activityRow: {
@@ -164,29 +172,38 @@ export const itinerarySubTabStyles = StyleSheet.create({
         marginBottom: 10,
     },
 
+    activityLabelText: {
+        marginVertical: 10,
+        fontSize: 20,
+        fontWeight: "700",
+        color: "#000",
+    },
+
     activityBullet: {
         fontSize: 16,
         lineHeight: 20,
         marginRight: 8,
-        color: "#444",
+        color: "#000",
     },
 
     activityText: {
         flex: 1,
-        fontSize: 14,
+        fontSize: 16,
         lineHeight: 20,
-        color: "#333",
+        color: "#000",
     },
+
+    likeContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        width: 60,
+        justifyContent: "flex-end",
+        gap: 4,
+    },
+
     likeCount: {
-        marginLeft: 6,
-        fontSize: 14,
-        color: "#333",
-        alignSelf: "center",
-    },
-
-
-
-
-
-
+        fontSize: 16,
+        minWidth: 20,
+        textAlign: "center"
+    }
 });

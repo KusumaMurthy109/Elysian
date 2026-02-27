@@ -572,26 +572,33 @@ const Recommendations = () => {
       <Modal
         visible={cityModalOpen}
         transparent
-        animationType="slide"
+        animationType="fade"
         onRequestClose={() => setCityModalOpen(false)}
       >
         {/* Full-screen dim overlay */}
         <Pressable
-          style={styles.cityModalOverlay}
-          onPress={() => {
-            setCityModalOpen(false);
-          }}
+          style={styles.modalDimOverlay}
+          onPress={() => setCityModalOpen(false)}
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
-          <Pressable style={styles.cityModalContainer}>
+          <Pressable style={{maxHeight:"50%", minHeight: "30%",
+            backgroundColor: "#fff",
+            padding: 20,
+            borderRadius: 40,
+            zIndex: 1001, // above overlay
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation: 5,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            overflow: "hidden",
+            width: "90%"
+          }}>
             {selectedCity && (
-              <View style={styles.cityModalInner}>
-                {/* Scrollable content */}
-                <ScrollView contentContainerStyle={styles.cityModalContent}>
-                  <Text style={styles.cityModalTitle}>
-                    {selectedCity.city_name}, {selectedCity.country}
-                  </Text>
-
+              <View style={styles.cityModalContent}>
                   {selectedCity.image && (
                     <Image
                       source={{ uri: selectedCity.image }}
@@ -600,23 +607,27 @@ const Recommendations = () => {
                     />
                   )}
 
+                  <Text style={styles.cityModalTitle}>
+                    {selectedCity.city_name}, {selectedCity.country}
+                  </Text>
+
+                  <Text style={styles.cityModalDescriptionLabel}>
+                    Description:
+                  </Text>
+
+                  <Text style={styles.cityModalTitle}>
+                    {selectedCity.city_name}, {selectedCity.country}
+                  </Text>
+
+                  <Text style={styles.cityModalDescriptionLabel}>
+                    Description:
+                  </Text>
+
                   {/* Visible description */}
                   <Text style={styles.cityModalDescription}>
                     {selectedCity.description || "No description available."}
                   </Text>
-                </ScrollView>
-
-                {/* Close button pinned at bottom */}
-                <Button
-                  mode="contained"
-                  onPress={() => {
-                    setCityModalOpen(false);
-                  }}
-                  style={styles.cityModalCloseBtn}
-                >
-                  Close
-                </Button>
-              </View>
+                </View>
             )}
           </Pressable>
         </Pressable>

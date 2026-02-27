@@ -127,22 +127,21 @@ export const profileStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(174, 170, 170, 0.15)",
   },
+
   closeButtonShared: {
     position: "absolute",
     top: 0,
     right: 0,
-    padding: 6,
     zIndex: 10,
-    borderRadius: 50,
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(174, 170, 170, 0.15)",
   },
+
   sharedInput: {
     backgroundColor: "transparent",
     marginHorizontal: 12,
     marginTop: 30
   },
+
   activityInput: {
     backgroundColor: "transparent",
     marginTop: 10,
@@ -163,5 +162,93 @@ export const profileStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
+  
+  scrollContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 8,
+    paddingTop: 16,
+    justifyContent: "space-between"
+  },
 
+  scrollGrid: {
+    width: "48%",
+    marginBottom: 13,
+  },
+
+  scrollCard: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+
+  scrollCardBlurContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "70%",
+  },
+
+  cardCityText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+
+  cardCityTextContainer: {
+    position: "absolute",
+    bottom: 10,
+    left: 16,
+    right: 16,
+  },
+
+  modalCityImage: {
+    width: "100%",
+    height: 225,
+    borderRadius: 25,
+    marginTop: 18,
+    overflow: "hidden",
+    alignSelf: "center",
+  },
+
+  modalRatingOverlay: {
+    position: "absolute",
+    alignItems: "center",
+    top: 15,
+    left: 15,
+  },
+
+  likeOverlay: {
+    position: "absolute",
+    alignItems: "center",
+    top: 8,
+    right: 8,
+  },
+
+  likeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 20,
+    backgroundColor: "white",
+    borderColor: "white",
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection:"row"
+  },
+
+  likeCountText: {
+    color: "black",
+    fontSize: 15,
+    fontWeight: 500,
+    paddingRight: 2
+  },
+
+  openPostLikeCountText: {
+    color: "black",
+    fontSize: 17,
+  }
+  
 });

@@ -126,7 +126,8 @@ export const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
-    backgroundColor: "#white", // -> Change to transparent for background image to show
+    backgroundColor: "transparent", // -> Change to transparent for background image to show
+    
   },
 
   homeContainer: {
@@ -135,7 +136,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 0, // Remove extra bottom space
-    backgroundColor: "white", // Remove for background image to show
+    // backgroundColor: "white", // Remove for background image to show
   },
 
   sectionTitle: {
@@ -158,7 +159,15 @@ export const styles = StyleSheet.create({
   loader: {
     marginTop: 20,
   },
+  
   // --- CITY INFO MODAL ---
+
+  modalDimOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
   cityModalContainer: {
     position: "absolute",
@@ -168,7 +177,7 @@ export const styles = StyleSheet.create({
     right: "5%",
     backgroundColor: "#fff",
     padding: 20,
-    borderRadius: 20,
+    borderRadius: 40,
     zIndex: 1001, // above overlay
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -178,18 +187,20 @@ export const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
+    overflow: "hidden"
   },
 
   cityModalContent: {
     flexGrow: 0,
-    paddingBottom: 10,
+    borderRadius: 20
   },
 
   cityModalTitle: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: "800",
-    color: "#1B1E28",
+    color: "#000000",
     marginBottom: 10,
+    flexShrink: 1
   },
 
   cityModalImage: {
@@ -200,10 +211,19 @@ export const styles = StyleSheet.create({
   },
 
   cityModalDescription: {
-    fontSize: 14,
+    fontSize: 17,
     lineHeight: 20,
     color: "#333",
     marginBottom: 14,
+  },
+
+  cityModalDescriptionLabel: {
+    fontSize: 23,
+    fontWeight: "600",
+    lineHeight: 20,
+    color: "#333",
+    marginBottom: 14,
+    paddingTop: 14
   },
 
   cityModalCloseBtn: {
@@ -308,13 +328,6 @@ export const styles = StyleSheet.create({
     zIndex: 10,
   },
 
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    marginTop: 60,
-  },
-
   searchBarExpanded: {
     position: "absolute",
     top: 77,
@@ -333,7 +346,7 @@ export const styles = StyleSheet.create({
 
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     zIndex: 10,
     shadowColor: "#000",
     shadowOpacity: 0.15,
@@ -344,7 +357,8 @@ export const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     backgroundColor: "transparent",
-    marginRight: 8,
+    fontSize: 16,
+    fontWeight: "500"
   },
 
   searchDropdown: {
@@ -353,7 +367,7 @@ export const styles = StyleSheet.create({
     left: 30,
     right: 30,
     backgroundColor: "#fff",
-    borderRadius: 20,
+    borderRadius: 25,
     borderWidth: 1,
     borderColor: "rgba(174, 170, 170, 0.15)",
     maxHeight: 220,
@@ -370,6 +384,20 @@ export const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
 
+  searchResultItemText: {
+    color: "#000",
+    fontWeight: "500",
+    fontSize: 16,
+    paddingHorizontal: 8,
+  },
+
+  searchResultNoneText: {
+    color: "#333",
+    fontWeight: "500",
+    fontSize: 16,
+    paddingHorizontal: 8,
+  },
+
   searchBackdrop: {
     position: "absolute",
     top: 0,
@@ -378,6 +406,7 @@ export const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 5,
   },
+
   glassButton: {
     padding: 10,
     borderRadius: 50,
@@ -385,6 +414,11 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(174, 170, 170, 0.15)",
   },
+
+  modalWrapper: {
+    width: "90%",
+    alignItems: "center",
+  }
 });
 
 export const inputTheme = {
@@ -392,7 +426,7 @@ export const inputTheme = {
   colors: {
     primary: "#464B80", // Underline and label when focused
     background: "#F7F7F9", // Input background color
-    text: "#1B1E28", // Input text color
+    text: "#000", // Input text color
     placeholder: "#807f7fff", // Label/placeholder color
     outline: "transparent",
   },

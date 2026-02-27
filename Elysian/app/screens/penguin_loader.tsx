@@ -68,7 +68,7 @@ const PenguinLoader: React.FC<Props> = ({
   ];
 
   return (
-    <View style={penguinLoaderStyles.container}>
+    <View style={penguinLoaderStyles.container} pointerEvents="none">
       <Animated.Image
         source={sprites[spriteIndex]}
         style={{

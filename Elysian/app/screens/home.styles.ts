@@ -99,13 +99,14 @@ export const homeStyles = StyleSheet.create({
 
   uploader: {
     marginTop: 10,
-    fontSize: 15,
+    fontSize: 17,
+    fontWeight: 500,
     color: "black",
   },
 
   reviewFont: {
     top: 10,
-    fontSize: 15,
+    fontSize: 17,
     color: "black",
     marginBottom: 10,
   },
@@ -130,7 +131,7 @@ export const homeStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "50%",
+    height: "70%",
     pointerEvents: "none"
   },
 
