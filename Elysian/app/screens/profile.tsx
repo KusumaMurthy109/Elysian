@@ -4,7 +4,7 @@ Function: This is the user Profile screen component for the app.
 */
 
 import React, { useEffect, useRef, useState } from "react";
-import { View, Image, ScrollView, TouchableOpacity, Modal, Pressable, ImageBackground, Dimensions } from "react-native";
+import { View, Image, ScrollView, TouchableOpacity, Modal, Pressable, ImageBackground, Dimensions, Keyboard } from "react-native";
 import { Text, Button, TextInput, ActivityIndicator } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -564,357 +564,363 @@ const Profile = () => {
 
 
   return (
-    <View style={styles.homeContainer}>
-      {/* Background image */}
-      <View style={profileStyles.topImageContainer}>
-        <Image
-          source={require("../../assets/profile_background_image.png")}
-          style={profileStyles.topImage}
-          resizeMode="cover"
-        />
-        <View style={profileStyles.halfCircleCutout} />
-      </View>
-      <View style={styles.topRightIcon}>
-        <TouchableOpacity onPress={() => handleViewPreferences()}>
-          {/* Menu button */}
-          <GlassView style={styles.glassButton}>
-            <Ionicons name="ellipsis-vertical" size={26} color="#000" />
-          </GlassView>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView>
-        {/* Profile image and edit button */}
-        <View style={profileStyles.profileImageContainer}>
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
+      <View style={styles.homeContainer}>
+        {/* Background image */}
+        <View style={profileStyles.topImageContainer}>
           <Image
-            source={
-              profileImage ? { uri: profileImage } : require("../../assets/profile_temp.jpg")
-            }
-            style={profileStyles.profileImage}
+            source={require("../../assets/profile_background_image.png")}
+            style={profileStyles.topImage}
+            resizeMode="cover"
           />
-          <TouchableOpacity
-            style={profileStyles.editIconContainer}
-            onPress={handleEditProfile}
-          >
-            <MaterialCommunityIcons name="pencil" size={18} color="#fff" />
+          <View style={profileStyles.halfCircleCutout} />
+        </View>
+        <View style={styles.topRightIcon}>
+          <TouchableOpacity onPress={() => handleViewPreferences()}>
+            {/* Menu button */}
+            <GlassView style={styles.glassButton}>
+              <Ionicons name="ellipsis-vertical" size={26} color="#000" />
+            </GlassView>
           </TouchableOpacity>
         </View>
 
-        {/* Name and username */}
-        <View style={profileStyles.nameContainer}>
-          <Text style={profileStyles.name}>{user?.displayName}</Text>
-          <Text style={profileStyles.username}>@{username}</Text>
+        <ScrollView>
+          {/* Profile image and edit button */}
+          <View style={profileStyles.profileImageContainer}>
+            <Image
+              source={
+                profileImage ? { uri: profileImage } : require("../../assets/profile_temp.jpg")
+              }
+              style={profileStyles.profileImage}
+            />
+            <TouchableOpacity
+              style={profileStyles.editIconContainer}
+              onPress={handleEditProfile}
+            >
+              <MaterialCommunityIcons name="pencil" size={18} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Name and username */}
+          <View style={profileStyles.nameContainer}>
+            <Text style={profileStyles.name}>{user?.displayName}</Text>
+            <Text style={profileStyles.username}>@{username}</Text>
+          </View>
+
+          {/* Name and username edit fields */}
+          {isEditing && (
+            <Modal visible={isEditing} transparent animationType="fade" >
+              <View style={profileStyles.editModalOverlay}>
+                <View style={profileStyles.editModalContent}>
+                  <Text style={profileStyles.editModalTitle}>Edit Profile</Text>
+                  {/*}
+                  <TouchableOpacity
+                    style={profileStyles.closeButton}
+                    onPress={() => setIsEditing(false)}
+                  >
+                    <MaterialCommunityIcons name="close" size={24} color="#333" />
+                  </TouchableOpacity>
+                  */}
+
+                  <TextInput
+                    value={editedName}
+                    onChangeText={setEditedName}
+                    style={styles.input}
+                    label="Full Name"
+                    theme={inputTheme}
+                    mode="outlined"
+                  />
+
+                  <TextInput
+                    value={editedUsername}
+                    onChangeText={setEditedUsername}
+                    style={styles.input}
+                    label="Username"
+                    autoCapitalize="none"
+                    theme={inputTheme}
+                    mode="outlined"
+                  />
+
+                  {error ? (
+                    <Text style={profileStyles.editError}>{error}</Text>
+                  ) : null}
+
+                  <Button
+                    mode="outlined"
+                    onPress={handleUploadProfileImage}
+                    style={profileStyles.changePhotoButton}
+                    labelStyle={profileStyles.photoButtonLabel}
+                    icon="camera"
+                  >
+                    Change Profile Photo
+                  </Button>
+
+                  <Button
+                    mode="contained"
+                    onPress={handleSaveProfile}
+                    style={styles.button}
+                    labelStyle={styles.buttonLabel}
+                  >
+                    Save
+                  </Button>
+                </View>
+              </View>
+            </Modal>
+          )}
+
+        </ScrollView>
+        <View style={{ flex: 1, marginTop: -500, }}>
+          <subTab.Navigator
+            screenOptions={{
+              tabBarIndicatorStyle: {
+                backgroundColor: "#000",
+                height: 3,
+                borderRadius: 2,
+                alignContent: "center",
+              },
+              tabBarLabelStyle: { fontSize: 20, fontWeight: "600" },
+              tabBarStyle: { backgroundColor: "transparent" },
+            }}
+          >
+            <subTab.Screen
+              name="Posts"
+              children={() => (
+                <View style={{ flex: 1, backgroundColor: "#fff" }}>
+                  <UserPosts onOpenPost={setOpenPost} />
+                </View>
+              )}
+            />
+
+            <subTab.Screen
+              name="Itineraries"
+              children={() => (
+                <View style={{ flex: 1, backgroundColor: "#fff" }}>
+                  <UserItineraries
+                    onOpenItinerary={setOpenItinerary}
+                    onOpenShareModal={(itin) => {
+                      setSelectedItinerary(itin);
+                      setShareModalOpen(true);
+                    }}
+                  />
+
+                </View>
+              )}
+            />
+
+          </subTab.Navigator>
         </View>
-
-        {/* Name and username edit fields */}
-        {isEditing && (
-          <Modal visible={isEditing} transparent animationType="fade" >
-            <View style={profileStyles.editModalOverlay}>
-              <View style={profileStyles.editModalContent}>
-                <Text style={profileStyles.editModalTitle}>Edit Profile</Text>
-                <TouchableOpacity
-                  style={profileStyles.closeButton}
-                  onPress={() => setIsEditing(false)}
-                >
-                  <MaterialCommunityIcons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-
-                <TextInput
-                  value={editedName}
-                  onChangeText={setEditedName}
-                  style={styles.input}
-                  label="New Name"
-                  theme={inputTheme}
-                  mode="outlined"
+        {openItinerary && (
+          <View style={styles.cityModalContainer}>
+            <ScrollView contentContainerStyle={styles.cityModalContent}>
+              {openItinerary.imageUrl ? (
+                <Image
+                  source={{ uri: openItinerary.imageUrl }}
+                  style={styles.cityModalImage}
+                  resizeMode="cover"
                 />
+              ) : (
+                <View style={[styles.cityModalImage, { backgroundColor: "#e0e0e0" }]} /> // Fallback if image doesn't load.
+              )}
 
-                <TextInput
-                  value={editedUsername}
-                  onChangeText={setEditedUsername}
-                  style={styles.input}
-                  label="New Username"
-                  autoCapitalize="none"
-                  theme={inputTheme}
-                  mode="outlined"
+
+              <Text style={styles.cityModalTitle}>
+                {openItinerary.city}, {openItinerary.country}
+              </Text>
+
+              <Text style={itinerarySubTabStyles.sharedWithText}>
+                Planning Group: <Text style={itinerarySubTabStyles.sharedWithNames}>{sharedWithSentence}</Text>
+              </Text>
+
+              <View style={itinerarySubTabStyles.activitiesContainer}>
+                {openItinerary.activities.map((a, i) => (
+                  <View key={i} style={itinerarySubTabStyles.activityRow}>
+                    <Text style={itinerarySubTabStyles.activityBullet}>•</Text>
+
+                    <Text style={itinerarySubTabStyles.activityText}>
+                      {a.name}
+                    </Text>
+
+                    <TouchableOpacity onPress={() => handleToggleLike(i)}>
+                      <Ionicons
+                        name={
+                          a.likes.includes(currentUser?.uid ?? "")
+                            ? "thumbs-up"
+                            : "thumbs-up-outline"
+                        }
+                        size={20}
+                        color={
+                          a.likes.includes(currentUser?.uid ?? "")
+                            ? "#007AFF"
+                            : "#666"
+                        }
+                      />
+
+                    </TouchableOpacity>
+
+                    <Text style={itinerarySubTabStyles.likeCount}>
+                      {a.likes.length}
+                    </Text>
+                  </View>
+
+                ))}
+              </View>
+
+              <TextInput
+                placeholder="Add an activity..."
+                value={newActivity}
+                onChangeText={setNewActivity}
+                style={profileStyles.activityInput}
+                mode="outlined"
+                underlineColor="transparent"
+                activeUnderlineColor="transparent"
+                caretHidden={false}
+                selectionColor="#000"
+                outlineColor="#000"
+                theme={inputTheme}
+                autoCapitalize="none"
+
+              />
+
+              <Button mode="contained" onPress={addActivityToItinerary} style={styles.cityModalCloseBtn}>
+                Add Activity
+              </Button>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={profileStyles.closeButton}
+              onPress={() => setOpenItinerary(null)}
+            >
+              <MaterialCommunityIcons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+        )}
+        {shareModalOpen && (
+          <View style={itinerarySubTabStyles.searchModalContainer}>
+            <ScrollView contentContainerStyle={styles.cityModalContent}>
+              <TouchableOpacity
+                style={profileStyles.closeButtonShared}
+                onPress={() => setShareModalOpen(false)}
+              >
+                <MaterialCommunityIcons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+              <Text style={itinerarySubTabStyles.shareTitle}>
+                Share {selectedItinerary?.city}, {selectedItinerary?.country}
+              </Text>
+
+              <TextInput
+                placeholder="Search username..."
+                value={searchQuery}
+                onChangeText={handleSearchUsers}
+                style={profileStyles.sharedInput}
+                mode="outlined"
+                underlineColor="transparent"
+                activeUnderlineColor="transparent"
+                caretHidden={false}
+                selectionColor="#000"
+                outlineColor="#000"
+                theme={inputTheme}
+                autoCapitalize="none"
+                left={
+                  <TextInput.Icon
+                    icon="magnify"
+                    color="#000"
+                  />
+                }
+              />
+
+
+
+
+
+              <ScrollView style={{ maxHeight: 250, marginTop: 10 }}>
+                {searchResults.map((user) => (
+                  <TouchableOpacity
+                    key={user.uid}
+                    style={itinerarySubTabStyles.searchResultRow}
+                    onPress={() => handleSelectUser(user)}
+                  >
+                    <Text style={itinerarySubTabStyles.searchResultUsername}>
+                      {user.username}
+                    </Text>
+                    {addedUserId === user.uid &&
+                      (
+                        <Ionicons name="checkmark-circle" size={22} color="green" />
+                      )}
+                  </TouchableOpacity>
+
+                ))}
+
+                {searchQuery && searchResults.length === 0 && (
+                  <Text>No users found.</Text>
+                )}
+              </ScrollView>
+
+
+            </ScrollView>
+          </View>
+        )}
+
+        {openPost && (
+          <Modal visible={true} transparent animationType="slide">
+            <View style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.7)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}>
+              <View style={{
+                width: "90%",
+                maxHeight: "80%",
+                backgroundColor: "#fff",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}>
+                <FlatList
+                  data={openPost.urls}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(uri, index) => uri + index}
+                  renderItem={({ item }) => (
+                    <Image
+                      source={{ uri: item }}
+                      style={{ width: Dimensions.get("window").width * 0.9, height: 300 }}
+                      resizeMode="cover"
+                    />
+                  )}
                 />
-
-                {error ? (
-                  <Text style={profileStyles.editError}>{error}</Text>
-                ) : null}
-
-                <Button
-                  mode="outlined"
-                  onPress={handleUploadProfileImage}
-                  style={{ marginBottom: 10 }}
-                >
-                  Change Profile Picture
-                </Button>
-
-                <Button
-                  mode="contained"
-                  onPress={handleSaveProfile}
-                  style={styles.button}
-                  labelStyle={styles.buttonLabel}
-                >
-                  Save
-                </Button>
+                <FlatList
+                  data={[openPost]}
+                  keyExtractor={item => item.id}
+                  contentContainerStyle={{ padding: 10 }}
+                  renderItem={({ item }) => (
+                    <>
+                      <Text style={styles.cityModalTitle}>
+                        {openPost.city?.name}, {openPost.city?.country}
+                      </Text>
+                      <Text style={{ marginTop: 10 }}>
+                        {openPost.review}
+                      </Text>
+                      <Text style={{ marginTop: 10 }}>
+                        Ratng: {openPost.ratingValue?.toFixed(1)}
+                      </Text>
+                      <Button
+                        mode="contained"
+                        onPress={() => setOpenPost(null)}
+                        style={styles.cityModalCloseBtn}
+                      >
+                        Close
+                      </Button>
+                    </>
+                  )}
+                />
               </View>
             </View>
           </Modal>
         )}
 
-      </ScrollView>
-      <View style={{ flex: 1, marginTop: -500, }}>
-        <subTab.Navigator
-          screenOptions={{
-            tabBarIndicatorStyle: {
-              backgroundColor: "#000",
-              height: 3,
-              borderRadius: 2,
-              alignContent: "center",
-            },
-            tabBarLabelStyle: { fontSize: 20, fontWeight: "600" },
-            tabBarStyle: { backgroundColor: "transparent" },
-          }}
-        >
-          <subTab.Screen
-            name="Posts"
-            children={() => (
-              <View style={{ flex: 1, backgroundColor: "#fff" }}>
-                <UserPosts onOpenPost={setOpenPost} />
-              </View>
-            )}
-          />
-
-          <subTab.Screen
-            name="Itineraries"
-            children={() => (
-              <View style={{ flex: 1, backgroundColor: "#fff" }}>
-                <UserItineraries
-                  onOpenItinerary={setOpenItinerary}
-                  onOpenShareModal={(itin) => {
-                    setSelectedItinerary(itin);
-                    setShareModalOpen(true);
-                  }}
-                />
-
-              </View>
-            )}
-          />
-
-        </subTab.Navigator>
       </View>
-      {openItinerary && (
-        <View style={styles.cityModalContainer}>
-          <ScrollView contentContainerStyle={styles.cityModalContent}>
-            {openItinerary.imageUrl ? (
-              <Image
-                source={{ uri: openItinerary.imageUrl }}
-                style={styles.cityModalImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={[styles.cityModalImage, { backgroundColor: "#e0e0e0" }]} /> // Fallback if image doesn't load.
-            )}
-
-
-            <Text style={styles.cityModalTitle}>
-              {openItinerary.city}, {openItinerary.country}
-            </Text>
-
-            <Text style={itinerarySubTabStyles.sharedWithText}>
-              Planning Group: <Text style={itinerarySubTabStyles.sharedWithNames}>{sharedWithSentence}</Text>
-            </Text>
-
-            <View style={itinerarySubTabStyles.activitiesContainer}>
-              {openItinerary.activities.map((a, i) => (
-                <View key={i} style={itinerarySubTabStyles.activityRow}>
-                  <Text style={itinerarySubTabStyles.activityBullet}>•</Text>
-
-                  <Text style={itinerarySubTabStyles.activityText}>
-                    {a.name}
-                  </Text>
-
-                  <TouchableOpacity onPress={() => handleToggleLike(i)}>
-                    <Ionicons
-                      name={
-                        a.likes.includes(currentUser?.uid ?? "")
-                          ? "thumbs-up"
-                          : "thumbs-up-outline"
-                      }
-                      size={20}
-                      color={
-                        a.likes.includes(currentUser?.uid ?? "")
-                          ? "#007AFF"
-                          : "#666"
-                      }
-                    />
-
-                  </TouchableOpacity>
-
-                  <Text style={itinerarySubTabStyles.likeCount}>
-                    {a.likes.length}
-                  </Text>
-                </View>
-
-              ))}
-            </View>
-
-            <TextInput
-              placeholder="Add an activity..."
-              value={newActivity}
-              onChangeText={setNewActivity}
-              style={profileStyles.activityInput}
-              mode="outlined"
-              underlineColor="transparent"
-              activeUnderlineColor="transparent"
-              caretHidden={false}
-              selectionColor="#000"
-              outlineColor="#000"
-              theme={inputTheme}
-              autoCapitalize="none"
-
-            />
-
-            <Button mode="contained" onPress={addActivityToItinerary} style={styles.cityModalCloseBtn}>
-              Add Activity
-            </Button>
-          </ScrollView>
-
-          <TouchableOpacity
-            style={profileStyles.closeButton}
-            onPress={() => setOpenItinerary(null)}
-          >
-            <MaterialCommunityIcons name="close" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
-      )}
-      {shareModalOpen && (
-        <View style={itinerarySubTabStyles.searchModalContainer}>
-          <ScrollView contentContainerStyle={styles.cityModalContent}>
-            <TouchableOpacity
-              style={profileStyles.closeButtonShared}
-              onPress={() => setShareModalOpen(false)}
-            >
-              <MaterialCommunityIcons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={itinerarySubTabStyles.shareTitle}>
-              Share {selectedItinerary?.city}, {selectedItinerary?.country}
-            </Text>
-
-            <TextInput
-              placeholder="Search username..."
-              value={searchQuery}
-              onChangeText={handleSearchUsers}
-              style={profileStyles.sharedInput}
-              mode="outlined"
-              underlineColor="transparent"
-              activeUnderlineColor="transparent"
-              caretHidden={false}
-              selectionColor="#000"
-              outlineColor="#000"
-              theme={inputTheme}
-              autoCapitalize="none"
-              left={
-                <TextInput.Icon
-                  icon="magnify"
-                  color="#000"
-                />
-              }
-            />
-
-
-
-
-
-            <ScrollView style={{ maxHeight: 250, marginTop: 10 }}>
-              {searchResults.map((user) => (
-                <TouchableOpacity
-                  key={user.uid}
-                  style={itinerarySubTabStyles.searchResultRow}
-                  onPress={() => handleSelectUser(user)}
-                >
-                  <Text style={itinerarySubTabStyles.searchResultUsername}>
-                    {user.username}
-                  </Text>
-                  {addedUserId === user.uid &&
-                    (
-                      <Ionicons name="checkmark-circle" size={22} color="green" />
-                    )}
-                </TouchableOpacity>
-
-              ))}
-
-              {searchQuery && searchResults.length === 0 && (
-                <Text>No users found.</Text>
-              )}
-            </ScrollView>
-
-
-          </ScrollView>
-        </View>
-      )}
-
-      {openPost && (
-        <Modal visible={true} transparent animationType="slide">
-          <View style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.7)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}>
-            <View style={{
-              width: "90%",
-              maxHeight: "80%",
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              overflow: "hidden",
-            }}>
-              <FlatList
-                data={openPost.urls}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(uri, index) => uri + index}
-                renderItem={({ item }) => (
-                  <Image
-                    source={{ uri: item }}
-                    style={{ width: Dimensions.get("window").width * 0.9, height: 300 }}
-                    resizeMode="cover"
-                  />
-                )}
-              />
-              <FlatList
-                data={[openPost]}
-                keyExtractor={item => item.id}
-                contentContainerStyle={{ padding: 10 }}
-                renderItem={({ item }) => (
-                  <>
-                    <Text style={styles.cityModalTitle}>
-                      {openPost.city?.name}, {openPost.city?.country}
-                    </Text>
-                    <Text style={{ marginTop: 10 }}>
-                      {openPost.review}
-                    </Text>
-                    <Text style={{ marginTop: 10 }}>
-                      Ratng: {openPost.ratingValue?.toFixed(1)}
-                    </Text>
-                    <Button
-                      mode="contained"
-                      onPress={() => setOpenPost(null)}
-                      style={styles.cityModalCloseBtn}
-                    >
-                      Close
-                    </Button>
-                  </>
-                )}
-              />
-            </View>
-          </View>
-        </Modal>
-      )}
-
-    </View>
+    </Pressable>
   );
 };
 

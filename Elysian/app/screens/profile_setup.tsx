@@ -4,7 +4,7 @@ Function: This is the Profile Setup screen component for the app. Users answer q
 */
 
 import { useEffect, useState } from "react";
-import { View, TouchableOpacity, ScrollView } from "react-native";
+import { View, TouchableOpacity, ScrollView, Keyboard, Pressable } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -307,107 +307,109 @@ const ProfileSetup = () => {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Display the question. */}
-      <Text style={styles.questionText}>{currentQuestion.question}</Text>
+  return ( // accessible={false} prevents screen readers from treating this as a button
+    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }} accessible={false}>  
+      <View style={styles.container}>
+        {/* Display the question. */}
+        <Text style={styles.questionText}>{currentQuestion.question}</Text>
 
-      {/* If the question is a short answer question, display like this: */}
-      {isAutocomplete ? (
-        <View style={{ width: "100%" }}>
-          <TextInput
-            label="Start typing..."
-            value={typedAnswer}
-            onChangeText={(text) => {
-              setTypedAnswer(text);
-              setDropdownOpen(true);
-            }}
-            mode="outlined"
-            style={styles.input}
-            theme={inputTheme}
-          />
-
-          {dropdownOpen && typedAnswer.length > 0 && (
-            <View
-              style={{
-                backgroundColor: "white",
-                borderWidth: 1,
-                borderColor: "#ccc",
-                marginTop: 4,
-                maxHeight: 100,
-                borderRadius: 6,
-                overflow: "hidden",
+        {/* If the question is a short answer question, display like this: */}
+        {isAutocomplete ? (
+          <View style={{ width: "100%" }}>
+            <TextInput
+              label="Start typing..."
+              value={typedAnswer}
+              onChangeText={(text) => {
+                setTypedAnswer(text);
+                setDropdownOpen(true);
               }}
-            >
-              <ScrollView>
-                {currentQuestion.answer
-                  .filter((country) =>
-                    country.toLowerCase().includes(typedAnswer.toLowerCase()),
-                  )
-                  .map((country, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => {
-                        setTypedAnswer(country);
-                        setDropdownOpen(false);
-                      }}
-                      style={{
-                        padding: 12,
-                        borderBottomWidth: 1,
-                        borderBottomColor: "#eee",
-                      }}
-                    >
-                      <Text>{country}</Text>
-                    </TouchableOpacity>
-                  ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-      ) : (
-        <View style={styles.gridContainer}>
-          {currentQuestion.answer.map((answer, index) => {
-            const selected =
-              chosenAnswers[currentQuestionIndex]?.includes(answer);
+              mode="outlined"
+              style={styles.input}
+              theme={inputTheme}
+            />
 
-            return (
-              <TouchableOpacity
-                key={index}
-                onPress={() => answerSelected(answer)}
-                activeOpacity={0.8}
-                style={[
-                  styles.answerButton,
-                  selected && styles.answerButtonSelected,
-                  selected &&
-                    selected && { backgroundColor: currentSelectedColor },
-                ]}
+            {dropdownOpen && typedAnswer.length > 0 && (
+              <View
+                style={{
+                  backgroundColor: "white",
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  marginTop: 4,
+                  maxHeight: 100,
+                  borderRadius: 6,
+                  overflow: "hidden",
+                }}
               >
-                <Text
+                <ScrollView>
+                  {currentQuestion.answer
+                    .filter((country) =>
+                      country.toLowerCase().includes(typedAnswer.toLowerCase()),
+                    )
+                    .map((country, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => {
+                          setTypedAnswer(country);
+                          setDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: 12,
+                          borderBottomWidth: 1,
+                          borderBottomColor: "#eee",
+                        }}
+                      >
+                        <Text>{country}</Text>
+                      </TouchableOpacity>
+                    ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.gridContainer}>
+            {currentQuestion.answer.map((answer, index) => {
+              const selected =
+                chosenAnswers[currentQuestionIndex]?.includes(answer);
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => answerSelected(answer)}
+                  activeOpacity={0.8}
                   style={[
-                    styles.answerText,
-                    selected && styles.answerTextSelected,
+                    styles.answerButton,
+                    selected && styles.answerButtonSelected,
+                    selected &&
+                      selected && { backgroundColor: currentSelectedColor },
                   ]}
                 >
-                  {answer}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
+                  <Text
+                    style={[
+                      styles.answerText,
+                      selected && styles.answerTextSelected,
+                    ]}
+                  >
+                    {answer}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
-      {/* Next or Finish button */}
-      <Button
-        mode="contained"
-        onPress={nextQuestion}
-        style={styles.button}
-        labelStyle={styles.buttonLabel}
-      >
-        {currentQuestionIndex < questions.length - 1
-          ? "Next"
-          : "Generate Recommendations!"}
-      </Button>
-    </View>
+        {/* Next or Finish button */}
+        <Button
+          mode="contained"
+          onPress={nextQuestion}
+          style={styles.button}
+          labelStyle={styles.buttonLabel}
+        >
+          {currentQuestionIndex < questions.length - 1
+            ? "Next"
+            : "Finish"}
+        </Button>
+      </View>
+    </Pressable>
   );
 };
 

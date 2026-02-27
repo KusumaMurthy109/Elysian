@@ -16,6 +16,7 @@ import {
   Image,
   Pressable,
   TouchableOpacity,
+  Keyboard
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Modal, Button, TextInput } from "react-native-paper";
@@ -452,6 +453,7 @@ const Favorites = () => {
             setSearchOpen(false);
             setSearchQuery("");
             setDropdownOpen(false);
+            Keyboard.dismiss();
           }}
         />
       )}

@@ -149,5 +149,19 @@ export const profileStyles = StyleSheet.create({
     marginBottom: 10,
   },
 
+  changePhotoButton: {
+    width: "100%",
+    alignSelf: "center",
+    borderRadius: 999,
+    backgroundColor: "#464B80",
+    paddingVertical: 5,
+    marginBottom: 10,
+  },
+
+  photoButtonLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
 
 });

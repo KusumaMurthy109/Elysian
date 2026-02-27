@@ -3,7 +3,8 @@ File: sign_up.tsx
 Function: This is the Sign Up screen component for the app that allows users to create an account. Firebase is used to store new user credentials.
 */
 
-import { View, Alert } from "react-native";
+import { View, Alert, Keyboard } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
 import React, { useState, useEffect } from "react";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
@@ -79,86 +80,89 @@ const SignUp = () => {
     navigation.push("Login");
   };
 
-  return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={styles.title}>
-        Create Account Now
-      </Text>
-      <Text variant="bodyLarge" style={styles.subtext}>
-        Fill in the details and create account.
-      </Text>
-
-      <TextInput
-        label="Full Name"
-        value={name}
-        onChangeText={setName}
-        mode="outlined"
-        style={styles.input}
-        theme={inputTheme}
-      />
-
-      <TextInput
-        label="Username"
-        value={username}
-        onChangeText={setUsername}
-        mode="outlined"
-        style={styles.input}
-        autoCapitalize="none"
-        theme={inputTheme}
-      />
-
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        theme={inputTheme}
-      />
-
-      <TextInput
-        label="Create Password"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-        textContentType="newPassword"
-        theme={inputTheme}
-      />
-
-      <TextInput
-        label="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-        textContentType="newPassword"
-        theme={inputTheme}
-      />
-
-      <Button
-        mode="contained"
-        onPress={handleCreateAccount}
-        style={styles.button}
-        labelStyle={styles.buttonLabel}
+    return (
+      <SafeAreaView
+        style={styles.container}
+        onTouchStart={() => {Keyboard.dismiss()}}
       >
-        {loading ? "Creating Account..." : "Sign Up"}
-      </Button>
-
-      <View style={styles.signupContainer}>
-        <Text>
-          Already have an account?{" "}
-          <Text style={styles.signupLink} onPress={goToSignIn}>
-            Sign in
-          </Text>
+        <Text variant="headlineMedium" style={styles.title}>
+          Create Account Now
         </Text>
-      </View>
-    </View>
-  );
-};
+        <Text variant="bodyLarge" style={styles.subtext}>
+          Fill in the details and create account.
+        </Text>
+
+        <TextInput
+          label="Full Name"
+          value={name}
+          onChangeText={setName}
+          mode="outlined"
+          style={styles.input}
+          theme={inputTheme}
+        />
+
+        <TextInput
+          label="Username"
+          value={username}
+          onChangeText={setUsername}
+          mode="outlined"
+          style={styles.input}
+          autoCapitalize="none"
+          theme={inputTheme}
+        />
+
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          theme={inputTheme}
+        />
+
+        <TextInput
+          label="Create Password"
+          value={password}
+          onChangeText={setPassword}
+          mode="outlined"
+          style={styles.input}
+          secureTextEntry
+          textContentType="newPassword"
+          theme={inputTheme}
+        />
+
+        <TextInput
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          mode="outlined"
+          style={styles.input}
+          secureTextEntry
+          textContentType="newPassword"
+          theme={inputTheme}
+        />
+
+        <Button
+          mode="contained"
+          onPress={handleCreateAccount}
+          style={styles.button}
+          labelStyle={styles.buttonLabel}
+        >
+          {loading ? "Creating..." : "Sign Up"}
+        </Button>
+
+        <View style={styles.signupContainer}>
+          <Text>
+            Already have an account?{" "}
+            <Text style={styles.signupLink} onPress={goToSignIn}>
+              Sign in
+            </Text>
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  };
 
 export default SignUp;

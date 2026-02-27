@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, ScrollView, Pressable, TouchableOpacity, Alert, Image } from "react-native";
+import { 
+  View, 
+  ScrollView, 
+  Pressable,
+  TouchableOpacity, 
+  Alert, 
+  Image,
+  Keyboard 
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput, Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
@@ -317,7 +325,10 @@ const Itinerary = () => {
       {searchOpen && (
         <Pressable
           style={styles.searchBackdrop}
-          onPress={closeSearch}
+          onPress={() => {
+            closeSearch();        
+            Keyboard.dismiss();    
+          }}
         />
       )}
 

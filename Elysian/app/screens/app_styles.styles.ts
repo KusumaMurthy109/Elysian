@@ -40,23 +40,23 @@ export const styles = StyleSheet.create({
   },
 
   title: {
-    marginBottom: 24,
+    marginBottom: 10,
     textAlign: "center",
     fontWeight: "bold",
     color: "black",
   },
 
   subtext: {
-    marginBottom: 24,
+    marginBottom: 20,
     textAlign: "center",
     color: "#7D848D",
   },
 
   input: {
     marginBottom: 16,
-    paddingHorizontal: 10,
-    height: 60,
-    fontSize: 18,
+    paddingHorizontal: 16,
+    height: 50,
+    fontSize: 16,
   },
 
   signupContainer: {
@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
   },
 
   signupLink: {
-    color: "#95CD00",
+    color: "#464B80",
     fontWeight: "600",
   },
 
@@ -100,7 +100,7 @@ export const styles = StyleSheet.create({
   },
 
   answerButtonSelected: {
-    backgroundColor: "#008CFF", // Brand blue when selected
+    backgroundColor: "#464B80", // Brand blue when selected
     shadowOpacity: 0.2,
   },
 
@@ -390,7 +390,7 @@ export const styles = StyleSheet.create({
 export const inputTheme = {
   roundness: 50,
   colors: {
-    primary: "#008CFF", // Underline and label when focused
+    primary: "#464B80", // Underline and label when focused
     background: "#F7F7F9", // Input background color
     text: "#1B1E28", // Input text color
     placeholder: "#807f7fff", // Label/placeholder color
@@ -398,4 +398,4 @@ export const inputTheme = {
   },
 };
 
-export const selectedColors = ["#95CD00", "#F49F9A", "#FBD605"];
+export const selectedColors = ["#ABD3F4", "#464B80"];

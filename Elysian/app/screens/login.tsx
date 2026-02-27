@@ -3,7 +3,8 @@ File: login.tsx
 Function: This is the Login screen component for the app that displays the app logo.
 */
 
-import { View, Alert } from "react-native";
+import { View, Alert, Keyboard } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
 import React, { useState, useEffect } from "react";
 import { doc, updateDoc } from "firebase/firestore";
@@ -64,7 +65,10 @@ const Login = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+      onTouchStart={() => Keyboard.dismiss()} 
+    >
       <Text variant="headlineMedium" style={styles.title}>
         Sign In Now
       </Text>
@@ -110,7 +114,7 @@ const Login = () => {
           </Text>
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

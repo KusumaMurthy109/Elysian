@@ -25,6 +25,11 @@ import {
   orderBy,
   onSnapshot,
   increment, 
+  doc, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  deleteField,
 } from "firebase/firestore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -36,8 +41,6 @@ import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { getAuth } from "firebase/auth";
-import { doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { deleteField } from "firebase/firestore";
 
 // This defines what the post object should look like
 type Post = {
@@ -281,7 +284,7 @@ const Home = () => {
         contentContainerStyle={homeStyles.homeContainer}
         ListHeaderComponent={
           <Text style={styles.pageTitle}>
-            Explore{"\n"}with Us
+            Explore{"\n"}Together
           </Text>
         }
         renderItem={({ item }) => {
@@ -409,7 +412,7 @@ const Home = () => {
                     <Ionicons
                       name={userLikes[item.id] ? "heart" : "heart-outline"}
                       size={28}
-                      color={userLikes[item.id] ? "red" : "#000"}
+                      color={userLikes[item.id] ? "#EB7D87" : "#000"}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -432,7 +435,7 @@ const Home = () => {
                     <Ionicons
                       name={item.city && userFavorites[item.city.id] ? "bookmark" : "bookmark-outline"}
                       size={28}
-                      color="#000"
+                      color={item.city && userFavorites[item.city.id] ? "#474540" : "#000"}
                     />
                   </TouchableOpacity>
                 </View>
