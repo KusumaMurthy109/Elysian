@@ -437,7 +437,7 @@ const CreatePost = () => {
                         key={i}
                         name={iconName}
                         size={36}
-                        color="#FFA84F"
+                        color="#ffd700"
                         style={{ marginHorizontal: 2 }}
                     />
                 );
@@ -610,7 +610,7 @@ const CreatePost = () => {
                                 <Entypo name="emoji-happy" size={30} color={feedBack === "LIKE" ? "rgb(69, 217, 69)" : "#000"} />
                             </Pressable>
                             <Pressable disabled={ratingStarted} onPress={() => setFeedback("NEUTRAL")}>
-                                <Entypo name="emoji-neutral" size={30} color={feedBack === "NEUTRAL" ? "#FFA84F" : "#000"} />
+                                <Entypo name="emoji-neutral" size={30} color={feedBack === "NEUTRAL" ? "#ffd700" : "#000"} />
                             </Pressable>
                             <Pressable disabled={ratingStarted} onPress={() => setFeedback("DISLIKE")}>
                                 <Entypo name="emoji-sad" size={30} color={feedBack === "DISLIKE" ? "#EB7D87" : "#000"} />
