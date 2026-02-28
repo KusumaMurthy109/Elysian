@@ -243,7 +243,7 @@ const Profile = () => {
           <View style={profileStyles.profileImageContainer}>
             <Image
               source={
-                profileImage ? { uri: profileImage } : require("../../assets/profile_temp.jpg")
+                profileImage ? { uri: profileImage } : require("../../assets/profile.jpg")
               }
               style={profileStyles.profileImage}
             />

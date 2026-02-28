@@ -84,7 +84,7 @@ const ProfilePreferences = () => {
       <View style={profilePreferencesStyles.profileHeader}>
         <Image
           source={
-            profileImage ? {uri : profileImage } : require("../../assets/profile_temp.jpg")
+            profileImage ? {uri : profileImage } : require("../../assets/profile.jpg")
           }
           style={profilePreferencesStyles.profileImage}
         />
