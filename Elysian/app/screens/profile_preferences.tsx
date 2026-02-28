@@ -70,7 +70,7 @@ const ProfilePreferences = () => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.solidSafeArea}>
       {/* Top-left back icon */}
       <View style={styles.topLeftIcon}>
         <Pressable onPress={() => navigation.goBack()}>

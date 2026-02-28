@@ -4,7 +4,7 @@ Function: This is the Profile Landing screen component for the app before displa
 */
 
 import { useEffect, useRef } from "react";
-import { Animated } from "react-native";
+import { Animated, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Text } from "react-native-paper";
@@ -47,13 +47,19 @@ const ProfileLanding = () => {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Text variant="headlineMedium" style={styles.title}>
-        Let's get to know you better!
+      <Text variant="displaySmall" style={styles.header2}>
+        Let's Get to Know You Better
       </Text>
 
-      <Text variant="bodyLarge" style={styles.title}>
-        Answers these questions so we can curate the best places for you!
+      <Text variant="titleLarge" style={styles.subtext2}>
+        Answer these questions to get your curated travel!
       </Text>
+
+      <Image
+          source={require("../../assets/penguin.png")}
+          style={styles.bottomImage}
+          resizeMode="contain"
+        />
     </Animated.View>
   );
 };

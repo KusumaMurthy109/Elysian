@@ -3,7 +3,7 @@ File: sign_up.tsx
 Function: This is the Sign Up screen component for the app that allows users to create an account. Firebase is used to store new user credentials.
 */
 
-import { View, Alert, Keyboard } from "react-native";
+import { View, Alert, Keyboard, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
 import React, { useState, useEffect } from "react";
@@ -85,11 +85,11 @@ const SignUp = () => {
         style={styles.container}
         onTouchStart={() => {Keyboard.dismiss()}}
       >
-        <Text variant="headlineMedium" style={styles.title}>
-          Create Account Now
+        <Text variant="displaySmall" style={styles.header1}>
+          Create Account
         </Text>
-        <Text variant="bodyLarge" style={styles.subtext}>
-          Fill in the details and create account.
+        <Text variant="titleMedium" style={styles.subtext1}>
+          Fill in the details and sign up.
         </Text>
 
         <TextInput
@@ -154,12 +154,15 @@ const SignUp = () => {
         </Button>
 
         <View style={styles.signupContainer}>
-          <Text>
-            Already have an account?{" "}
-            <Text style={styles.signupLink} onPress={goToSignIn}>
-              Sign in
-            </Text>
-          </Text>
+          <Text variant="labelLarge"> Already have an account? </Text>
+          <Pressable
+            onPress={goToSignIn}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Text style={styles.signupLink}>Sign In</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );

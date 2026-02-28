@@ -91,7 +91,12 @@ const UserPosts = ({ userId }: UserPostsProps) => {
     if (posts.length === 0) {
       return (
         <View style={itinerarySubTabStyles.itineraryEmpty}>
-          <Text>No posts found.</Text>
+          <Image
+            source={require("../../assets/penguin.png")}
+            style={profileStyles.emptyPageImage}
+            resizeMode="contain"
+          />
+          <Text variant="bodyLarge" style={itinerarySubTabStyles.emptyText}>No Posts Yet</Text>
         </View>
       );
     }
@@ -260,7 +265,7 @@ const UserPosts = ({ userId }: UserPostsProps) => {
                                 <MaterialCommunityIcons
                                     name="map-marker-outline"
                                     size={22}
-                                    color="white"
+                                    color="#f7f7f7"
                                 />
                                 <Text style={homeStyles.countryFont}>
                                     {openPost.city.country}

@@ -15,7 +15,7 @@ export const itinerarySubTabStyles = StyleSheet.create({
         bottom: "30%",
         left: "5%",
         right: "5%",
-        backgroundColor: "#fff",
+        backgroundColor: "#FFFDFC",
         padding: 20,
         borderRadius: 40,
         zIndex: 1001, // above overlay
@@ -37,8 +37,16 @@ export const itinerarySubTabStyles = StyleSheet.create({
 
     itineraryEmpty: {
         flex: 1,
+        marginTop: -160,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+    },
+
+    emptyText: {
+        paddingTop: 10,
+        fontSize: 20, 
+        fontWeight: "600",
+        color: "#63a4e1"
     },
 
     itineraryActivityText: {
@@ -60,7 +68,7 @@ export const itinerarySubTabStyles = StyleSheet.create({
         fontWeight: "600",
         marginVertical: 12,
         textAlign: "center",
-        color: "#333"
+        color: "#807f7fff"
     },
 
     searchInput: {
@@ -132,13 +140,13 @@ export const itinerarySubTabStyles = StyleSheet.create({
         marginVertical: 6,
         fontSize: 16,
         fontWeight: "600",
-        color: "#666",
+        color: "#807f7fff",
     },
 
     sharedWithNames: {
         fontSize: 16,
         fontWeight: "400",
-        color: "#666",
+        color: "#807f7fff",
     },
 
     sharedInputBar: {
@@ -174,7 +182,7 @@ export const itinerarySubTabStyles = StyleSheet.create({
 
     activityLabelText: {
         marginVertical: 10,
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: "700",
         color: "#000",
     },

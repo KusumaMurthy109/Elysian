@@ -289,7 +289,7 @@ const Home = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={homeStyles.homeContainer}
           ListHeaderComponent={
-            <Text style={styles.pageTitle}>
+            <Text style={homeStyles.title}>
               Explore{"\n"}Together
             </Text>
           }
@@ -369,7 +369,7 @@ const Home = () => {
                         <MaterialCommunityIcons
                           name="map-marker-outline"
                           size={22}
-                          color="white"
+                          color="#fff"
                         />
                         <Text style={homeStyles.countryFont}>{item.city.country}</Text>
                       </View>

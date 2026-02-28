@@ -354,32 +354,6 @@ const Favorites = () => {
                 }
               }
 
-              // --- DESCRIPTION (Wikivoyage only, travel blurb) ---
-              //let description = city.description;
-
-              // if old descriptions exist, they block the new pipeline
-              // const looksOld =
-              //   typeof description === "string" &&
-              //   (description.length > 260 || // usually too long
-              //     description.includes("population") ||
-              //     description.includes("Founded in") ||
-              //     description.includes("capital of"));
-
-              // // fetch if missing OR looks old
-              // if (!description || looksOld) {
-              //   const fresh = await fetchCityDescription(
-              //     city.city_name,
-              //     city.country_name
-              //   );
-              // const description = city.description;
-              //   if (fresh) {
-              //     description = fresh;
-              //     await updateDoc(favoritesRef, {
-              //       [`${key}.description`]: fresh,
-              //     });
-              //   }
-              // }
-
               const description = city.description;
 
               return {
@@ -446,6 +420,7 @@ const Favorites = () => {
             <GlassView style={styles.searchBarExpanded}>
               <TextInput
                 placeholder="Search cities..."
+                placeholderTextColor="#807f7fff"
                 value={searchQuery}
                 onChangeText={(text) => {
                   setSearchQuery(text);
@@ -525,7 +500,7 @@ const Favorites = () => {
             {error && !loading && <PenguinLoader text={error} />}
             
             <ScrollView contentContainerStyle={styles.homeContainer}>
-              <Text variant="headlineLarge" style={styles.pageTitle}>
+              <Text variant="headlineLarge" style={favoritesStyles.title}>
                 Favorites
               </Text>
               {!loading && favorites.length > 0 && (

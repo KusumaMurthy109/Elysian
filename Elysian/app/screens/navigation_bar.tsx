@@ -111,13 +111,28 @@ export default function NavigationBar() {
     // Create the navigation bar
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused }) => (
-          <Icon
-            name={icons[route.name]}
-            size={30}
-            color={focused ? "#FFFFFF" : "#807f7fff"}
-          />
-        ),
+        tabBarIcon: ({ focused }) => {
+        let iconName: string;
+
+        switch (route.name) {
+          case "Home":
+            iconName = focused ? "home" : "home-outline";
+            break;
+          case "Recommendations":
+            iconName = focused ? "airplane" : "airplane-outline";
+            break;
+          case "Favorites":
+            iconName = focused ? "bookmark" : "bookmark-outline";
+            break;
+          case "Profile":
+            iconName = focused ? "person-circle" : "person-circle-outline";
+            break;
+          default:
+            iconName = "help-circle-outline";
+        }
+
+        return <Icon name={iconName} size={30} color={focused ? "#FFFFFF" : "#807f7fff"} />;
+      },
 
         headerShown: false,
         tabBarShowLabel: false,

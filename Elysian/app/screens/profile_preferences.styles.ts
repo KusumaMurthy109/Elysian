@@ -35,6 +35,7 @@ export const profilePreferencesStyles = StyleSheet.create({
 
   content: {
     flex: 1,
+    marginTop: 10,
     paddingHorizontal: 40,
   },
 
@@ -50,17 +51,18 @@ export const profilePreferencesStyles = StyleSheet.create({
   },
 
   answerPill: {
-    backgroundColor: "#fff",
-    paddingVertical: 12,
+    backgroundColor: "#f7f7f7",
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: "rgba(174, 170, 170, 0.15)",
+    borderColor: "transparent",
     elevation: 2,
   },
 
   answerText: {
     fontSize: 14,
-    color: "#474747",
+    fontWeight: 500,
+    color: "#000",
   },
 });

@@ -11,6 +11,15 @@ const IMG_WIDTH = SCREEN_WIDTH - 75;
 
 export const homeStyles = StyleSheet.create({
 
+  title: {
+    textAlign: "left",
+    fontWeight: "800",
+    fontSize: 45,
+    color: "#000",
+    marginBottom: 20,
+    marginTop: -30,
+  },
+
   homeContainer: {
     paddingTop: 40,
     paddingHorizontal: 20,
@@ -53,13 +62,13 @@ export const homeStyles = StyleSheet.create({
   cityFont: {
     fontSize: 40,
     fontWeight: "600",
-    color: "white",
+    color: "#fff",
   },
 
   countryFont: {
     fontSize: 20,
     fontWeight: "600",
-    color: "white",
+    color: "#fff",
   },
 
   pinIcon: {
@@ -74,11 +83,11 @@ export const homeStyles = StyleSheet.create({
   },
 
   ratingTag: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 20,
-    borderColor: "white",
+    borderColor: "#fff",
     borderWidth: 1,
     flexDirection: "row",
     gap: 2,
@@ -100,7 +109,7 @@ export const homeStyles = StyleSheet.create({
   uploader: {
     marginTop: 10,
     fontSize: 17,
-    fontWeight: 500,
+    fontWeight: 600,
     color: "black",
   },
 
@@ -159,7 +168,7 @@ export const homeStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
   },
 
 }); 

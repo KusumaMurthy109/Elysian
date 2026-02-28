@@ -30,7 +30,7 @@ export const itineraryStyles = StyleSheet.create({
     itineraryCountryName: {
         fontSize: 20,
         fontWeight: "600",
-        color: "#555",
+        color: "#807f7fff",
         textAlign: "center"
     },
 
@@ -50,9 +50,11 @@ export const itineraryStyles = StyleSheet.create({
 
     itineraryDescription: {
         fontSize: 20,
+        fontWeight: 500,
         textAlign: "center",
         paddingHorizontal: 20,
-        marginTop: 35
+        marginTop: 35,
+        color: "#63a4e1"
     },
 
     itineraryPillsRow: {
@@ -68,8 +70,8 @@ export const itineraryStyles = StyleSheet.create({
     itineraryPill: {
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderRadius: 20,
-        backgroundColor: "white",
+        borderRadius: 30,
+        backgroundColor: "#63a4e1",
         marginRight: 10,
     },
 
@@ -79,7 +81,7 @@ export const itineraryStyles = StyleSheet.create({
 
     itineraryPillText: {
         fontSize: 16,
-        color: "#000",
+        color: "white",
         fontWeight: "500",
     },
 

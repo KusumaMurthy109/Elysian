@@ -32,7 +32,7 @@ export const profileStyles = StyleSheet.create({
     height: 400,
     borderTopLeftRadius: 400,
     borderTopRightRadius: 400,
-    backgroundColor: "white",
+    backgroundColor: "#FFFDFC",
   },
 
   profileImageContainer: {
@@ -46,7 +46,7 @@ export const profileStyles = StyleSheet.create({
     width: 100,
     borderRadius: 70,
     borderWidth: 3,
-    borderColor: "#fff",
+    borderColor: "#f7f7f7",
   },
 
   editIconContainer: {
@@ -67,15 +67,15 @@ export const profileStyles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 30,
-    fontWeight: 600,
+    fontWeight: 700,
     marginBottom: 5,
-    color: "white",
+    color: "#f7f7f7",
   },
 
   username: {
-    fontSize: 18,
-    color: "white",
+    fontSize: 20,
+    fontWeight: 600,
+    color: "#f7f7f7",
     marginBottom: 10,
   },
 
@@ -101,19 +101,40 @@ export const profileStyles = StyleSheet.create({
   },
 
   editModalContent: {
-    width: "90%",
-    height: "45%",
-    padding: 40,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    justifyContent: "center",
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+
+  editModalContainer: {
+    position: "absolute",
+        top: "29%",
+        bottom: "29%",
+        left: "5%",
+        right: "5%",
+        backgroundColor: "#FFFDFC",
+        padding: 20,
+        borderRadius: 40,
+        zIndex: 1001, // above overlay
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
   },
 
   editModalTitle: {
     fontSize: 25,
-    fontWeight: "800",
-    color: "#1B1E28",
+    fontWeight: "700",
+    color: "#000",
     marginBottom: 25,
+    textAlign: "center"
   },
 
   closeButton: {
@@ -129,6 +150,14 @@ export const profileStyles = StyleSheet.create({
   },
 
   closeButtonShared: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    zIndex: 10,
+    overflow: "hidden",
+  },
+
+  editProfileCloseButtonShared: {
     position: "absolute",
     top: 0,
     right: 0,
@@ -152,7 +181,8 @@ export const profileStyles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
     borderRadius: 999,
-    backgroundColor: "#464B80",
+    backgroundColor: "#63a4e1",
+    borderColor: "#63a4e1",
     paddingVertical: 5,
     marginBottom: 10,
   },
@@ -231,8 +261,8 @@ export const profileStyles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 20,
-    backgroundColor: "white",
-    borderColor: "white",
+    backgroundColor: "#f7f7f7",
+    borderColor: "#f7f7f7",
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -249,6 +279,13 @@ export const profileStyles = StyleSheet.create({
   openPostLikeCountText: {
     color: "black",
     fontSize: 17,
-  }
+  },
+
+  emptyPageImage: {
+    width: 150,
+    height: 150,
+    marginTop: 30,
+    alignSelf: "center"
+  },
   
 });

@@ -1,61 +1,73 @@
-/* 
-File: landing.tsx
-Function: This is the Sign Up screen component for the app that allows users to create an account. Firebase is used to store new user credentials.
-*/
-
 import { useEffect, useRef } from "react";
-import { ImageBackground, Animated } from "react-native";
+import { View, ImageBackground, Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Text } from "react-native-paper";
 import { styles } from "./app_styles.styles";
 
-
-// Define the navigation parameter list
 export type RootParamList = {
   Login: undefined;
   Home: undefined;
   Landing: undefined;
 };
 
-// Define the type for Home screen navigation prop
 type LandingScreenProp = NativeStackNavigationProp<RootParamList, "Landing">;
 
-// Landing component
 const Landing = () => {
-  // Initialize navigation with type safety
   const navigation = useNavigation<LandingScreenProp>();
 
-  const fadeAnim = useRef(new Animated.Value(1)).current; // Start fully visible
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
   useEffect(() => {
-    // Set a timer to start fade out after 3 seconds
     const timer = setTimeout(() => {
-      Animated.timing(scaleAnim, {
-      toValue: 1.2,
-      duration: 1500,
-      useNativeDriver: true,
-    }).start(() => {
-      navigation.replace("Login");
-    });
-    }, 3000); // Delay duration before starting fade out animation
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        navigation.replace("Login");
+      });
+    }, 1500);
 
-    return () => clearTimeout(timer); // Cleanup timer on component unmount
-  }, []);
+    return () => clearTimeout(timer);
+  }, [fadeAnim, scaleAnim, navigation]);
 
   return (
-    <AnimatedImageBackground
-      source={require("../../assets/landing_page_background.png")}
-      style={[styles.landingContainer, { opacity: fadeAnim }]}
-      resizeMode="cover"
-    >
-      <Text variant="displayMedium" style={styles.landingTitle}>
+    <View style={styles.landingContainer}>
+      {/* Animated background image */}
+      <AnimatedImageBackground
+        source={require("../../assets/landing_page_background.png")}
+        style={[
+          styles.landingBackground,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+        resizeMode="cover"
+      />
+      
+      {/* Text fades with the background */}
+      <Animated.Text
+        style={[
+          styles.landingTitle,
+          {
+            opacity: fadeAnim, // Apply same fade
+          },
+        ]}
+      >
         Elysian
-      </Text>
-    </AnimatedImageBackground>
+      </Animated.Text>
+    </View>
   );
 };
 

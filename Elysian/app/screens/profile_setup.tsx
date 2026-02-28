@@ -3,7 +3,7 @@ File: profile_setup.tsx
 Function: This is the Profile Setup screen component for the app. Users answer questions to curate their travel profile.
 */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View, TouchableOpacity, ScrollView, Keyboard, Pressable } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
@@ -12,6 +12,7 @@ import { inputTheme, styles, selectedColors } from "./app_styles.styles";
 import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import { getAuth } from "firebase/auth";
+import { createPostStyles } from "./create_post.styles";
 
 // Define the type for Home screen navigation prop
 export type RootParamList = {
@@ -95,7 +96,7 @@ const ProfileSetup = () => {
       ],
     },
     {
-      question: "What type of vacation are you looking for?",
+      question: "What type(s) of vacation are you looking for?",
       answer: [
         "Beach",
         "City",
@@ -106,15 +107,15 @@ const ProfileSetup = () => {
       ],
     },
     {
-      question: "What seasons do you like?",
+      question: "What season(s) do you like?",
       answer: ["Spring", "Summer", "Fall", "Winter"],
     },
     {
-      question: "What is your budget?",
+      question: "What is your budget(s)?",
       answer: ["Budget Friendly", "Mid-Range", "Luxury", "Premium"],
     },
     {
-      question: "What has been your favorite country you've visted?",
+      question: "Of countries visited, which has been your favorite?", 
       answer: [
         "Argentina",
         "Australia",
@@ -175,7 +176,7 @@ const ProfileSetup = () => {
       ],
     },
     {
-      question: "What type of place do you like?",
+      question: "What type of place(s) do you like?",
       answer: ["Quiet", "Moderate", "Busy"],
     },
   ];
@@ -308,16 +309,23 @@ const ProfileSetup = () => {
   };
 
   return ( // accessible={false} prevents screen readers from treating this as a button
-    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }} accessible={false}>  
+    <Pressable 
+      onPress={()=> {
+        Keyboard.dismiss(); 
+        setDropdownOpen(false);
+      }}
+      style={{ flex: 1 }} accessible={false}>  
       <View style={styles.container}>
         {/* Display the question. */}
-        <Text style={styles.questionText}>{currentQuestion.question}</Text>
+        <Text variant="headlineLarge" style={styles.questionText}>{currentQuestion.question}</Text>
 
         {/* If the question is a short answer question, display like this: */}
         {isAutocomplete ? (
-          <View style={{ width: "100%" }}>
+
+          <View style={{ width: "100%", position: "relative" }}>
+            
             <TextInput
-              label="Start typing..."
+              label="Country"
               value={typedAnswer}
               onChangeText={(text) => {
                 setTypedAnswer(text);
@@ -329,38 +337,36 @@ const ProfileSetup = () => {
             />
 
             {dropdownOpen && typedAnswer.length > 0 && (
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  marginTop: 4,
-                  maxHeight: 100,
-                  borderRadius: 6,
-                  overflow: "hidden",
-                }}
-              >
-                <ScrollView>
-                  {currentQuestion.answer
-                    .filter((country) =>
-                      country.toLowerCase().includes(typedAnswer.toLowerCase()),
-                    )
-                    .map((country, index) => (
+              <View style={styles.profileSetupDropdown}>
+                <ScrollView keyboardShouldPersistTaps="handled">
+                  {(() => {
+                    const filtered = currentQuestion.answer.filter((country) =>
+                      country.toLowerCase().includes(typedAnswer.toLowerCase())
+                    );
+
+                    if (filtered.length === 0) {
+                      return (
+                        <View style={createPostStyles.dropdownItem}>
+                          <Text variant="bodyLarge" style={{ color: "#999" }}>
+                            No Results
+                          </Text>
+                        </View>
+                      );
+                    }
+
+                    return filtered.map((country, index) => (
                       <TouchableOpacity
                         key={index}
                         onPress={() => {
                           setTypedAnswer(country);
                           setDropdownOpen(false);
                         }}
-                        style={{
-                          padding: 12,
-                          borderBottomWidth: 1,
-                          borderBottomColor: "#eee",
-                        }}
+                        style={createPostStyles.dropdownItem}
                       >
-                        <Text>{country}</Text>
+                        <Text variant="bodyLarge">{country}</Text>
                       </TouchableOpacity>
-                    ))}
+                    ));
+                  })()}
                 </ScrollView>
               </View>
             )}
@@ -378,15 +384,15 @@ const ProfileSetup = () => {
                   activeOpacity={0.8}
                   style={[
                     styles.answerButton,
-                    selected && styles.answerButtonSelected,
-                    selected &&
-                      selected && { backgroundColor: currentSelectedColor },
+                    selected && { backgroundColor: currentSelectedColor },
                   ]}
                 >
                   <Text
+                    variant="bodyLarge"
                     style={[
                       styles.answerText,
-                      selected && styles.answerTextSelected,
+                      { color: currentSelectedColor },
+                      selected && styles.answerTextSelected
                     ]}
                   >
                     {answer}

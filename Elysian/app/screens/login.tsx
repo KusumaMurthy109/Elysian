@@ -3,14 +3,14 @@ File: login.tsx
 Function: This is the Login screen component for the app that displays the app logo.
 */
 
-import { View, Alert, Keyboard } from "react-native";
+import { View, Alert, Keyboard, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { styles, inputTheme } from "./app_styles.styles";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
@@ -69,10 +69,10 @@ const Login = () => {
       style={styles.container}
       onTouchStart={() => Keyboard.dismiss()} 
     >
-      <Text variant="headlineMedium" style={styles.title}>
-        Sign In Now
+      <Text variant="displaySmall" style={styles.header1}>
+        Welcome Back{"\n"}Sign In
       </Text>
-      <Text variant="bodyLarge" style={styles.subtext}>
+      <Text variant="titleMedium" style={styles.subtext1}>
         Please sign in to start your adventure!
       </Text>
 
@@ -107,12 +107,15 @@ const Login = () => {
       </Button>
 
       <View style={styles.signupContainer}>
-        <Text>
-          Don't have an account?{" "}
-          <Text style={styles.signupLink} onPress={signUp}>
-            Sign up
-          </Text>
-        </Text>
+        <Text variant="labelLarge">Don't have an account? </Text>
+        <Pressable
+          onPress={signUp}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.6 : 1,
+          })}
+        >
+          <Text style={styles.signupLink}>Sign Up</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

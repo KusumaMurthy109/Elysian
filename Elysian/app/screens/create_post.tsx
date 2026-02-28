@@ -437,7 +437,7 @@ const CreatePost = () => {
                         key={i}
                         name={iconName}
                         size={36}
-                        color="#FFD700"
+                        color="#FFA84F"
                         style={{ marginHorizontal: 2 }}
                     />
                 );
@@ -464,7 +464,7 @@ const CreatePost = () => {
 
 
     return (
-        <SafeAreaView style={styles.safeArea} 
+        <SafeAreaView style={styles.solidSafeArea} 
             onTouchStart={() => {
                 if (!dropdownOpen) {
                     Keyboard.dismiss();
@@ -511,6 +511,7 @@ const CreatePost = () => {
                 </ScrollView>
                 )}
 
+                <View style={{ width: "100%", position: "relative" }}>
                 {/* City search */}
                 <TextInput
                     placeholder="Location"
@@ -534,8 +535,6 @@ const CreatePost = () => {
                     underlineColor="transparent"
                     activeUnderlineColor="transparent"
                     caretHidden={false}
-                    selectionColor="#000"
-                    outlineColor="#000"
                     theme={inputTheme}
                     left={
                         <TextInput.Icon
@@ -565,7 +564,7 @@ const CreatePost = () => {
                                 setDropdownOpen(false);
                             }}
                             >
-                            <Text>
+                            <Text variant="bodyLarge">
                                 {city.name}, {city.country}
                             </Text>
                             </Pressable>
@@ -573,6 +572,7 @@ const CreatePost = () => {
                     </ScrollView>
                     </View>
                 )}
+                </View>
 
                 <TextInput
                     placeholder="Write your review..."
@@ -585,9 +585,8 @@ const CreatePost = () => {
                     underlineColor="transparent"
                     activeUnderlineColor="transparent"
                     caretHidden={false}
-                    selectionColor="#000"
-                    outlineColor="#000"
                     theme={{...inputTheme, roundness: 20}}
+                    maxLength={150}
                 />
 
                 {selectedCity &&(
@@ -598,13 +597,13 @@ const CreatePost = () => {
 
                         <View style={createPostStyles.iconsLayout}>
                             <Pressable disabled={ratingStarted} onPress={() => setFeedback("LIKE")}>
-                                <Entypo name="emoji-happy" size={30} color={feedBack === "LIKE" ? "#0f0" : "#000"} />
+                                <Entypo name="emoji-happy" size={30} color={feedBack === "LIKE" ? "rgb(69, 217, 69)" : "#000"} />
                             </Pressable>
                             <Pressable disabled={ratingStarted} onPress={() => setFeedback("NEUTRAL")}>
-                                <Entypo name="emoji-neutral" size={30} color={feedBack === "NEUTRAL" ? "#ffa500" : "#000"} />
+                                <Entypo name="emoji-neutral" size={30} color={feedBack === "NEUTRAL" ? "#FFA84F" : "#000"} />
                             </Pressable>
                             <Pressable disabled={ratingStarted} onPress={() => setFeedback("DISLIKE")}>
-                                <Entypo name="emoji-sad" size={30} color={feedBack === "DISLIKE" ? "#f00" : "#000"} />
+                                <Entypo name="emoji-sad" size={30} color={feedBack === "DISLIKE" ? "#EB7D87" : "#000"} />
                             </Pressable>
                         </View>
                     </View>

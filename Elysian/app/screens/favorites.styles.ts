@@ -9,6 +9,16 @@ import { StyleSheet } from "react-native";
 
 export const favoritesStyles = StyleSheet.create({
 
+  title: {
+    textAlign: "left",
+    fontWeight: "800",
+    fontSize: 45,
+    lineHeight: 45,
+    color: "#000",
+    marginBottom: 20,
+    marginTop: -20,
+  },
+
   itineraryIcon: {
     position: "absolute",
     top: 75,
@@ -57,8 +67,8 @@ export const favoritesStyles = StyleSheet.create({
  
   cityCardText: {
     color: "#fff",
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: 24,
+    fontWeight: "700",
   },
 
   removeIconBtn: {

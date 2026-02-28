@@ -248,7 +248,7 @@ const Itinerary = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={styles.solidSafeArea} edges={["top"]}>
       {/* Overlay title: Create Itinerary */}
       {!searchOpen && !isItineraryListMode && (
         <View style={itineraryStyles.container} pointerEvents="none">
@@ -296,6 +296,7 @@ const Itinerary = () => {
           <GlassView style={styles.searchBarExpanded}>
             <TextInput
               placeholder="Search favorited cities..."
+              placeholderTextColor="#807f7fff"
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);

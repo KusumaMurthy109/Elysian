@@ -243,7 +243,33 @@ const UserItineraries = () => {
     const sharedUsernameList = 
         sharedUsernames.length > 0
             ? sharedUsernames.map(username => `@${username}`).join(", ")
-            : "no one yet";
+            : "None";
+    
+    if (loading) {
+        return (
+            <View style={itinerarySubTabStyles.itineraryEmpty}>
+                <Image
+                    source={require("../../assets/penguin.png")}
+                    style={profileStyles.emptyPageImage}
+                    resizeMode="contain"
+                />
+                <Text style={itinerarySubTabStyles.emptyText}>Loading...</Text>
+            </View>
+        );
+    }
+
+    if (itineraries.length === 0) {
+        return (
+            <View style={itinerarySubTabStyles.itineraryEmpty}>
+                <Image
+                    source={require("../../assets/penguin.png")}
+                    style={profileStyles.emptyPageImage}
+                    resizeMode="contain"
+                />
+                <Text style={itinerarySubTabStyles.emptyText}>No Itineraries Created</Text>
+            </View>
+        );
+    }
 
     return (
         <>
@@ -390,8 +416,8 @@ const UserItineraries = () => {
                                                 size={20}
                                                 color={
                                                 a.likes.includes(currentUser?.uid ?? "")
-                                                    ? "#007AFF"
-                                                    : "#666"
+                                                    ? "#33375D"
+                                                    : "#807f7fff"
                                                 }
                                             />
                                             </TouchableOpacity>
@@ -409,16 +435,16 @@ const UserItineraries = () => {
                                         {/* Glass pill input */}
                                         <GlassView style={itinerarySubTabStyles.activityInputBar}>
                                             <TextInput
-                                            placeholder="Add an activity..."
-                                            placeholderTextColor="#666"
-                                            value={newActivity}
-                                            onChangeText={setNewActivity}
-                                            style={styles.searchInput}
-                                            mode="flat"
-                                            underlineColor="transparent"
-                                            activeUnderlineColor="transparent"
-                                            caretHidden={false}
-                                            selectionColor="#000"
+                                                placeholder="Add an activity..."
+                                                placeholderTextColor="#666"
+                                                value={newActivity}
+                                                onChangeText={setNewActivity}
+                                                style={styles.searchInput}
+                                                mode="flat"
+                                                underlineColor="transparent"
+                                                activeUnderlineColor="transparent"
+                                                caretHidden={false}
+                                                selectionColor="#000"
                                             />
                                         </GlassView>
 
@@ -466,7 +492,7 @@ const UserItineraries = () => {
                                 onPress={() => setShareModalOpen(false)}
                             >
                                 <GlassView style={styles.glassButton}>
-                                <Ionicons name="close" size={26} color="#333" />
+                                <Ionicons name="close" size={26} color="#000" />
                                  </GlassView>
                             </TouchableOpacity>
                     

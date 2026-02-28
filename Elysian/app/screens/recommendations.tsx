@@ -9,7 +9,6 @@ users double tap a city to open more details in a modal.
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
-  ScrollView,
   Image,
   Pressable,
   Modal,
@@ -467,7 +466,7 @@ const Recommendations = () => {
   ).current;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.solidSafeArea}>
       {/* Loading */}
       {loading && <PenguinLoader text="Finding your perfect destination..." />}
 
@@ -582,7 +581,7 @@ const Recommendations = () => {
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
           <Pressable style={{maxHeight:"50%", minHeight: "30%",
-            backgroundColor: "#fff",
+            backgroundColor: "#FFFDFC",
             padding: 20,
             borderRadius: 40,
             zIndex: 1001, // above overlay
@@ -606,14 +605,6 @@ const Recommendations = () => {
                       resizeMode="cover"
                     />
                   )}
-
-                  <Text style={styles.cityModalTitle}>
-                    {selectedCity.city_name}, {selectedCity.country}
-                  </Text>
-
-                  <Text style={styles.cityModalDescriptionLabel}>
-                    Description:
-                  </Text>
 
                   <Text style={styles.cityModalTitle}>
                     {selectedCity.city_name}, {selectedCity.country}

@@ -10,11 +10,62 @@ export const styles = StyleSheet.create({
 
   landingTitle: {
     justifyContent: "flex-start",
-    paddingTop: 50,
     fontSize: 70,
     textAlign: "center",
     fontWeight: "bold",
     color: "black",
+  },
+
+  landingBackground: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  },
+
+  header1: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "black",
+  },
+
+  header2: {
+    marginHorizontal: 15,
+    marginBottom: 15,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "black",
+  },
+
+  subtext1: {
+    marginBottom: 30,
+    textAlign: "center",
+    color: "#63a4e1",
+  },
+  
+  subtext2: {
+    marginHorizontal: 15,
+    marginTop: 15,
+    textAlign: "center",
+    fontWeight: 600,
+    color: "#63a4e1",
+  },
+
+  body1: {
+
+  },
+
+  body2: {
+
+  },
+
+  bottomImage: {
+    width: 200,
+    height: 200,
+    marginTop: 30,
+    alignSelf: "center"
   },
 
   container: {
@@ -22,7 +73,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     paddingHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
   },
 
   button: {
@@ -31,6 +82,7 @@ export const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#000",
     paddingVertical: 5,
+    marginVertical: 10
   },
 
   buttonLabel: {
@@ -39,29 +91,17 @@ export const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  title: {
-    marginBottom: 10,
-    textAlign: "center",
-    fontWeight: "bold",
-    color: "black",
-  },
-
-  subtext: {
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#7D848D",
-  },
-
   input: {
     marginBottom: 16,
     paddingHorizontal: 16,
-    height: 50,
     fontSize: 16,
   },
 
   signupContainer: {
-    marginTop: 30,
+    marginTop: 16,
     alignItems: "center",
+    flexDirection: "row",        
+    justifyContent: "center", 
   },
 
   signupLink: {
@@ -78,19 +118,21 @@ export const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    rowGap: 10, // Minimal vertical spacing
-    columnGap: 10, // Consistent spacing between columns (if RN 0.71+)
+    justifyContent: "center", // centers items horizontally
+    alignItems: "center", 
+    rowGap: 15, // Minimal vertical spacing
+    columnGap: 15, // Consistent spacing between columns (if RN 0.71+)
+    marginBottom: 16
   },
 
   answerButton: {
-    flexBasis: "48%", // Two buttons per row
-    height: 120,
-    backgroundColor: "#F7F7F9", // Same light gray as input background
+    flexBasis: "40%", // Two buttons per row
+    height: 80,
+    backgroundColor: "#f7f7f7", // Same light gray as input background
     borderColor: "#E5E5E5",
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 20,
     paddingVertical: 14,
-    marginBottom: 12,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000", // Subtle shadow for iOS
@@ -100,33 +142,36 @@ export const styles = StyleSheet.create({
   },
 
   answerButtonSelected: {
-    backgroundColor: "#464B80", // Brand blue when selected
     shadowOpacity: 0.2,
   },
 
   answerText: {
-    color: "#1B1E28",
-    fontSize: 16,
-    fontWeight: "500",
+    fontWeight: 600,
     textAlign: "center",
   },
 
   answerTextSelected: {
     color: "#FFFFFF", // White text on blue button
-    fontWeight: "700",
+    fontWeight: 600,
   },
 
   questionText: {
-    fontSize: 25,
+    textAlign: "center",
     fontWeight: "bold",
-    color: "#1B1E28",
+    color: "#000",
     marginBottom: 24,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
 
   safeArea: {
     flex: 1,
-    backgroundColor: "transparent", // -> Change to transparent for background image to show
+    backgroundColor: "transparent", // Transparent for background image to show
+    
+  },
+
+  solidSafeArea: {
+    flex: 1,
+    backgroundColor: "#FFFDFC",
     
   },
 
@@ -136,7 +181,15 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 0, // Remove extra bottom space
-    // backgroundColor: "white", // Remove for background image to show
+  },
+
+  solidBackgroundContainer: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 0, // Remove extra bottom space
+    backgroundColor: "#FFFDFC"
   },
 
   sectionTitle: {
@@ -145,17 +198,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#1B1E28",
   },
-
-  pageTitle: {
-    textAlign: "left",
-    fontWeight: "800",
-    fontSize: 45,
-    lineHeight: 45,
-    color: "#000",
-    marginBottom: 20,
-    marginTop: -20,
-  },
-
+  
   loader: {
     marginTop: 20,
   },
@@ -166,7 +209,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
 
   cityModalContainer: {
@@ -175,7 +218,7 @@ export const styles = StyleSheet.create({
     bottom: "20%",
     left: "5%",
     right: "5%",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFDFC",
     padding: 20,
     borderRadius: 40,
     zIndex: 1001, // above overlay
@@ -197,7 +240,7 @@ export const styles = StyleSheet.create({
 
   cityModalTitle: {
     fontSize: 30,
-    fontWeight: "800",
+    fontWeight: "700",
     color: "#000000",
     marginBottom: 10,
     flexShrink: 1
@@ -211,19 +254,19 @@ export const styles = StyleSheet.create({
   },
 
   cityModalDescription: {
-    fontSize: 17,
+    fontSize: 16,
     lineHeight: 20,
     color: "#333",
     marginBottom: 14,
   },
 
   cityModalDescriptionLabel: {
-    fontSize: 23,
+    fontSize: 22,
     fontWeight: "600",
     lineHeight: 20,
-    color: "#333",
-    marginBottom: 14,
-    paddingTop: 14
+    color: "#63a4e1",
+    marginBottom: 10,
+    paddingTop: 5
   },
 
   cityModalCloseBtn: {
@@ -392,7 +435,7 @@ export const styles = StyleSheet.create({
   },
 
   searchResultNoneText: {
-    color: "#333",
+    color: "#999",
     fontWeight: "500",
     fontSize: 16,
     paddingHorizontal: 8,
@@ -418,18 +461,27 @@ export const styles = StyleSheet.create({
   modalWrapper: {
     width: "90%",
     alignItems: "center",
+  },
+
+  profileSetupDropdown: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+    maxHeight: 145,
+    borderRadius: 20,
+    overflow: "hidden",
   }
 });
 
 export const inputTheme = {
   roundness: 50,
   colors: {
-    primary: "#464B80", // Underline and label when focused
-    background: "#F7F7F9", // Input background color
+    primary: "#33375D", // Underline and label when focused
+    background: "#f7f7f7", // Input background color
     text: "#000", // Input text color
     placeholder: "#807f7fff", // Label/placeholder color
     outline: "transparent",
   },
 };
 
-export const selectedColors = ["#ABD3F4", "#464B80"];
+export const selectedColors = ["#63a4e1", "#33375D"];

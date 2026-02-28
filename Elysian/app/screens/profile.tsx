@@ -5,8 +5,8 @@ Function: This is the user Profile screen component for the app.
 
 import React, { useEffect, useState } from "react";
 import { View, Image, ScrollView, TouchableOpacity, Modal, Alert, Pressable, Keyboard } from "react-native";
-import { Text, Button, TextInput, ActivityIndicator } from "react-native-paper";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { Text, Button, TextInput } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { onAuthStateChanged, User, updateProfile, getAuth } from "firebase/auth";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
@@ -219,7 +219,7 @@ const Profile = () => {
 
   return (
     <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
-      <View style={styles.homeContainer}>
+      <View style={styles.solidBackgroundContainer}>
         {/* Background image */}
         <View style={profileStyles.topImageContainer}>
           <Image
@@ -257,16 +257,36 @@ const Profile = () => {
 
           {/* Name and username */}
           <View style={profileStyles.nameContainer}>
-            <Text style={profileStyles.name}>{user?.displayName}</Text>
-            <Text style={profileStyles.username}>@{username}</Text>
+            <Text variant="headlineLarge" style={profileStyles.name}>{user?.displayName}</Text>
+            <Text variant="headlineSmall" style={profileStyles.username}>@{username}</Text>
           </View>
 
           {/* Name and username edit fields */}
           {isEditing && (
-            <Modal visible={isEditing} transparent animationType="fade" >
-              <View style={profileStyles.editModalOverlay}>
-                <View style={profileStyles.editModalContent}>
+            <Modal visible={isEditing} transparent animationType="fade">
+              <View style={styles.modalDimOverlay}>
+                {/* Full-screen Pressable overlay that closes modal */}
+                <Pressable
+                  style={{ 
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%"
+                  }}
+                  onPress={() => setIsEditing(false)}
+                />
+              <View style={profileStyles.editModalContainer}>
+                <View style={{ flex: 1, width: "100%" }}>
+                  <TouchableOpacity
+                    style={profileStyles.editProfileCloseButtonShared}
+                    onPress={() => setIsEditing(false)}
+                  >
+                    <GlassView style={styles.glassButton}>
+                      <Ionicons name="close" size={26} color="#000" />
+                    </GlassView>
+                  </TouchableOpacity>
+
                   <Text style={profileStyles.editModalTitle}>Edit Profile</Text>
+
                   <TextInput
                     value={editedName}
                     onChangeText={setEditedName}
@@ -295,7 +315,9 @@ const Profile = () => {
                     onPress={handleUploadProfileImage}
                     style={profileStyles.changePhotoButton}
                     labelStyle={profileStyles.photoButtonLabel}
-                    icon="camera"
+                    icon={({ size, color }) => (
+                      <MaterialCommunityIcons name="camera" size={24} color={color} />
+                    )}
                   >
                     Change Profile Photo
                   </Button>
@@ -308,13 +330,14 @@ const Profile = () => {
                   >
                     Save
                   </Button>
-                </View>
+                 </View>
               </View>
-            </Modal>
-          )}
+            </View>
+          </Modal>
+        )}
 
       </ScrollView>
-      <View style={{ flex: 1, marginTop: -480, }}>
+      <View style={{ flex: 1, marginTop: -500, }}>
         <subTab.Navigator
           screenOptions={{
             tabBarIndicatorStyle: {
@@ -323,14 +346,14 @@ const Profile = () => {
               borderRadius: 2,
               alignContent: "center",
             },
-            tabBarLabelStyle: { fontSize: 20, fontWeight: "600" },
+            tabBarLabelStyle: { fontSize: 22, fontWeight: "600" },
             tabBarStyle: { backgroundColor: "transparent" },
           }}
         >
           <subTab.Screen
             name="Posts"
             children={() => (
-              <View style={{ flex: 1, backgroundColor: "#fff" }}>
+              <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
                 <UserPosts
                   userId={currentUser?.uid ?? ""}
                 />
@@ -341,7 +364,7 @@ const Profile = () => {
           <subTab.Screen
             name="Itineraries"
             children={() => (
-              <View style={{ flex: 1, backgroundColor: "#fff" }}>
+              <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
                 <UserItineraries/>
               </View>
             )}

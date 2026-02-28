@@ -6,23 +6,23 @@ export const createPostStyles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 40,
         paddingBottom: 40,
-        backgroundColor: "white",
+        backgroundColor: "FFFDFC",
         position: "relative"
     },
 
     title: {
         textAlign: "center",
         fontWeight: "700",
-        fontSize: 30,
+        fontSize: 35,
         color: "#000",
-        marginBottom: 10,
+        marginBottom: 20,
         marginTop: -20,
     },
 
     feedbackQuestionHeader: {
         textAlign: "left",
         color: "#000",
-        fontWeight: 700,
+        fontWeight: 600,
         fontSize: 18,
         marginRight: 12
     },
@@ -30,7 +30,7 @@ export const createPostStyles = StyleSheet.create({
     comparisonQuestionHeader: {
         color: "#000",
         fontSize: 18,
-        fontWeight: 700,
+        fontWeight: 600,
         marginHorizontal: 10
     },
 
@@ -48,24 +48,19 @@ export const createPostStyles = StyleSheet.create({
     },
 
     input: {
-        backgroundColor: "transparent",
         marginHorizontal: 12,
-        marginTop: 30
+        marginTop: 30,
+        marginBottom: 10
     },
 
     dropdown: {
-        maxHeight: 110,
+        maxHeight: 145,
         backgroundColor: "#fff",
         borderRadius: 20,
         borderWidth: 1,
         borderColor: "rgba(174, 170, 170, 0.15)",
         overflow: "hidden",
-        top: 310,
         marginHorizontal: 12,
-        position: "absolute",
-        zIndex: 1000,
-        left: 20,
-        right: 20
     },
 
     dropdownItem: {
@@ -78,13 +73,13 @@ export const createPostStyles = StyleSheet.create({
     },
 
     reviewInput: {
-        marginTop: 16,
+        marginTop: 10,
         marginHorizontal: 12,
         minHeight: 105,
         maxHeight: 105,
         textAlignVertical: "top",
-        backgroundColor: "transparent",
-        marginBottom: 16
+        marginBottom: 16,
+        color:"black"
     },
 
     feedbackLayout: { 
@@ -160,8 +155,8 @@ export const createPostStyles = StyleSheet.create({
     },
 
     ratingResultNumber: {
-        fontSize: 18,
-        fontWeight: 700,
+        fontSize: 16,
+        fontWeight: 600,
         color: "#000",
         marginBottom: 30, // space between number and stars
         textAlign: "left", // keep the rating number left-aligned
