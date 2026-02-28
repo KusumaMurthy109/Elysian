@@ -41,8 +41,9 @@ export const styles = StyleSheet.create({
 
   subtext1: {
     marginBottom: 30,
+    fontSize: 18,
     textAlign: "center",
-    color: "#63a4e1",
+    color: "#3c6d9b",
   },
   
   subtext2: {
@@ -50,15 +51,7 @@ export const styles = StyleSheet.create({
     marginTop: 15,
     textAlign: "center",
     fontWeight: 600,
-    color: "#63a4e1",
-  },
-
-  body1: {
-
-  },
-
-  body2: {
-
+    color: "#3c6d9b",
   },
 
   bottomImage: {
@@ -73,7 +66,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     paddingHorizontal: 20,
-    backgroundColor: "#fff",
+    
   },
 
   button: {
@@ -267,12 +260,6 @@ export const styles = StyleSheet.create({
     color: "#63a4e1",
     marginBottom: 10,
     paddingTop: 5
-  },
-
-  cityModalCloseBtn: {
-    borderRadius: 999,
-    backgroundColor: "#008CFF",
-    marginTop: 10,
   },
 
   cityModalOverlay: {
@@ -484,4 +471,4 @@ export const inputTheme = {
   },
 };
 
-export const selectedColors = ["#63a4e1", "#33375D"];
+export const selectedColors = ["#3c6d9b", "#33375D"];

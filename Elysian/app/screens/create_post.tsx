@@ -547,29 +547,39 @@ const CreatePost = () => {
 
                 {dropdownOpen && searchQuery.length > 0 && (
                     <View style={createPostStyles.dropdown}>
-                    <ScrollView keyboardShouldPersistTaps="handled">
-                        {cities
-                        .filter((city) =>
-                            `${city.name}, ${city.country}`
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase())
-                        )
-                        .map((city) => (
-                            <Pressable
-                            key={city.id}
-                            style={createPostStyles.dropdownItem}
-                            onPress={() => {
-                                setSelectedCity(city);
-                                setSearchQuery(`${city.name}, ${city.country}`);
-                                setDropdownOpen(false);
-                            }}
-                            >
-                            <Text variant="bodyLarge">
-                                {city.name}, {city.country}
-                            </Text>
-                            </Pressable>
-                        ))}
-                    </ScrollView>
+                        <ScrollView keyboardShouldPersistTaps="handled">
+                            {(() => {
+                                const filtered = cities.filter((city) =>
+                                `${city.name}, ${city.country}`
+                                    .toLowerCase()
+                                    .includes(searchQuery.toLowerCase())
+                                );
+
+                                if (filtered.length === 0) {
+                                return (
+                                    <View style={createPostStyles.dropdownItem}>
+                                        <Text style={styles.searchResultNoneText}>No Results</Text>
+                                    </View>
+                                );
+                                }
+
+                                return filtered.map((city) => (
+                                <Pressable
+                                    key={city.id}
+                                    style={createPostStyles.dropdownItem}
+                                    onPress={() => {
+                                    setSelectedCity(city);
+                                    setSearchQuery(`${city.name}, ${city.country}`);
+                                    setDropdownOpen(false);
+                                    }}
+                                >
+                                    <Text variant="bodyLarge">
+                                    {city.name}, {city.country}
+                                    </Text>
+                                </Pressable>
+                                ));
+                            })()}
+                            </ScrollView>
                     </View>
                 )}
                 </View>

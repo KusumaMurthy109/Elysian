@@ -32,7 +32,7 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 35,
     marginBottom: 18,
     position: "relative",
-    paddingBottom: 5,
+    paddingBottom: 5
   },
 
   imageContainer: {

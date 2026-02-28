@@ -19,7 +19,7 @@ export const profilePreferencesStyles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 3,
+    borderWidth: 4,
     borderColor: "#fff",
   },
 

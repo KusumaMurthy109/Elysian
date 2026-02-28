@@ -4,7 +4,7 @@ Function: Profile preferences page, displays questionnaire responses and logout.
 */
 
 import React, { useState, useEffect } from "react";
-import { View, Pressable, Image } from "react-native";
+import { View, Pressable, Image, ImageBackground } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -70,7 +70,12 @@ const ProfilePreferences = () => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.solidSafeArea}>
+    <ImageBackground
+                  source={require("../../assets/profile_preference_page_background.jpeg")}
+                  style={{ flex: 1 }}
+                  resizeMode="cover"
+                >
+    <SafeAreaView style={styles.safeArea}>
       {/* Top-left back icon */}
       <View style={styles.topLeftIcon}>
         <Pressable onPress={() => navigation.goBack()}>
@@ -84,7 +89,7 @@ const ProfilePreferences = () => {
       <View style={profilePreferencesStyles.profileHeader}>
         <Image
           source={
-            profileImage ? {uri : profileImage } : require("../../assets/profile.jpg")
+            profileImage ? {uri : profileImage } : require("../../assets/profile_pic.png")
           }
           style={profilePreferencesStyles.profileImage}
         />
@@ -119,6 +124,7 @@ const ProfilePreferences = () => {
         </Button>
       </View>
     </SafeAreaView>
+    </ImageBackground>
   );
 };
 

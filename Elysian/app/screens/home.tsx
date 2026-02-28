@@ -279,7 +279,7 @@ const Home = () => {
 
   return (
     <ImageBackground
-          source={require("../../assets/new_background1.png")}
+          source={require("../../assets/home_page_background.png")}
           style={{ flex: 1 }}
           resizeMode="cover"
         >

@@ -4,7 +4,7 @@ Function: This is the Profile Setup screen component for the app. Users answer q
 */
 
 import { useState } from "react";
-import { View, TouchableOpacity, ScrollView, Keyboard, Pressable } from "react-native";
+import { View, TouchableOpacity, ScrollView, Keyboard, Pressable, ImageBackground } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -309,6 +309,11 @@ const ProfileSetup = () => {
   };
 
   return ( // accessible={false} prevents screen readers from treating this as a button
+    <ImageBackground
+                  source={require("../../assets/login_page_background.png")}
+                  style={{ flex: 1 }}
+                  resizeMode="cover"
+                >
     <Pressable 
       onPress={()=> {
         Keyboard.dismiss(); 
@@ -347,9 +352,7 @@ const ProfileSetup = () => {
                     if (filtered.length === 0) {
                       return (
                         <View style={createPostStyles.dropdownItem}>
-                          <Text variant="bodyLarge" style={{ color: "#999" }}>
-                            No Results
-                          </Text>
+                          <Text style={styles.searchResultNoneText}>No Results</Text>
                         </View>
                       );
                     }
@@ -416,6 +419,7 @@ const ProfileSetup = () => {
         </Button>
       </View>
     </Pressable>
+    </ImageBackground>
   );
 };
 

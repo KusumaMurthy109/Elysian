@@ -45,7 +45,7 @@ export const profileStyles = StyleSheet.create({
     height: 100,
     width: 100,
     borderRadius: 70,
-    borderWidth: 3,
+    borderWidth: 4,
     borderColor: "#f7f7f7",
   },
 
