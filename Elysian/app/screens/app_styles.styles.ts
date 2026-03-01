@@ -51,7 +51,7 @@ export const styles = StyleSheet.create({
     marginTop: 15,
     textAlign: "center",
     fontWeight: 600,
-    color: "#3c6d9b",
+    color: "#63a4e1",
   },
 
   bottomImage: {
@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
 
   button: {
@@ -467,4 +467,4 @@ export const inputTheme = {
   },
 };
 
-export const selectedColors = ["#3c6d9b", "#33375D"];
+export const selectedColors = ["#63a4e1", "#33375D"];
