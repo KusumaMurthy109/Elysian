@@ -1,17 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { 
-  View, 
-  ScrollView, 
+import {
+  View,
+  ScrollView,
   Pressable,
-  TouchableOpacity, 
-  Alert, 
+  TouchableOpacity,
+  Alert,
   Image,
-  Keyboard 
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput, Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 import { itineraryStyles } from "./itinerary.styles";
 import { styles } from "./app_styles.styles";
@@ -68,12 +73,12 @@ const Itinerary = () => {
   const [selectedCity, setSelectedCity] = useState<FavCity | null>(null);
   const isItineraryListMode = !!selectedCity;
 
-  const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>(
+    [],
+  );
 
   const showActivitiesUI =
-    !activitiesLoading &&
-    !activitiesError &&
-    activityOptions.length > 0;
+    !activitiesLoading && !activitiesError && activityOptions.length > 0;
 
   // Reset search UI when leaving screen
   useFocusEffect(
@@ -83,7 +88,7 @@ const Itinerary = () => {
         setSearchQuery("");
         setDropdownOpen(false);
       };
-    }, [])
+    }, []),
   );
 
   // Load favorited cities (userFavorites) in realtime
@@ -136,7 +141,7 @@ const Itinerary = () => {
         setError("Failed to load favorite cities.");
         setFavoritesCities([]);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -146,7 +151,7 @@ const Itinerary = () => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
     return favoritesCities.filter((c) =>
-      `${c.name}, ${c.country}`.toLowerCase().includes(q)
+      `${c.name}, ${c.country}`.toLowerCase().includes(q),
     );
   }, [favoritesCities, searchQuery]);
 
@@ -158,15 +163,14 @@ const Itinerary = () => {
     setSelectedActivities([]); // Clear old selections
     setSelectedFilters([]); // Clear filters
     getActivities(city);
-
   };
 
   const closeSearch = () => {
     setSearchOpen(false);
     setSearchQuery("");
     setDropdownOpen(false);
-    setSelectedCity(previousCity);  // Restore previous page
-  }
+    setSelectedCity(previousCity); // Restore previous page
+  };
 
   const handleBack = () => {
     // In itinerary list mode, go back to city-search within this page
@@ -182,24 +186,27 @@ const Itinerary = () => {
 
   const visibleActivities = useMemo(() => {
     if (selectedFilters.length === 0) return activityOptions; // no filters = show all
-    return activityOptions.filter(a => selectedFilters.includes(a.category as ActivityCategory));
+    return activityOptions.filter((a) =>
+      selectedFilters.includes(a.category as ActivityCategory),
+    );
   }, [activityOptions, selectedFilters]);
-
-
 
   const getActivities = async (city: FavCity) => {
     setActivitiesLoading(true);
     setActivitiesError(null);
 
     try {
-      const res = await fetch(`https://capstone-team-generated-group30-project.onrender.com/api/activities`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          city: city.name,
-          country: city.country,
-        }),
-      });
+      const res = await fetch(
+        `https://capstone-team-generated-group30-project.onrender.com/api/activities`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            city: city.name,
+            country: city.country,
+          }),
+        },
+      );
 
       if (!res.ok) throw new Error("Failed to fetch activities.");
       const json = await res.json();
@@ -238,13 +245,11 @@ const Itinerary = () => {
         sharedWith: [], // Empty until shared with someone.
       });
 
-
-      console.log("Itinerary saved successfully!");
+      // console.log("Itinerary saved successfully!");
       navigation.goBack();
     } catch (err) {
       console.error("Error saving itinerary:", err);
     }
-
   };
 
   return (
@@ -252,9 +257,13 @@ const Itinerary = () => {
       {/* Overlay title: Create Itinerary */}
       {!searchOpen && !isItineraryListMode && (
         <View style={itineraryStyles.container} pointerEvents="none">
-          <Text style={itineraryStyles.itineraryTitle}>Create{"\n"}Itinerary</Text>
+          <Text style={itineraryStyles.itineraryTitle}>
+            Create{"\n"}Itinerary
+          </Text>
           <Text style={itineraryStyles.itineraryDescription}>
-            Search your favorite cities, discover activities, and build your perfect itinerary. Save it to your profile to share and co-plan trips with friends!
+            Search your favorite cities, discover activities, and build your
+            perfect itinerary. Save it to your profile to share and co-plan
+            trips with friends!
           </Text>
           <Image
             source={require("../../assets/penguin.png")}
@@ -322,8 +331,8 @@ const Itinerary = () => {
         <Pressable
           style={styles.searchBackdrop}
           onPress={() => {
-            closeSearch();        
-            Keyboard.dismiss();    
+            closeSearch();
+            Keyboard.dismiss();
           }}
         />
       )}
@@ -402,7 +411,10 @@ const Itinerary = () => {
                         onPress={() =>
                           setSelectedFilters(
                             (prev) =>
-                              toggleInArray(prev, f.value) as ActivityCategory[]
+                              toggleInArray(
+                                prev,
+                                f.value,
+                              ) as ActivityCategory[],
                           )
                         }
                         style={[
@@ -413,7 +425,8 @@ const Itinerary = () => {
                         <Text
                           style={[
                             itineraryStyles.itineraryPillText,
-                            selected && itineraryStyles.itineraryPillTextSelected,
+                            selected &&
+                              itineraryStyles.itineraryPillTextSelected,
                           ]}
                         >
                           {f.label}
@@ -423,7 +436,9 @@ const Itinerary = () => {
                   })}
                 </ScrollView>
 
-                <View style={[itineraryStyles.itineraryActivitiesWrap, { flex: 1 }]}>
+                <View
+                  style={[itineraryStyles.itineraryActivitiesWrap, { flex: 1 }]}
+                >
                   <ScrollView
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
@@ -436,7 +451,7 @@ const Itinerary = () => {
                           key={a.name}
                           onPress={() =>
                             setSelectedActivities((prev) =>
-                              toggleInArray(prev, a.name)
+                              toggleInArray(prev, a.name),
                             )
                           }
                           style={itineraryStyles.itineraryActivityRow}
@@ -444,7 +459,8 @@ const Itinerary = () => {
                           <View
                             style={[
                               itineraryStyles.itineraryCheckbox,
-                              checked && itineraryStyles.itineraryCheckboxChecked,
+                              checked &&
+                                itineraryStyles.itineraryCheckboxChecked,
                             ]}
                           />
                           <Text style={itineraryStyles.itineraryActivityText}>

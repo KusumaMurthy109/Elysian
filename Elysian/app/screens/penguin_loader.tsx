@@ -5,7 +5,6 @@
  * This can be exported and used by other pages.
  */
 
-
 import React, { useEffect, useRef, useState } from "react";
 import { View, Animated, Dimensions } from "react-native";
 import { Text } from "react-native-paper";
@@ -20,7 +19,7 @@ interface Props {
 const PenguinLoader: React.FC<Props> = ({
   size = 150,
   text = "Loading...",
-  textColor = "black"
+  textColor = "black",
 }) => {
   const stepDuration = 250;
   const speed = 80;
@@ -34,7 +33,7 @@ const PenguinLoader: React.FC<Props> = ({
   // Sprite alternation
   useEffect(() => {
     const interval = setInterval(() => {
-      setSpriteIndex(prev => (prev === 0 ? 1 : 0));
+      setSpriteIndex((prev) => (prev === 0 ? 1 : 0));
     }, stepDuration);
     return () => clearInterval(interval);
   }, [stepDuration]);
@@ -78,7 +77,12 @@ const PenguinLoader: React.FC<Props> = ({
         }}
         resizeMode="contain"
       />
-      <Text variant="headlineMedium" style={[penguinLoaderStyles.text, { color: textColor }]}>{text}</Text>
+      <Text
+        variant="headlineMedium"
+        style={[penguinLoaderStyles.text, { color: textColor }]}
+      >
+        {text}
+      </Text>
     </View>
   );
 };

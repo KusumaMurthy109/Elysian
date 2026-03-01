@@ -18,7 +18,8 @@ const Landing = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
+  const AnimatedImageBackground =
+    Animated.createAnimatedComponent(ImageBackground);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,7 +56,7 @@ const Landing = () => {
         ]}
         resizeMode="cover"
       />
-      
+
       {/* Text fades with the background */}
       <Animated.Text
         style={[

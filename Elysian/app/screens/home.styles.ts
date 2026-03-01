@@ -10,7 +10,6 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const IMG_WIDTH = SCREEN_WIDTH - 75;
 
 export const homeStyles = StyleSheet.create({
-
   title: {
     textAlign: "left",
     fontWeight: "800",
@@ -32,7 +31,7 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 35,
     marginBottom: 18,
     position: "relative",
-    paddingBottom: 5
+    paddingBottom: 5,
   },
 
   imageContainer: {
@@ -56,7 +55,7 @@ export const homeStyles = StyleSheet.create({
     top: 120,
     left: 20,
     bottom: 20,
-    pointerEvents: "none"
+    pointerEvents: "none",
   },
 
   cityFont: {
@@ -96,7 +95,7 @@ export const homeStyles = StyleSheet.create({
   ratingFont: {
     color: "black",
     fontSize: 17,
-    fontWeight: 600
+    fontWeight: 600,
   },
 
   contentContainer: {
@@ -120,10 +119,10 @@ export const homeStyles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  date: { 
+  date: {
     fontSize: 15,
     color: "black",
-    alignSelf: "flex-end",    
+    alignSelf: "flex-end",
     top: 20,
   },
 
@@ -141,7 +140,7 @@ export const homeStyles = StyleSheet.create({
     left: 0,
     right: 0,
     height: "70%",
-    pointerEvents: "none"
+    pointerEvents: "none",
   },
 
   // Scroll indicator container (dots at bottom center of image)
@@ -170,5 +169,4 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#fff",
   },
-
-}); 
+});

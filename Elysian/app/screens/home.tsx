@@ -25,11 +25,11 @@ import {
   query,
   orderBy,
   onSnapshot,
-  increment, 
-  doc, 
-  setDoc, 
-  updateDoc, 
-  deleteDoc, 
+  increment,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
   deleteField,
 } from "firebase/firestore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -63,22 +63,28 @@ type Post = {
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 const Home = () => {
-  const [posts, setPosts] = useState<Post[]>([]);  // Initializes post as an empty array which is then updated by setPosts
-  const [expandedReview, setExpandedReview] = useState<{ [key: string]: boolean }>({});
-  const [userFavorites, setUserFavorites] = useState<{ [key: string]: boolean }>({});
+  const [posts, setPosts] = useState<Post[]>([]); // Initializes post as an empty array which is then updated by setPosts
+  const [expandedReview, setExpandedReview] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [userFavorites, setUserFavorites] = useState<{
+    [key: string]: boolean;
+  }>({});
   const navigation = useNavigation<HomeNavigationProp>();
-  const [postImageIndices, setPostImageIndices] = useState<{ [postId: string]: number }>({});
+  const [postImageIndices, setPostImageIndices] = useState<{
+    [postId: string]: number;
+  }>({});
   const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
 
   // Sync posts from Firestore
   useEffect(() => {
     const q = query(
       collection(FIREBASE_DB, "posts"),
-      orderBy("timestamp", "desc")
-    );  
-    
+      orderBy("timestamp", "desc"),
+    );
+
     // Store the function that stops listening into the variable unsubscribe
-    const unsubscribe = onSnapshot(q, (snapshot) => { 
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data: Post[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...(doc.data() as Omit<Post, "id">),
@@ -89,7 +95,7 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  // Sync userFavorites from Firestore 
+  // Sync userFavorites from Firestore
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -109,7 +115,7 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  // onSnapshot to listen for user likes 
+  // onSnapshot to listen for user likes
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -121,7 +127,7 @@ const Home = () => {
       const likeRef = doc(FIREBASE_DB, "posts", post.id, "likes", user.uid);
 
       const unsubscribe = onSnapshot(likeRef, (snapshot) => {
-        setUserLikes(prev => ({
+        setUserLikes((prev) => ({
           ...prev,
           [post.id]: snapshot.exists(), // If document exist, the user liked the post, otherwise does not exist
         }));
@@ -130,8 +136,8 @@ const Home = () => {
       unsubscribeFunctions.push(unsubscribe);
     });
 
-    return () => unsubscribeFunctions.forEach(unsub => unsub()); // Stops listening to Firestore 
-  }, [posts]); // Runs when posts update 
+    return () => unsubscribeFunctions.forEach((unsub) => unsub()); // Stops listening to Firestore
+  }, [posts]); // Runs when posts update
 
   // Updates likeCount on posts database
   const likesOnPost = async (postId: string) => {
@@ -143,13 +149,15 @@ const Home = () => {
       const postRef = doc(FIREBASE_DB, "posts", postId);
       const likeRef = doc(FIREBASE_DB, "posts", postId, "likes", user.uid);
 
-      if (userLikes[postId]) { // Check if user already liked, then unlike 
+      if (userLikes[postId]) {
+        // Check if user already liked, then unlike
         await deleteDoc(likeRef);
         await updateDoc(postRef, {
           likeCount: increment(-1),
         });
-      } else { // Otherwise post is liked 
-        await setDoc(likeRef, { liked: true }); // Create like document 
+      } else {
+        // Otherwise post is liked
+        await setDoc(likeRef, { liked: true }); // Create like document
         await updateDoc(postRef, {
           likeCount: increment(1),
         });
@@ -160,15 +168,11 @@ const Home = () => {
   };
 
   const uploadMethod = () => {
-    Alert.alert(
-      "Create a Post",
-      "Choose Upload Options:",
-      [
-        { text: "Take Photo", onPress: takePhoto },
-        { text: "Choose from Album", onPress: fromAlbum },
-        { text: "Cancel", style: "cancel" }
-      ]
-    );
+    Alert.alert("Create a Post", "Choose Upload Options:", [
+      { text: "Take Photo", onPress: takePhoto },
+      { text: "Choose from Album", onPress: fromAlbum },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   // Request for access to the camera.
@@ -193,7 +197,7 @@ const Home = () => {
     if (status !== "granted") {
       Alert.alert(
         "Permission denied",
-        "Need access to photos in order to upload images"
+        "Need access to photos in order to upload images",
       );
       return;
     }
@@ -207,7 +211,7 @@ const Home = () => {
 
     if (!selectedImage.canceled) {
       const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
-      createPost(uris);  
+      createPost(uris);
     }
   };
 
@@ -216,14 +220,18 @@ const Home = () => {
   };
 
   const handleReview = (postId: string) => {
-    setExpandedReview(prev => ({
+    setExpandedReview((prev) => ({
       ...prev,
       [postId]: !prev[postId],
     }));
   };
 
-  // Add city to userFavorites 
-  const addCity = async (city: { id: string; name: string; country: string }) => {
+  // Add city to userFavorites
+  const addCity = async (city: {
+    id: string;
+    name: string;
+    country: string;
+  }) => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -241,7 +249,7 @@ const Home = () => {
             country_name: city.country,
           },
         },
-        { merge: true }
+        { merge: true },
       );
     } catch (err) {
       console.error("Error adding to favorites:", err);
@@ -249,7 +257,11 @@ const Home = () => {
   };
 
   // Remove city from userFavorites
-  const removeCity = async (city: { id: string; name: string; country: string }) => {
+  const removeCity = async (city: {
+    id: string;
+    name: string;
+    country: string;
+  }) => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -262,16 +274,20 @@ const Home = () => {
         {
           [city.id]: deleteField(),
         },
-        { merge: true }
+        { merge: true },
       );
     } catch (err) {
       console.error("Error removing from favorites:", err);
     }
   };
 
-  const onScrollImage = (postId: string, offsetX: number, imageWidth: number) => {
+  const onScrollImage = (
+    postId: string,
+    offsetX: number,
+    imageWidth: number,
+  ) => {
     const index = Math.round(offsetX / imageWidth);
-    setPostImageIndices(prev => ({
+    setPostImageIndices((prev) => ({
       ...prev,
       [postId]: index,
     }));
@@ -279,19 +295,17 @@ const Home = () => {
 
   return (
     <ImageBackground
-          source={require("../../assets/home_page_background.png")}
-          style={{ flex: 1 }}
-          resizeMode="cover"
-        >
+      source={require("../../assets/home_page_background.png")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
+    >
       <SafeAreaView edges={["top"]}>
         <FlatList
           data={posts}
           keyExtractor={(item) => item.id}
           contentContainerStyle={homeStyles.homeContainer}
           ListHeaderComponent={
-            <Text style={homeStyles.title}>
-              Explore{"\n"}Together
-            </Text>
+            <Text style={homeStyles.title}>Explore{"\n"}Together</Text>
           }
           renderItem={({ item }) => {
             // Get current image index from parent state
@@ -308,12 +322,15 @@ const Home = () => {
                     showsHorizontalScrollIndicator={false}
                     bounces={false}
                     keyExtractor={(uri, index) => uri + index}
-                    onScroll={item.urls.length > 1 ? event =>
-                      onScrollImage(
-                        item.id,
-                        event.nativeEvent.contentOffset.x,
-                        homeStyles.cityImage.width
-                      ) : undefined
+                    onScroll={
+                      item.urls.length > 1
+                        ? (event) =>
+                            onScrollImage(
+                              item.id,
+                              event.nativeEvent.contentOffset.x,
+                              homeStyles.cityImage.width,
+                            )
+                        : undefined
                     }
                     scrollEventThrottle={16}
                     renderItem={({ item: uri }) => (
@@ -371,7 +388,9 @@ const Home = () => {
                           size={22}
                           color="#fff"
                         />
-                        <Text style={homeStyles.countryFont}>{item.city.country}</Text>
+                        <Text style={homeStyles.countryFont}>
+                          {item.city.country}
+                        </Text>
                       </View>
                     </View>
                   )}
@@ -396,10 +415,11 @@ const Home = () => {
                 {/* Uploader, review, date */}
                 <View style={homeStyles.contentContainer}>
                   <View>
-                    <Text style={homeStyles.uploader}>
-                      @{item.uploader}
-                    </Text>
-                    <TouchableOpacity activeOpacity={1} onPress={() => handleReview(item.id)}>
+                    <Text style={homeStyles.uploader}>@{item.uploader}</Text>
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => handleReview(item.id)}
+                    >
                       <Text
                         style={homeStyles.reviewFont}
                         numberOfLines={expandedReview[item.id] ? undefined : 2}
@@ -413,17 +433,17 @@ const Home = () => {
                     </Text>
                   </View>
 
-                <View style={homeStyles.postIcons}>
-                  <TouchableOpacity onPress={() => likesOnPost(item.id)}>
-                    <Ionicons
-                      name={userLikes[item.id] ? "heart" : "heart-outline"}
-                      size={28}
-                      color={userLikes[item.id] ? "#EB7D87" : "#000"}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (!item.city) return;
+                  <View style={homeStyles.postIcons}>
+                    <TouchableOpacity onPress={() => likesOnPost(item.id)}>
+                      <Ionicons
+                        name={userLikes[item.id] ? "heart" : "heart-outline"}
+                        size={28}
+                        color={userLikes[item.id] ? "#EB7D87" : "#000"}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (!item.city) return;
 
                         const postCity = {
                           id: item.city.id,
@@ -431,31 +451,32 @@ const Home = () => {
                           country: item.city.country,
                         };
 
-                      if (userFavorites[item.city.id]) {
-                        removeCity(postCity);
-                      } else {
-                        addCity(postCity);
-                      }
-                    }}
-                  >
-                    <Ionicons
-                      name={item.city && userFavorites[item.city.id] ? "bookmark" : "bookmark-outline"}
-                      size={28}
-                      color={"#000"}
-                    />
-                  </TouchableOpacity>
+                        if (userFavorites[item.city.id]) {
+                          removeCity(postCity);
+                        } else {
+                          addCity(postCity);
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          item.city && userFavorites[item.city.id]
+                            ? "bookmark"
+                            : "bookmark-outline"
+                        }
+                        size={28}
+                        color={"#000"}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
-          );
-        }}
-      />
+            );
+          }}
+        />
 
         {/* Upload button */}
-        <TouchableOpacity
-          style={styles.topRightIcon}
-          onPress={uploadMethod}
-        >
+        <TouchableOpacity style={styles.topRightIcon} onPress={uploadMethod}>
           <GlassView style={styles.glassButton}>
             <Ionicons name="add" size={26} color="#000" />
           </GlassView>

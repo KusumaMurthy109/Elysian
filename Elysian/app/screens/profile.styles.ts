@@ -104,29 +104,29 @@ export const profileStyles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: "100%",
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   editModalContainer: {
     position: "absolute",
-        top: "29%",
-        bottom: "29%",
-        left: "5%",
-        right: "5%",
-        backgroundColor: "#FFFDFC",
-        padding: 20,
-        borderRadius: 40,
-        zIndex: 1001, // above overlay
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
+    top: "29%",
+    bottom: "29%",
+    left: "5%",
+    right: "5%",
+    backgroundColor: "#FFFDFC",
+    padding: 20,
+    borderRadius: 40,
+    zIndex: 1001, // above overlay
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
 
   editModalTitle: {
@@ -134,7 +134,7 @@ export const profileStyles = StyleSheet.create({
     fontWeight: "700",
     color: "#000",
     marginBottom: 25,
-    textAlign: "center"
+    textAlign: "center",
   },
 
   closeButton: {
@@ -168,7 +168,7 @@ export const profileStyles = StyleSheet.create({
   sharedInput: {
     backgroundColor: "transparent",
     marginHorizontal: 12,
-    marginTop: 30
+    marginTop: 30,
   },
 
   activityInput: {
@@ -192,13 +192,13 @@ export const profileStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
-  
+
   scrollContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     paddingHorizontal: 8,
     paddingTop: 16,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
 
   scrollGrid: {
@@ -266,14 +266,14 @@ export const profileStyles = StyleSheet.create({
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
-    flexDirection:"row"
+    flexDirection: "row",
   },
 
   likeCountText: {
     color: "black",
     fontSize: 15,
     fontWeight: 500,
-    paddingRight: 2
+    paddingRight: 2,
   },
 
   openPostLikeCountText: {
@@ -285,7 +285,6 @@ export const profileStyles = StyleSheet.create({
     width: 150,
     height: 150,
     marginTop: 30,
-    alignSelf: "center"
+    alignSelf: "center",
   },
-  
 });

@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     color: "#3c6d9b",
   },
-  
+
   subtext2: {
     marginHorizontal: 15,
     marginTop: 15,
@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
     width: 200,
     height: 200,
     marginTop: 30,
-    alignSelf: "center"
+    alignSelf: "center",
   },
 
   container: {
@@ -66,7 +66,6 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     paddingHorizontal: 20,
-    
   },
 
   button: {
@@ -75,7 +74,7 @@ export const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#000",
     paddingVertical: 5,
-    marginVertical: 10
+    marginVertical: 10,
   },
 
   buttonLabel: {
@@ -93,8 +92,8 @@ export const styles = StyleSheet.create({
   signupContainer: {
     marginTop: 16,
     alignItems: "center",
-    flexDirection: "row",        
-    justifyContent: "center", 
+    flexDirection: "row",
+    justifyContent: "center",
   },
 
   signupLink: {
@@ -112,10 +111,10 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center", // centers items horizontally
-    alignItems: "center", 
+    alignItems: "center",
     rowGap: 15, // Minimal vertical spacing
     columnGap: 15, // Consistent spacing between columns (if RN 0.71+)
-    marginBottom: 16
+    marginBottom: 16,
   },
 
   answerButton: {
@@ -159,13 +158,11 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "transparent", // Transparent for background image to show
-    
   },
 
   solidSafeArea: {
     flex: 1,
     backgroundColor: "#FFFDFC",
-    
   },
 
   homeContainer: {
@@ -182,7 +179,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 0, // Remove extra bottom space
-    backgroundColor: "#FFFDFC"
+    backgroundColor: "#FFFDFC",
   },
 
   sectionTitle: {
@@ -191,18 +188,18 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#1B1E28",
   },
-  
+
   loader: {
     marginTop: 20,
   },
-  
+
   // --- CITY INFO MODAL ---
 
   modalDimOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   cityModalContainer: {
@@ -223,12 +220,12 @@ export const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    overflow: "hidden"
+    overflow: "hidden",
   },
 
   cityModalContent: {
     flexGrow: 0,
-    borderRadius: 20
+    borderRadius: 20,
   },
 
   cityModalTitle: {
@@ -236,7 +233,7 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#000000",
     marginBottom: 10,
-    flexShrink: 1
+    flexShrink: 1,
   },
 
   cityModalImage: {
@@ -259,7 +256,7 @@ export const styles = StyleSheet.create({
     lineHeight: 20,
     color: "#63a4e1",
     marginBottom: 10,
-    paddingTop: 5
+    paddingTop: 5,
   },
 
   cityModalOverlay: {
@@ -388,7 +385,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
     fontSize: 16,
-    fontWeight: "500"
+    fontWeight: "500",
   },
 
   searchDropdown: {
@@ -457,7 +454,7 @@ export const styles = StyleSheet.create({
     maxHeight: 145,
     borderRadius: 20,
     overflow: "hidden",
-  }
+  },
 });
 
 export const inputTheme = {

@@ -8,7 +8,6 @@
 import { StyleSheet } from "react-native";
 
 export const favoritesStyles = StyleSheet.create({
-
   title: {
     textAlign: "left",
     fontWeight: "800",
@@ -64,7 +63,7 @@ export const favoritesStyles = StyleSheet.create({
     left: 16,
     right: 16,
   },
- 
+
   cityCardText: {
     color: "#fff",
     fontSize: 24,
@@ -81,12 +80,11 @@ export const favoritesStyles = StyleSheet.create({
     padding: 6,
   },
 
-  
   removeIconBtnShadow: {
     shadowColor: "#000",
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
-  }
+  },
 });

@@ -4,11 +4,25 @@ Function: This is the user Profile screen component for the app.
 */
 
 import React, { useEffect, useState } from "react";
-import { View, Image, ScrollView, TouchableOpacity, Modal, Alert, Pressable, Keyboard } from "react-native";
+import {
+  View,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  Alert,
+  Pressable,
+  Keyboard,
+} from "react-native";
 import { Text, Button, TextInput } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { onAuthStateChanged, User, updateProfile, getAuth } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  User,
+  updateProfile,
+  getAuth,
+} from "firebase/auth";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import { query, where, collection, getDocs, orderBy } from "firebase/firestore";
@@ -66,7 +80,6 @@ const Profile = () => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
-  
   const subTab = createMaterialTopTabNavigator();
 
   // Function to check if username is already taken
@@ -181,7 +194,7 @@ const Profile = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ uid: user.uid }),
-        }
+        },
       );
 
       const { uploadUrl, fileUrl } = await response.json();
@@ -196,18 +209,16 @@ const Profile = () => {
       await setDoc(
         doc(FIREBASE_DB, "users", user.uid),
         { profileImage: fileUrl },
-        { merge: true }
+        { merge: true },
       );
 
       setProfileImage(`${fileUrl}?t=${Date.now()}`);
 
       Alert.alert("Profile picture updated!");
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
       Alert.alert("Upload failed");
-    }
-    finally {
+    } finally {
       setUploading(false);
     }
   };
@@ -243,7 +254,9 @@ const Profile = () => {
           <View style={profileStyles.profileImageContainer}>
             <Image
               source={
-                profileImage ? { uri: profileImage } : require("../../assets/profile_pic.png")
+                profileImage
+                  ? { uri: profileImage }
+                  : require("../../assets/profile_pic.png")
               }
               style={profileStyles.profileImage}
             />
@@ -257,8 +270,12 @@ const Profile = () => {
 
           {/* Name and username */}
           <View style={profileStyles.nameContainer}>
-            <Text variant="headlineLarge" style={profileStyles.name}>{user?.displayName}</Text>
-            <Text variant="headlineSmall" style={profileStyles.username}>@{username}</Text>
+            <Text variant="headlineLarge" style={profileStyles.name}>
+              {user?.displayName}
+            </Text>
+            <Text variant="headlineSmall" style={profileStyles.username}>
+              @{username}
+            </Text>
           </View>
 
           {/* Name and username edit fields */}
@@ -267,113 +284,115 @@ const Profile = () => {
               <View style={styles.modalDimOverlay}>
                 {/* Full-screen Pressable overlay that closes modal */}
                 <Pressable
-                  style={{ 
+                  style={{
                     position: "absolute",
                     width: "100%",
-                    height: "100%"
+                    height: "100%",
                   }}
                   onPress={() => setIsEditing(false)}
                 />
-              <View style={profileStyles.editModalContainer}>
-                <View style={{ flex: 1, width: "100%" }}>
-                  <TouchableOpacity
-                    style={profileStyles.editProfileCloseButtonShared}
-                    onPress={() => setIsEditing(false)}
-                  >
-                    <GlassView style={styles.glassButton}>
-                      <Ionicons name="close" size={26} color="#000" />
-                    </GlassView>
-                  </TouchableOpacity>
+                <View style={profileStyles.editModalContainer}>
+                  <View style={{ flex: 1, width: "100%" }}>
+                    <TouchableOpacity
+                      style={profileStyles.editProfileCloseButtonShared}
+                      onPress={() => setIsEditing(false)}
+                    >
+                      <GlassView style={styles.glassButton}>
+                        <Ionicons name="close" size={26} color="#000" />
+                      </GlassView>
+                    </TouchableOpacity>
 
-                  <Text style={profileStyles.editModalTitle}>Edit Profile</Text>
+                    <Text style={profileStyles.editModalTitle}>
+                      Edit Profile
+                    </Text>
 
-                  <TextInput
-                    value={editedName}
-                    onChangeText={setEditedName}
-                    style={styles.input}
-                    label="Full Name"
-                    theme={inputTheme}
-                    mode="outlined"
-                  />
+                    <TextInput
+                      value={editedName}
+                      onChangeText={setEditedName}
+                      style={styles.input}
+                      label="Full Name"
+                      theme={inputTheme}
+                      mode="outlined"
+                    />
 
-                  <TextInput
-                    value={editedUsername}
-                    onChangeText={setEditedUsername}
-                    style={styles.input}
-                    label="Username"
-                    autoCapitalize="none"
-                    theme={inputTheme}
-                    mode="outlined"
-                  />
+                    <TextInput
+                      value={editedUsername}
+                      onChangeText={setEditedUsername}
+                      style={styles.input}
+                      label="Username"
+                      autoCapitalize="none"
+                      theme={inputTheme}
+                      mode="outlined"
+                    />
 
-                  {error ? (
-                    <Text style={profileStyles.editError}>{error}</Text>
-                  ) : null}
+                    {error ? (
+                      <Text style={profileStyles.editError}>{error}</Text>
+                    ) : null}
 
-                  <Button
-                    mode="outlined"
-                    onPress={handleUploadProfileImage}
-                    style={profileStyles.changePhotoButton}
-                    labelStyle={profileStyles.photoButtonLabel}
-                    icon={({ size, color }) => (
-                      <MaterialCommunityIcons name="camera" size={24} color={color} />
-                    )}
-                  >
-                    Change Profile Photo
-                  </Button>
+                    <Button
+                      mode="outlined"
+                      onPress={handleUploadProfileImage}
+                      style={profileStyles.changePhotoButton}
+                      labelStyle={profileStyles.photoButtonLabel}
+                      icon={({ size, color }) => (
+                        <MaterialCommunityIcons
+                          name="camera"
+                          size={24}
+                          color={color}
+                        />
+                      )}
+                    >
+                      Change Profile Photo
+                    </Button>
 
-                  <Button
-                    mode="contained"
-                    onPress={handleSaveProfile}
-                    style={styles.button}
-                    labelStyle={styles.buttonLabel}
-                  >
-                    Save
-                  </Button>
-                 </View>
+                    <Button
+                      mode="contained"
+                      onPress={handleSaveProfile}
+                      style={styles.button}
+                      labelStyle={styles.buttonLabel}
+                    >
+                      Save
+                    </Button>
+                  </View>
+                </View>
               </View>
-            </View>
-          </Modal>
-        )}
+            </Modal>
+          )}
+        </ScrollView>
+        <View style={{ flex: 1, marginTop: -500 }}>
+          <subTab.Navigator
+            screenOptions={{
+              tabBarIndicatorStyle: {
+                backgroundColor: "#000",
+                height: 3,
+                borderRadius: 2,
+                alignContent: "center",
+              },
+              tabBarLabelStyle: { fontSize: 22, fontWeight: "600" },
+              tabBarStyle: { backgroundColor: "transparent" },
+            }}
+          >
+            <subTab.Screen
+              name="Posts"
+              children={() => (
+                <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
+                  <UserPosts userId={currentUser?.uid ?? ""} />
+                </View>
+              )}
+            />
 
-      </ScrollView>
-      <View style={{ flex: 1, marginTop: -500, }}>
-        <subTab.Navigator
-          screenOptions={{
-            tabBarIndicatorStyle: {
-              backgroundColor: "#000",
-              height: 3,
-              borderRadius: 2,
-              alignContent: "center",
-            },
-            tabBarLabelStyle: { fontSize: 22, fontWeight: "600" },
-            tabBarStyle: { backgroundColor: "transparent" },
-          }}
-        >
-          <subTab.Screen
-            name="Posts"
-            children={() => (
-              <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
-                <UserPosts
-                  userId={currentUser?.uid ?? ""}
-                />
-              </View>
-            )}
-          />
-
-          <subTab.Screen
-            name="Itineraries"
-            children={() => (
-              <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
-                <UserItineraries/>
-              </View>
-            )}
-          />
-
-        </subTab.Navigator>
+            <subTab.Screen
+              name="Itineraries"
+              children={() => (
+                <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
+                  <UserItineraries />
+                </View>
+              )}
+            />
+          </subTab.Navigator>
+        </View>
       </View>
-    </View>
-  </Pressable>
+    </Pressable>
   );
 };
 

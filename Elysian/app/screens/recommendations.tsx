@@ -64,9 +64,9 @@ const Recommendations = () => {
   const [currentCity, setCurrentCity] = useState<Recommendation | null>(null);
   const currentCityRef = useRef<Recommendation | null>(null);
   const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
+  // This will set the tags for the current city.
   const [currentCityAttr, setCurrentCityAttr] = useState<string | null>(null);
   const glassAvailable = isLiquidGlassAvailable();
-  // This will set the tags for the current city.
   // Need to get the width and height of screen for the images to fit full page.
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -126,13 +126,6 @@ const Recommendations = () => {
     return null;
   };
 
-  // const shorten = (text: string, sentences = 3) => {
-  //   const cleaned = text.replace(/\s+/g, " ").trim();
-  //   if (!cleaned) return "";
-  //   const parts = cleaned.split(". ");
-  //   const sliced = parts.slice(0, sentences).join(". ");
-  //   return sliced.endsWith(".") ? sliced : sliced + ".";
-  // };
 
   const shorten = (text: string, sentences = 2, maxChars = 240) => {
     const cleaned = text.replace(/\s+/g, " ").trim();
@@ -160,21 +153,6 @@ const Recommendations = () => {
     return out;
   };
 
-  const fetchWikipediaSummary = async (title: string) => {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-      title
-    )}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    return res.json();
-  };
-
-  const isFlagImage = (url?: string) => {
-    if (!url) return false;
-    const lower = url.toLowerCase();
-    return lower.includes("flag") || lower.includes("flag_of");
-  };
-
   const fetchCityInfo = async (cityName: string, country: string) => {
     try {
       // Wikivoyage only (text)
@@ -194,39 +172,91 @@ const Recommendations = () => {
   };
 
   const makeTravelBlurb = (raw: string, cityName: string) => {
+    if (!raw || !raw.trim()) {
+      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
+    }
     const cleaned = raw
       .replace(/\s+/g, " ")
       .replace(/\[[^\]]*\]/g, "") // remove [1], [2]
       .trim();
 
-    // pull 1–2 best sentences (shorter ones)
+    // Split into sentences
     const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
 
-    const good = sentences
-      .filter((s) => s.length >= 60 && s.length <= 160)
-      .slice(0, 2)
-      .join(" ");
+    if (sentences.length === 0) {
+      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
+    }
 
-    const fallback = sentences.slice(0, 1).join(" ");
+    // Scoring helpers
+    const positiveKeywords = [
+      "known for", "famous for", "offers", "features", "boasts",
+      "historic", "vibrant", "beautiful", "coastal", "mountain",
+      "popular", "renowned"
+    ];
 
-    let out = (good || fallback || "").trim();
+    const negativeKeywords = [
+      "danger", "unsafe", "avoid", "warning", "crime",
+      "may refer to", "more than one place", "disambiguation"
+    ];
 
-    // if it's still long, cut cleanly
-    const maxChars = 240;
+    const scoreSentence = (s: string) => {
+      let score = 0;
+      const lower = s.toLowerCase();
+
+      if (lower.includes(cityName.toLowerCase())) score += 1;
+      if (positiveKeywords.some(k => lower.includes(k))) score += 1;
+      if (/^[A-Z]/.test(s.trim())) score += 0.5; // starts clean
+      if (s.length >= 60 && s.length <= 220) score += 1;
+
+      if (negativeKeywords.some(k => lower.includes(k))) score -= 3;
+      if (s.includes("(")) score -= 0.5;
+      if (/[;:]/.test(s)) score -= 1;
+      if (!/[.!?]$/.test(s)) score -= 1;
+
+      return score;
+    };
+
+    // Score and sort
+    const scored = sentences
+      .map(s => ({ s, score: scoreSentence(s) }))
+      .sort((a, b) => b.score - a.score);
+
+    // Pick best 1–2 sentences
+    const best = [scored[0]?.s].filter(Boolean);
+
+    if (scored[1]) {
+      const s2 = scored[1].s.trim();
+      const startsClean = /^[A-Z]/.test(s2);
+      const badStart = /^(and|but|however|although)\b/i.test(s2);
+
+      if (startsClean && !badStart && s2.length <= 220) {
+        best.push(s2);
+      }
+    }
+
+    let out = best.join(" ").trim();
+
+    // Ensure final punctuation
+    if (!/[.!?]$/.test(out)) out += ".";
+
+    // Soft length cap (sentence-safe)
+    const maxChars = 260;
     if (out.length > maxChars) {
-      out =
-        out
-          .slice(0, maxChars)
-          .replace(/\s+\S*$/, "")
-          .trimEnd() + ".";
+      const parts = out.split(/(?<=[.!?])\s+/);
+      let trimmed = "";
+      for (const p of parts) {
+        if ((trimmed + " " + p).length > maxChars) break;
+        trimmed += (trimmed ? " " : "") + p;
+      }
+      out = trimmed.trim();
     }
 
-    // avoid super dry openings
-    if (out.toLowerCase().startsWith(cityName.toLowerCase() + " is")) {
-      // keep it, but it’s okay
+    // Final fallback if somehow empty
+    if (!out) {
+      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
     }
 
-    return out || "No description available.";
+    return out;
   };
 
   const fetchUnsplashImage = async (cityName: string, country: string) => {
@@ -237,12 +267,12 @@ const Recommendations = () => {
         )}` + `&country=${encodeURIComponent(country)}`;
 
       const res = await fetch(url);
-      console.log("Res:");
-      console.log(res);
+      // console.log("Res:");
+      // console.log(res);
       if (!res.ok) return null;
 
       const json = await res.json();
-      console.log(json?.data?.imageUrl);
+      // console.log(json?.data?.imageUrl);
       return json?.data?.imageUrl ?? null;
     } catch (e) {
       console.error("Unsplash fetch error:", e);
@@ -267,7 +297,7 @@ const Recommendations = () => {
         setUnsplashImageUrl(uImg);
 
         setCurrentCity({ ...city, ...extra });
-        console.log(currentCity);
+        // console.log(currentCity);
       } catch (err) {
         console.error(err);
         setError("Failed to get recommendations");
@@ -580,7 +610,8 @@ const Recommendations = () => {
           onPress={() => setCityModalOpen(false)}
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
-          <Pressable style={{maxHeight:"50%", minHeight: "30%",
+          <Pressable style={{
+            maxHeight: "60%", minHeight: "30%",
             backgroundColor: "#FFFDFC",
             padding: 20,
             borderRadius: 40,
@@ -598,27 +629,27 @@ const Recommendations = () => {
           }}>
             {selectedCity && (
               <View style={styles.cityModalContent}>
-                  {selectedCity.image && (
-                    <Image
-                      source={{ uri: selectedCity.image }}
-                      style={styles.cityModalImage}
-                      resizeMode="cover"
-                    />
-                  )}
+                {selectedCity.image && (
+                  <Image
+                    source={{ uri: selectedCity.image }}
+                    style={styles.cityModalImage}
+                    resizeMode="cover"
+                  />
+                )}
 
-                  <Text style={styles.cityModalTitle}>
-                    {selectedCity.city_name}, {selectedCity.country}
-                  </Text>
+                <Text style={styles.cityModalTitle}>
+                  {selectedCity.city_name}, {selectedCity.country}
+                </Text>
 
-                  <Text style={styles.cityModalDescriptionLabel}>
-                    Description:
-                  </Text>
+                <Text style={styles.cityModalDescriptionLabel}>
+                  Description:
+                </Text>
 
-                  {/* Visible description */}
-                  <Text style={styles.cityModalDescription}>
-                    {selectedCity.description || "No description available."}
-                  </Text>
-                </View>
+                {/* Visible description */}
+                <Text style={styles.cityModalDescription}>
+                  {selectedCity.description || "No description available."}
+                </Text>
+              </View>
             )}
           </Pressable>
         </Pressable>

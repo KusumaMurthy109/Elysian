@@ -77,12 +77,12 @@ const Favorites = () => {
   const doubleTap = useRef<number | null>(null);
 
   const handlePress = (city: Recommendation) => {
-      const now = Date.now();
-      if (doubleTap.current && now - doubleTap.current < 300) {
-          setSelectedCity(city);
-          setCityModalOpen(true);
-      }
-      doubleTap.current = now;
+    const now = Date.now();
+    if (doubleTap.current && now - doubleTap.current < 300) {
+      setSelectedCity(city);
+      setCityModalOpen(true);
+    }
+    doubleTap.current = now;
   };
 
   // Fetches all cities in the training set from Firebase.
@@ -229,39 +229,99 @@ const Favorites = () => {
     return null;
   };
 
-  const makeTravelBlurb = (raw: string) => {
+  const makeTravelBlurb = (raw: string, cityName: string) => {
+    if (!raw || !raw.trim()) {
+      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
+    }
     const cleaned = raw
       .replace(/\s+/g, " ")
-      .replace(/\[[^\]]*\]/g, "")
+      .replace(/\[[^\]]*\]/g, "") // remove [1], [2]
       .trim();
 
+    // Split into sentences
     const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
 
-    const good = sentences
-      .filter((s) => s.length >= 60 && s.length <= 160)
-      .slice(0, 2)
-      .join(" ");
-
-    const fallback = sentences.slice(0, 1).join(" ");
-
-    let out = (good || fallback || "").trim();
-
-    if (out.length > 240) {
-      out =
-        out
-          .slice(0, 240)
-          .replace(/\s+\S*$/, "")
-          .trimEnd() + "...";
+    if (sentences.length === 0) {
+      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
     }
 
-    return out || "No description available.";
+    // Scoring helpers
+    const positiveKeywords = [
+      "known for", "famous for", "offers", "features", "boasts",
+      "historic", "vibrant", "beautiful", "coastal", "mountain",
+      "popular", "renowned"
+    ];
+
+    const negativeKeywords = [
+      "danger", "unsafe", "avoid", "warning", "crime",
+      "may refer to", "more than one place", "disambiguation"
+    ];
+
+    const scoreSentence = (s: string) => {
+      let score = 0;
+      const lower = s.toLowerCase();
+
+      if (lower.includes(cityName.toLowerCase())) score += 1;
+      if (positiveKeywords.some(k => lower.includes(k))) score += 1;
+      if (/^[A-Z]/.test(s.trim())) score += 0.5; // starts clean
+      if (s.length >= 60 && s.length <= 220) score += 1;
+
+      if (negativeKeywords.some(k => lower.includes(k))) score -= 3;
+      if (s.includes("(")) score -= 0.5;
+      if (/[;:]/.test(s)) score -= 1;
+      if (!/[.!?]$/.test(s)) score -= 1;
+
+      return score;
+    };
+
+    // Score and sort
+    const scored = sentences
+      .map(s => ({ s, score: scoreSentence(s) }))
+      .sort((a, b) => b.score - a.score);
+
+    // Pick best 1–2 sentences
+    const best = [scored[0]?.s].filter(Boolean);
+
+    if (scored[1]) {
+      const s2 = scored[1].s.trim();
+      const startsClean = /^[A-Z]/.test(s2);
+      const badStart = /^(and|but|however|although)\b/i.test(s2);
+
+      if (startsClean && !badStart && s2.length <= 220) {
+        best.push(s2);
+      }
+    }
+
+    let out = best.join(" ").trim();
+
+    // Ensure final punctuation
+    if (!/[.!?]$/.test(out)) out += ".";
+
+    // Soft length cap (sentence-safe)
+    const maxChars = 260;
+    if (out.length > maxChars) {
+      const parts = out.split(/(?<=[.!?])\s+/);
+      let trimmed = "";
+      for (const p of parts) {
+        if ((trimmed + " " + p).length > maxChars) break;
+        trimmed += (trimmed ? " " : "") + p;
+      }
+      out = trimmed.trim();
+    }
+
+    // Final fallback if somehow empty
+    if (!out) {
+      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
+    }
+
+    return out;
   };
 
   const fetchCityInfo = async (cityName: string, country: string) => {
     try {
       const raw = await fetchWikivoyageIntro(cityName, country);
       if (!raw) return undefined;
-      return makeTravelBlurb(raw);
+      return makeTravelBlurb(raw, cityName);
     } catch {
       return undefined;
     }
@@ -386,8 +446,8 @@ const Favorites = () => {
   return (
     <ImageBackground
       source={require("../../assets/favorites_page_background.png")}
-        style={{ flex: 1 }}
-        resizeMode="cover"
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         {/* Itinerary Icon (hidden when search is open) */}
@@ -446,7 +506,7 @@ const Favorites = () => {
               setSearchOpen(false);
               setSearchQuery("");
               setDropdownOpen(false);
-            Keyboard.dismiss();
+              Keyboard.dismiss();
             }}
           />
         )}
@@ -498,7 +558,7 @@ const Favorites = () => {
               <PenguinLoader text="Loading your favorite cities!" />
             )}
             {error && !loading && <PenguinLoader text={error} />}
-            
+
             <ScrollView contentContainerStyle={styles.homeContainer}>
               <Text variant="headlineLarge" style={favoritesStyles.title}>
                 Favorites
@@ -590,7 +650,7 @@ const Favorites = () => {
             {selectedCity && (
               <View style={styles.cityModalContainer}>
                 <ScrollView contentContainerStyle={styles.cityModalContent}>
-  
+
                   {selectedCity.image && (
                     <Image
                       source={{ uri: selectedCity.image }}
@@ -608,7 +668,7 @@ const Favorites = () => {
                   </Text>
 
                   <Text style={styles.cityModalDescription}>
-                    {selectedCity.description || "No description available."}
+                    {selectedCity.description || `${selectedCity.city_name} is a destination known for its culture, atmosphere, and local attractions.`}
                   </Text>
                 </ScrollView>
               </View>

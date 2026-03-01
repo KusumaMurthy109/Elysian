@@ -16,7 +16,11 @@ const ProfileMainScreen = ({ userId }: { userId: string }) => {
     <Tab.Navigator
       initialRouteName="Posts"
       screenOptions={{
-        tabBarIndicatorStyle: { backgroundColor: "#000", height: 3, borderRadius: 2 },
+        tabBarIndicatorStyle: {
+          backgroundColor: "#000",
+          height: 3,
+          borderRadius: 2,
+        },
         tabBarLabelStyle: { fontSize: 20, fontWeight: "600" },
         tabBarStyle: { backgroundColor: "transparent" },
       }}

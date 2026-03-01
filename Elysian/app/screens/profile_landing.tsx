@@ -56,10 +56,10 @@ const ProfileLanding = () => {
       </Text>
 
       <Image
-          source={require("../../assets/penguin.png")}
-          style={styles.bottomImage}
-          resizeMode="contain"
-        />
+        source={require("../../assets/penguin.png")}
+        style={styles.bottomImage}
+        resizeMode="contain"
+      />
     </Animated.View>
   );
 };

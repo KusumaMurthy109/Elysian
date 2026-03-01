@@ -30,7 +30,7 @@ type ProfileStackParamList = {
 export type HomeStackParamList = {
   HomeMain: undefined;
   CreatePost: { imageURIs: string[] };
-}
+};
 
 // Define the navigation parameter list
 export type RootTabParamList = {
@@ -112,27 +112,33 @@ export default function NavigationBar() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => {
-        let iconName: string;
+          let iconName: string;
 
-        switch (route.name) {
-          case "Home":
-            iconName = focused ? "home" : "home-outline";
-            break;
-          case "Recommendations":
-            iconName = focused ? "airplane" : "airplane-outline";
-            break;
-          case "Favorites":
-            iconName = focused ? "bookmark" : "bookmark-outline";
-            break;
-          case "Profile":
-            iconName = focused ? "person-circle" : "person-circle-outline";
-            break;
-          default:
-            iconName = "help-circle-outline";
-        }
+          switch (route.name) {
+            case "Home":
+              iconName = focused ? "home" : "home-outline";
+              break;
+            case "Recommendations":
+              iconName = focused ? "airplane" : "airplane-outline";
+              break;
+            case "Favorites":
+              iconName = focused ? "bookmark" : "bookmark-outline";
+              break;
+            case "Profile":
+              iconName = focused ? "person-circle" : "person-circle-outline";
+              break;
+            default:
+              iconName = "help-circle-outline";
+          }
 
-        return <Icon name={iconName} size={30} color={focused ? "#FFFFFF" : "#807f7fff"} />;
-      },
+          return (
+            <Icon
+              name={iconName}
+              size={30}
+              color={focused ? "#FFFFFF" : "#807f7fff"}
+            />
+          );
+        },
 
         headerShown: false,
         tabBarShowLabel: false,

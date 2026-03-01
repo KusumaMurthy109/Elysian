@@ -10,7 +10,7 @@ export const penguinLoaderStyles = StyleSheet.create({
     left: 0,
     width: "100%",
     height: "100%",
-    zIndex: 100
+    zIndex: 100,
   },
 
   text: {
@@ -19,7 +19,6 @@ export const penguinLoaderStyles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 700,
     alignSelf: "center",
-    textAlign: "center"
+    textAlign: "center",
   },
 });
-

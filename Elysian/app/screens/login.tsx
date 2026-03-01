@@ -3,7 +3,13 @@ File: login.tsx
 Function: This is the Login screen component for the app that displays the app logo.
 */
 
-import { View, Alert, Keyboard, Pressable, ImageBackground } from "react-native";
+import {
+  View,
+  Alert,
+  Keyboard,
+  Pressable,
+  ImageBackground,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
 import React, { useState } from "react";
@@ -50,7 +56,6 @@ const Login = () => {
       });
 
       console.log("Signed in user:", user);
-
     } catch (error: any) {
       console.log("Sign-in error:", error.code, error.message);
       Alert.alert("Sign-in Failed", error.message);
@@ -66,63 +71,63 @@ const Login = () => {
 
   return (
     <ImageBackground
-              source={require("../../assets/login_page_background.png")}
-              style={{ flex: 1 }}
-              resizeMode="cover"
-            >
-    <SafeAreaView
-      style={styles.container}
-      onTouchStart={() => Keyboard.dismiss()} 
+      source={require("../../assets/login_page_background.png")}
+      style={{ flex: 1 }}
+      resizeMode="cover"
     >
-      <Text variant="displaySmall" style={styles.header1}>
-        Sign In
-      </Text>
-      <Text variant="titleMedium" style={styles.subtext1}>
-        Please sign in to start your adventure!
-      </Text>
-
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        theme={inputTheme}
-      />
-
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-        theme={inputTheme}
-      />
-
-      <Button
-        mode="contained"
-        onPress={signIn}
-        style={styles.button}
-        labelStyle={styles.buttonLabel}
+      <SafeAreaView
+        style={styles.container}
+        onTouchStart={() => Keyboard.dismiss()}
       >
-        Login
-      </Button>
+        <Text variant="displaySmall" style={styles.header1}>
+          Sign In
+        </Text>
+        <Text variant="titleMedium" style={styles.subtext1}>
+          Please sign in to start your adventure!
+        </Text>
 
-      <View style={styles.signupContainer}>
-        <Text variant="labelLarge">Don't have an account? </Text>
-        <Pressable
-          onPress={signUp}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.6 : 1,
-          })}
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          theme={inputTheme}
+        />
+
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          mode="outlined"
+          style={styles.input}
+          secureTextEntry
+          theme={inputTheme}
+        />
+
+        <Button
+          mode="contained"
+          onPress={signIn}
+          style={styles.button}
+          labelStyle={styles.buttonLabel}
         >
-          <Text style={styles.signupLink}>Sign Up</Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+          Login
+        </Button>
+
+        <View style={styles.signupContainer}>
+          <Text variant="labelLarge">Don't have an account? </Text>
+          <Pressable
+            onPress={signUp}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Text style={styles.signupLink}>Sign Up</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
     </ImageBackground>
   );
 };
