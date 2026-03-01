@@ -342,26 +342,28 @@ const Home = () => {
                     )}
                   />
 
-                  {/* Progressive Blur on bottom */}
-                  <View style={homeStyles.postBlurContainer}>
-                    <MaskedView
-                      maskElement={
-                        <LinearGradient
-                          colors={["transparent", "rgba(255,255,255,0.9)"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
+                  {/* Progressive Blur on bottom - only on first image */}
+                  {currentIndex === 0 && (
+                    <View style={homeStyles.postBlurContainer}>
+                      <MaskedView
+                        maskElement={
+                          <LinearGradient
+                            colors={["transparent", "rgba(255,255,255,0.9)"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={{ flex: 1 }}
+                          />
+                        }
+                        style={{ flex: 1 }}
+                      >
+                        <BlurView
+                          intensity={100}
+                          tint="dark"
                           style={{ flex: 1 }}
                         />
-                      }
-                      style={{ flex: 1 }}
-                    >
-                      <BlurView
-                        intensity={100}
-                        tint="dark"
-                        style={{ flex: 1 }}
-                      />
-                    </MaskedView>
-                  </View>
+                      </MaskedView>
+                    </View>
+                  )}
 
                   {/* Scroll indicators (only if multiple images) */}
                   {item.urls.length > 1 && (

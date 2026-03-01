@@ -219,27 +219,28 @@ const UserPosts = ({ userId }: UserPostsProps) => {
                     />
                   )}
 
-                  {/* Blur (unchanged) */}
-                  <View style={homeStyles.postBlurContainer}>
-                    <MaskedView
-                      maskElement={
-                        <LinearGradient
-                          colors={["transparent", "rgba(255,255,255,0.9)"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
+                  {/* Blur - only on first image and if city exists */}
+                  {currentIndex === 0 && openPost.city && (
+                    <View style={homeStyles.postBlurContainer}>
+                      <MaskedView
+                        maskElement={
+                          <LinearGradient
+                            colors={["transparent", "rgba(255,255,255,0.9)"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={{ flex: 1 }}
+                          />
+                        }
+                        style={{ flex: 1 }}
+                      >
+                        <BlurView
+                          intensity={100}
+                          tint="dark"
                           style={{ flex: 1 }}
                         />
-                      }
-                      style={{ flex: 1 }}
-                    >
-                      <BlurView
-                        intensity={100}
-                        tint="dark"
-                        style={{ flex: 1 }}
-                      />
-                    </MaskedView>
-                  </View>
-
+                      </MaskedView>
+                    </View>
+                  )}
                   {/* Scroll indicators */}
                   {openPost.urls.length > 1 && (
                     <View style={homeStyles.scrollIndicatorContainer}>
