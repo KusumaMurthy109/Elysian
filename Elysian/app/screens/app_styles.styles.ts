@@ -204,8 +204,7 @@ export const styles = StyleSheet.create({
 
   cityModalContainer: {
     position: "absolute",
-    top: "20%",
-    bottom: "20%",
+    maxHeight: "60%",
     left: "5%",
     right: "5%",
     backgroundColor: "#FFFDFC",
