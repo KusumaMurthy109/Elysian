@@ -10,9 +10,9 @@ from utils.firebase_config import db
 # ---------------------------------------------------------
 # Load encoders
 # ---------------------------------------------------------
-le_origin = joblib.load("../le_origin.pkl")
-le_fav = joblib.load("../le_fav.pkl")
-mlbs = joblib.load("../mlbs.pkl")   # dict of MultiLabelBinarizers
+le_origin = joblib.load("le_origin.pkl")
+le_fav = joblib.load("le_fav.pkl")
+mlbs = joblib.load("mlbs.pkl")   # dict of MultiLabelBinarizers
 
 # ---------------------------------------------------------
 # Load city data + precomputed embeddings
@@ -30,7 +30,7 @@ city_id_to_idx = {
 # ---------------------------------------------------------
 # Load user-only TFLite model
 # ---------------------------------------------------------
-interpreter = tf.lite.Interpreter(model_path="../user_encoder.tflite")
+interpreter = tf.lite.Interpreter(model_path="user_encoder.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
