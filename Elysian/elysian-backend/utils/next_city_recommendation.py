@@ -20,7 +20,7 @@ mlbs = joblib.load(os.path.join(BASE_DIR, "mlbs.pkl"))   # dict of MultiLabelBin
 # ---------------------------------------------------------
 # Load city data + precomputed embeddings
 # ---------------------------------------------------------
-cities_df = pd.read_csv("../../../Datasets/cities.csv")
+cities_df = pd.read_csv(os.path.join(BASE_DIR, "../../../Datasets/cities.csv"))
 city_vectors = np.load(os.path.join(BASE_DIR, "city_vectors.npy"))   # shape: (num_cities, embedding_dim)
 
 # Map city_id -> index in cities_df / city_vectors
