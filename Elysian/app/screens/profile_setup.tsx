@@ -15,11 +15,11 @@ import {
 import { TextInput, Button, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { inputTheme, styles, selectedColors } from "./app_styles.styles";
+import { inputTheme, styles, selectedColors } from "./styles/app_styles.styles";
 import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import { getAuth } from "firebase/auth";
-import { createPostStyles } from "./create_post.styles";
+import { createPostStyles } from "./styles/create_post.styles";
 
 // Define the type for Home screen navigation prop
 export type RootParamList = {
