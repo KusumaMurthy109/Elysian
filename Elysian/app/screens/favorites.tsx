@@ -9,7 +9,12 @@
  * more details and manage their saved places.
  */
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { 
+  useEffect, 
+  useState, 
+  useCallback, 
+  useRef 
+} from "react";
 import {
   View,
   ScrollView,
@@ -150,7 +155,7 @@ const Favorites = () => {
         fetchCityInfo(city.name, city.country),
       ]);
 
-      const patch: any = {};
+      const patch: { image?: string; description?: string } = {};  
       if (image) patch.image = image;
       if (description) patch.description = description;
 
@@ -186,6 +191,7 @@ const Favorites = () => {
       return null;
     }
   };
+
   const fetchWikivoyageIntro = async (
     cityName: string,
     country: string
@@ -443,6 +449,7 @@ const Favorites = () => {
 
     return () => unsubscribe();
   }, []);
+
   return (
     <ImageBackground
       source={require("../../assets/favorites_page_background.png")}
@@ -465,7 +472,6 @@ const Favorites = () => {
         {/* Search Icon and Bar */}
         <View style={styles.searchOverlay}>
           {/* Absolute search icon */}
-
           <TouchableOpacity
             style={styles.topRightIcon}
             onPress={() => setSearchOpen((prev) => !prev)}
