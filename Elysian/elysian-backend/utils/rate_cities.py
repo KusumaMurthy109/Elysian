@@ -18,7 +18,7 @@ Returns updated Elos, comparison count, and final rating score.
 
 import time
 from flask import request, jsonify
-from firebase_config import db
+from utils.firebase_config import db
 
 # Configuration Constants
 BASE_ELO = 1000   # Default Elo rating for new cities
