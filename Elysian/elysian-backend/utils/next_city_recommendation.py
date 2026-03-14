@@ -3,6 +3,9 @@ import pandas as pd
 import tensorflow as tf
 import joblib
 from numpy.linalg import norm
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 from utils.firebase_config import db
@@ -10,15 +13,15 @@ from utils.firebase_config import db
 # ---------------------------------------------------------
 # Load encoders
 # ---------------------------------------------------------
-le_origin = joblib.load("le_origin.pkl")
-le_fav = joblib.load("le_fav.pkl")
-mlbs = joblib.load("mlbs.pkl")   # dict of MultiLabelBinarizers
+le_origin = joblib.load(os.path.join(BASE_DIR, "le_origin.pkl"))
+le_fav = joblib.load(os.path.join(BASE_DIR, "le_fav.pkl"))
+mlbs = joblib.load(os.path.join(BASE_DIR, "mlbs.pkl"))   # dict of MultiLabelBinarizers
 
 # ---------------------------------------------------------
 # Load city data + precomputed embeddings
 # ---------------------------------------------------------
 cities_df = pd.read_csv("../../../Datasets/cities.csv")
-city_vectors = np.load("city_vectors.npy")   # shape: (num_cities, embedding_dim)
+city_vectors = np.load(os.path.join(BASE_DIR, "city_vectors.npy"))   # shape: (num_cities, embedding_dim)
 
 # Map city_id -> index in cities_df / city_vectors
 city_id_to_idx = {
@@ -30,7 +33,7 @@ city_id_to_idx = {
 # ---------------------------------------------------------
 # Load user-only TFLite model
 # ---------------------------------------------------------
-interpreter = tf.lite.Interpreter(model_path="user_encoder.tflite")
+interpreter = tf.lite.Interpreter(model_path=os.path.join(BASE_DIR, "user_encoder.tflite"))
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
