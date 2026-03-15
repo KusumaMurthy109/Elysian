@@ -26,8 +26,8 @@ import {
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import { query, where, collection, getDocs, orderBy } from "firebase/firestore";
-import { styles, inputTheme } from "./styles/app_styles.styles";
-import { profileStyles } from "./styles/profile.styles";
+import { styles, inputTheme } from "../styles/app_styles.styles";
+import { profileStyles } from "../styles/profile.styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import * as ImagePicker from "expo-image-picker";

@@ -5,8 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
-import { tutorialStyles } from "./styles/tutorial.styles";
-import { styles } from "./styles/app_styles.styles";
+import { tutorialStyles } from "../styles/tutorial.styles";
+import { styles } from "../styles/app_styles.styles";
 
 
 export default function Tutorial() {
