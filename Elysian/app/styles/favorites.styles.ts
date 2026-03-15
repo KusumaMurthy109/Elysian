@@ -34,7 +34,7 @@ export const favoritesStyles = StyleSheet.create({
     height: 180,
     marginBottom: 18,
     borderRadius: 20,
-    overflow: "hidden", // important for rounded corners
+    overflow: "hidden",
     position: "relative",
   },
 
@@ -54,7 +54,7 @@ export const favoritesStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "35%", // bottom third
+    height: "35%",
   },
 
   cityCardTextContainer: {
@@ -86,5 +86,60 @@ export const favoritesStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
+  },
+
+  sortRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginBottom: 14,
+    marginTop: -10,
+  },
+
+  sortIconWrapper: {
+    padding: 8,
+    borderRadius: 999,
+    backgroundColor: "#F3F0FF",
+  },
+
+  sortMenuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 20,
+  },
+
+  sortMenu: {
+    position: "absolute",
+    top: 100,
+    right: 20,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 8,
+    minWidth: 170,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 5,
+    zIndex: 30,
+  },
+
+  sortMenuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+
+  sortMenuText: {
+    fontSize: 15,
+    color: "#444",
+  },
+
+  sortMenuTextActive: {
+    fontSize: 15,
+    color: "#000",
+    fontWeight: "700",
   },
 });
