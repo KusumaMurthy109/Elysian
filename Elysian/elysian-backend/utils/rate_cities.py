@@ -18,7 +18,7 @@ Returns updated Elos, comparison count, and final rating score.
 
 import time
 from flask import request, jsonify
-from firebase_config import db
+from utils.firebase_config import db
 
 # Configuration Constants
 BASE_ELO = 1000   # Default Elo rating for new cities
@@ -49,6 +49,8 @@ SESSION_TIMEOUT = 300   # 5 minutes
 #     "ranked": list,
 #     "tempPersonalElos": {},
 #     "tempGlobalElos": {},
+#     "globalElos": {},
+#     "comparisonCount": int,
 #     "lastActivity": timestamp
 # }
 _sessions = {}
@@ -143,12 +145,13 @@ def calculate_rating_updates(session, winner_id, loser_id):
     personal_elos = session["tempPersonalElos"]
 
     # Fetch current global Elo values
-    winner_city = get_city_data(winner_id)
-    loser_city = get_city_data(loser_id)
+    global_elos = session["globalElos"]
+    winner_global = global_elos.get(winner_id, BASE_ELO)
+    loser_global = global_elos.get(loser_id, BASE_ELO)
 
     # Use personal Elo if exits, otherwise fallback to global Elo
-    winner_personal = personal_elos.get(winner_id, winner_city["globalElo"])
-    loser_personal = personal_elos.get(loser_id, loser_city["globalElo"])
+    winner_personal = personal_elos.get(winner_id, winner_global)
+    loser_personal = personal_elos.get(loser_id, loser_global)
 
     # Expected probability that winner will win
     expected_win = expected_score(winner_personal, loser_personal)
@@ -163,9 +166,6 @@ def calculate_rating_updates(session, winner_id, loser_id):
     # Global Elo updates move slower (30%)
     global_k = K_FACTOR * 0.3
 
-    winner_global = winner_city["globalElo"]
-    loser_global = loser_city["globalElo"]
-
     winner_expected_global = expected_score(winner_global, loser_global)
 
     winner_new_global = winner_global + global_k * (1 - winner_expected_global)
@@ -173,10 +173,6 @@ def calculate_rating_updates(session, winner_id, loser_id):
 
     session["tempGlobalElos"][winner_id] = winner_new_global
     session["tempGlobalElos"][loser_id] = loser_new_global
-
-    return {
-        "comparisonIncrement": 1
-    }
 
 # Ranking Helper Functions
 
@@ -211,10 +207,23 @@ def start_rating(user_id, city_id, feedback):
     cleanup_expired_sessions()
     ranked = get_sorted_ranking(user_id) # Get user's ranked cities
 
+    # Get global Elo for the city if it exists
+    city_data = get_city_data(city_id)
+    global_elo = city_data["globalElo"]
+
     # If user has never rated any cities
     if not ranked:
-        # Assign inital Elo based on feedback
-        initial_elo = INITIAL_ELO_MAP.get(feedback, BASE_ELO)
+        # Calculate initial Elo based on feedback AND global Elo
+        feedback_elo = INITIAL_ELO_MAP.get(feedback, BASE_ELO)
+        
+        # If city has a global Elo, blend it with feedback
+        if global_elo != BASE_ELO:
+            weight = min(city_data["comparisonCount"] / 50, 0.7)
+            initial_elo = (weight * global_elo) + ((1 - weight) * feedback_elo)
+        else:
+            # Otherwise just use feedback-based initial Elo
+            initial_elo = feedback_elo
+
         # Convert to display score
         rating_value = calculate_display_score_from_elos(
             {city_id: initial_elo},
@@ -248,6 +257,15 @@ def start_rating(user_id, city_id, feedback):
         left = 0
         right = len(ranked) - 1
 
+    global_elos = {}
+
+    # Load global Elo for new city
+    global_elos[city_id] = global_elo
+
+    # Load global Elo for ranked cities
+    for cid in ranked:
+        global_elos[cid] = get_city_data(cid)["globalElo"]
+
     # Creates a new rating session for user
     _sessions[user_id] = {
         "city_id": city_id,
@@ -256,6 +274,8 @@ def start_rating(user_id, city_id, feedback):
         "ranked": ranked,
         "tempPersonalElos": temp_elos,
         "tempGlobalElos": {},
+        "globalElos": global_elos,
+        "comparisonCount": 0,
         "lastActivity": time.time()
     }
 
@@ -296,17 +316,22 @@ def submit_comparison(user_id, preferred):
             session["left"] = mid + 1
 
         # Update Elo ratings
-        rating_updates = calculate_rating_updates(session, winner, loser)
+        calculate_rating_updates(session, winner, loser)
+
+        session["comparisonCount"] += 1
 
         # Finished comparisons
         if session["left"] > session["right"]:
             final_personal_elos = session["tempPersonalElos"]
             final_global_elos = session["tempGlobalElos"]
+            final_comparison_count = session["comparisonCount"]
 
             rating_value = calculate_display_score_from_elos(
                 final_personal_elos,
                 new_city
             )
+            
+            print(rating_value)
 
             _sessions.pop(user_id) # Delete session
 
@@ -314,7 +339,7 @@ def submit_comparison(user_id, preferred):
                 "status": "done",
                 "personalElos": final_personal_elos,
                 "globalElos": final_global_elos,
-                "comparisonIncrement": rating_updates["comparisonIncrement"],
+                "comparisonIncrement": final_comparison_count,
                 "ratingValue": rating_value
             }
 

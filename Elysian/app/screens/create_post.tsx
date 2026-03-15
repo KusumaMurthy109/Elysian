@@ -7,8 +7,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { View, Image, Pressable, ScrollView, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
-import { styles, inputTheme } from "./app_styles.styles";
-import { createPostStyles } from "./create_post.styles";
+import { styles, inputTheme } from "./styles/app_styles.styles";
+import { createPostStyles } from "./styles/create_post.styles";
 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -166,8 +166,6 @@ const CreatePost = () => {
 
   useEffect(() => {
     if (!comparison) return;
-    // console.log("Comparing?")
-    // console.log(comparison)
 
     const loadImages = async () => {
       let newImg = newCityImageRef.current;
@@ -180,7 +178,6 @@ const CreatePost = () => {
         );
 
         newCityImageRef.current = newImg;
-        console.log(newCityImageRef);
       }
 
       // Always fetch existing city image (it changes)
@@ -188,8 +185,6 @@ const CreatePost = () => {
         comparison.existing_city.city_name,
         comparison.existing_city.country_name,
       );
-
-      // console.log(existingImg);
 
       setComparisonImages({
         new: newImg,
@@ -315,7 +310,6 @@ const CreatePost = () => {
       setReview("");
       navigation.goBack();
     } catch (err) {
-      console.error("Submit post failed:", err);
       alert("Failed to submit post. Please try again.");
       setUploading(false);
     }
@@ -328,8 +322,6 @@ const CreatePost = () => {
       const run = async () => {
         setRatingStarted(true);
         setRatingCompleted(false);
-
-        // console.log("Starting rating");
 
         const res = await fetch(
           "https://capstone-team-generated-group30-project.onrender.com/rate-city",
@@ -345,9 +337,7 @@ const CreatePost = () => {
         );
 
         const data = await res.json();
-        // console.log("data");
-        // console.log(data);
-
+        
         if (data.status === "compare") {
           setComparison({
             new_city: data.new_city,
@@ -428,14 +418,14 @@ const CreatePost = () => {
     const rounded = Math.round(starValue * 2) / 2;
 
     for (let i = 1; i <= 5; i++) {
-      let iconName: "star" | "star-half-outline" | "star-outline"; // restrict to allowed Ionicons names
+      let iconName: "star" | "star-half-outline" | "star-outline";
 
       if (i <= Math.floor(rounded)) {
-        iconName = "star"; // full
+        iconName = "star"; // Full
       } else if (i === Math.floor(rounded) + 1 && rounded % 1 === 0.5) {
-        iconName = "star-half-outline"; // half
+        iconName = "star-half-outline"; // Half
       } else {
-        iconName = "star-outline"; // empty
+        iconName = "star-outline"; // Empty
       }
 
       stars.push(
@@ -511,7 +501,7 @@ const CreatePost = () => {
           </ScrollView>
         )}
 
-        <View style={{ width: "100%", position: "relative" }}>
+        <View style={createPostStyles.bodyContainer}>
           {/* City search */}
           <TextInput
             placeholder="Location"

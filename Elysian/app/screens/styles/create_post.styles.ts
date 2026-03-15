@@ -9,6 +9,11 @@ export const createPostStyles = StyleSheet.create({
     position: "relative",
   },
 
+  bodyContainer: {
+    width: "100%", 
+    position: "relative"
+  },
+
   title: {
     textAlign: "center",
     fontWeight: "700",

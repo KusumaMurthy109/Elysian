@@ -9,7 +9,12 @@
  * more details and manage their saved places.
  */
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { 
+  useEffect, 
+  useState, 
+  useCallback, 
+  useRef 
+} from "react";
 import {
   View,
   ScrollView,
@@ -22,8 +27,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
-import { styles } from "./app_styles.styles";
-import { favoritesStyles } from "./favorites.styles";
+import { styles } from "./styles/app_styles.styles";
+import { favoritesStyles } from "./styles/favorites.styles";
 
 import { getAuth } from "firebase/auth";
 import {
@@ -156,7 +161,7 @@ const Favorites = () => {
         fetchCityInfo(city.name, city.country),
       ]);
 
-      const patch: any = {};
+      const patch: { image?: string; description?: string } = {};  
       if (image) patch.image = image;
       if (description) patch.description = description;
 
@@ -192,6 +197,7 @@ const Favorites = () => {
       return null;
     }
   };
+
   const fetchWikivoyageIntro = async (
     cityName: string,
     country: string
@@ -500,7 +506,6 @@ const Favorites = () => {
         {/* Search Icon and Bar */}
         <View style={styles.searchOverlay}>
           {/* Absolute search icon */}
-
           <TouchableOpacity
             style={styles.topRightIcon}
             onPress={() => setSearchOpen((prev) => !prev)}

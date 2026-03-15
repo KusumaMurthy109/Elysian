@@ -15,17 +15,19 @@ import {
 import { TextInput, Button, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { inputTheme, styles, selectedColors } from "./app_styles.styles";
+import { inputTheme, styles, selectedColors } from "./styles/app_styles.styles";
 import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import { getAuth } from "firebase/auth";
-import { createPostStyles } from "./create_post.styles";
+import { createPostStyles } from "./styles/create_post.styles";
+import Tutorial from "./tutorial"
 
 // Define the type for Home screen navigation prop
 export type RootParamList = {
   ProfileSetup: undefined;
   Home: undefined;
   NavigationBar: undefined;
+  Tutorial: undefined;
 };
 
 // Define the type for Home screen navigation prop
@@ -111,6 +113,8 @@ const ProfileSetup = () => {
         "Adventure",
         "Nature",
         "Religious",
+        "Art",
+        "Archaeological"
       ],
     },
     {
@@ -184,7 +188,7 @@ const ProfileSetup = () => {
     },
     {
       question: "What type of place(s) do you like?",
-      answer: ["Quiet", "Moderate", "Busy"],
+      answer: ["Quiet", "Moderate", "Busy", "Chill", "Night Life", "Modern"],
     },
   ];
 
@@ -255,7 +259,7 @@ const ProfileSetup = () => {
   };
 
   // Handles action when next button is selected
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     // Check that there is an answer typed for short answer questions
     if (isAutocomplete && typedAnswer.trim() === "") {
       alert("Answer required. Please select from dropdown.");
@@ -307,12 +311,14 @@ const ProfileSetup = () => {
         return;
       }
 
-      setDoc(
+      await setDoc(
         doc(FIREBASE_DB, "users", user.uid),
-        { accountCreationComplete: true },
-        { merge: true },
+        { profileResponses: finalResponses },
+        { merge: true }
       );
+      navigation.navigate("Tutorial");
     }
+
   };
 
   return (

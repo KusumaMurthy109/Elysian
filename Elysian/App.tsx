@@ -11,6 +11,7 @@ import SignUp from './app/screens/sign_up';
 import ProfileLanding from './app/screens/profile_landing';
 import ProfileSetup from './app/screens/profile_setup';
 import NavigationBar from './app/screens/navigation_bar';
+import Tutorial from './app/screens/tutorial';
 
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -35,6 +36,7 @@ function AccountCreationStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileLanding" component={ProfileLanding} />
       <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
+      <Stack.Screen name="Tutorial" component={Tutorial} />
     </Stack.Navigator>
   );
 }
@@ -96,14 +98,14 @@ export default function App() {
       {/* No user logged in. Show authentication flow. */}
       {!user ? (
         <AuthStack />
-      ) : 
-      /* User logged in but account is not created. Show account creation flow. */
-      !accountCreationComplete ? (
-        <AccountCreationStack />
-      ) : (
-        /* User logged in and account is created. Show main app flow. */
-        <AppStack />
-      )}
+      ) :
+        /* User logged in but account is not created. Show account creation flow. */
+        !accountCreationComplete ? (
+          <AccountCreationStack />
+        ) : (
+          /* User logged in and account is created. Show main app flow. */
+          <AppStack />
+        )}
     </NavigationContainer>
   );
 }
