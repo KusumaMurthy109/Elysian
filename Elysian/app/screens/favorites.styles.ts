@@ -25,8 +25,60 @@ export const favoritesStyles = StyleSheet.create({
     zIndex: 10,
   },
 
+  sortLabel: {
+    fontSize: 14,
+    color: "#444",
+  },
+
+  sortRow: {
+    position: "absolute",
+    top: 80,
+    right: 32,
+    zIndex: 10,
+  },
+
+  sortIconWrapper: {
+    padding: 6,
+  },
+
+  sortMenuOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.12)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 165,
+    paddingRight: 28,
+  },
+
+  sortMenu: {
+    backgroundColor: "#FFFDFC",
+    borderRadius: 18,
+    paddingVertical: 8,
+    width: 190,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  sortMenuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+
+  sortMenuText: {
+    fontSize: 15,
+    color: "#222",
+  },
+
+  sortMenuTextActive: {
+    fontWeight: "700",
+    color: "#000",
+  },
+
   resultsContainer: {
-    marginTop: 8,
+    marginTop: 36,
   },
 
   cityCard: {
@@ -34,7 +86,7 @@ export const favoritesStyles = StyleSheet.create({
     height: 180,
     marginBottom: 18,
     borderRadius: 20,
-    overflow: "hidden", // important for rounded corners
+    overflow: "hidden",
     position: "relative",
   },
 
@@ -54,7 +106,7 @@ export const favoritesStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "35%", // bottom third
+    height: "35%",
   },
 
   cityCardTextContainer: {

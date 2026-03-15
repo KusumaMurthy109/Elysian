@@ -44,6 +44,7 @@ interface Recommendation {
   score: number;
   description?: string;
   image?: string;
+  addedAt?: number;
 }
 
 type City = {
@@ -126,7 +127,6 @@ const Recommendations = () => {
     return null;
   };
 
-
   const shorten = (text: string, sentences = 2, maxChars = 240) => {
     const cleaned = text.replace(/\s+/g, " ").trim();
     if (!cleaned) return "";
@@ -189,14 +189,29 @@ const Recommendations = () => {
 
     // Scoring helpers
     const positiveKeywords = [
-      "known for", "famous for", "offers", "features", "boasts",
-      "historic", "vibrant", "beautiful", "coastal", "mountain",
-      "popular", "renowned"
+      "known for",
+      "famous for",
+      "offers",
+      "features",
+      "boasts",
+      "historic",
+      "vibrant",
+      "beautiful",
+      "coastal",
+      "mountain",
+      "popular",
+      "renowned",
     ];
 
     const negativeKeywords = [
-      "danger", "unsafe", "avoid", "warning", "crime",
-      "may refer to", "more than one place", "disambiguation"
+      "danger",
+      "unsafe",
+      "avoid",
+      "warning",
+      "crime",
+      "may refer to",
+      "more than one place",
+      "disambiguation",
     ];
 
     const scoreSentence = (s: string) => {
@@ -204,11 +219,11 @@ const Recommendations = () => {
       const lower = s.toLowerCase();
 
       if (lower.includes(cityName.toLowerCase())) score += 1;
-      if (positiveKeywords.some(k => lower.includes(k))) score += 1;
+      if (positiveKeywords.some((k) => lower.includes(k))) score += 1;
       if (/^[A-Z]/.test(s.trim())) score += 0.5; // starts clean
       if (s.length >= 60 && s.length <= 220) score += 1;
 
-      if (negativeKeywords.some(k => lower.includes(k))) score -= 3;
+      if (negativeKeywords.some((k) => lower.includes(k))) score -= 3;
       if (s.includes("(")) score -= 0.5;
       if (/[;:]/.test(s)) score -= 1;
       if (!/[.!?]$/.test(s)) score -= 1;
@@ -218,7 +233,7 @@ const Recommendations = () => {
 
     // Score and sort
     const scored = sentences
-      .map(s => ({ s, score: scoreSentence(s) }))
+      .map((s) => ({ s, score: scoreSentence(s) }))
       .sort((a, b) => b.score - a.score);
 
     // Pick best 1–2 sentences
@@ -327,6 +342,7 @@ const Recommendations = () => {
             ...city,
             image: unsplashImageUrl || null,
             description: currentCityRef.current?.description || null,
+            addedAt: Date.now(),
           },
         },
         { merge: true }
@@ -610,23 +626,26 @@ const Recommendations = () => {
           onPress={() => setCityModalOpen(false)}
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
-          <Pressable style={{
-            maxHeight: "60%", minHeight: "30%",
-            backgroundColor: "#FFFDFC",
-            padding: 20,
-            borderRadius: 40,
-            zIndex: 1001, // above overlay
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 4,
-            elevation: 5,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            overflow: "hidden",
-            width: "90%"
-          }}>
+          <Pressable
+            style={{
+              maxHeight: "60%",
+              minHeight: "30%",
+              backgroundColor: "#FFFDFC",
+              padding: 20,
+              borderRadius: 40,
+              zIndex: 1001, // above overlay
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              overflow: "hidden",
+              width: "90%",
+            }}
+          >
             {selectedCity && (
               <View style={styles.cityModalContent}>
                 {selectedCity.image && (
