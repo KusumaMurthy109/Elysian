@@ -23,7 +23,7 @@ import {
   TouchableOpacity,
   Keyboard,
   ImageBackground,
-  Modal
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
@@ -57,6 +57,7 @@ interface Recommendation {
   score?: number; // Score is optional here
   description?: string;
   image?: string;
+  addedAt?: number;
 }
 
 interface City {
@@ -80,6 +81,10 @@ const Favorites = () => {
   const [cities, setCities] = useState<City[]>([]);
 
   const doubleTap = useRef<number | null>(null);
+  const [sortOption, setSortOption] = useState<"oldest" | "alphabetical">(
+    "oldest"
+  );
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
 
   const handlePress = (city: Recommendation) => {
     const now = Date.now();
@@ -144,6 +149,7 @@ const Favorites = () => {
           [city.id]: {
             city_name: city.name,
             country_name: city.country,
+            addedAt: Date.now(),
           },
         },
         { merge: true }
@@ -253,14 +259,29 @@ const Favorites = () => {
 
     // Scoring helpers
     const positiveKeywords = [
-      "known for", "famous for", "offers", "features", "boasts",
-      "historic", "vibrant", "beautiful", "coastal", "mountain",
-      "popular", "renowned"
+      "known for",
+      "famous for",
+      "offers",
+      "features",
+      "boasts",
+      "historic",
+      "vibrant",
+      "beautiful",
+      "coastal",
+      "mountain",
+      "popular",
+      "renowned",
     ];
 
     const negativeKeywords = [
-      "danger", "unsafe", "avoid", "warning", "crime",
-      "may refer to", "more than one place", "disambiguation"
+      "danger",
+      "unsafe",
+      "avoid",
+      "warning",
+      "crime",
+      "may refer to",
+      "more than one place",
+      "disambiguation",
     ];
 
     const scoreSentence = (s: string) => {
@@ -268,11 +289,11 @@ const Favorites = () => {
       const lower = s.toLowerCase();
 
       if (lower.includes(cityName.toLowerCase())) score += 1;
-      if (positiveKeywords.some(k => lower.includes(k))) score += 1;
+      if (positiveKeywords.some((k) => lower.includes(k))) score += 1;
       if (/^[A-Z]/.test(s.trim())) score += 0.5; // starts clean
       if (s.length >= 60 && s.length <= 220) score += 1;
 
-      if (negativeKeywords.some(k => lower.includes(k))) score -= 3;
+      if (negativeKeywords.some((k) => lower.includes(k))) score -= 3;
       if (s.includes("(")) score -= 0.5;
       if (/[;:]/.test(s)) score -= 1;
       if (!/[.!?]$/.test(s)) score -= 1;
@@ -282,7 +303,7 @@ const Favorites = () => {
 
     // Score and sort
     const scored = sentences
-      .map(s => ({ s, score: scoreSentence(s) }))
+      .map((s) => ({ s, score: scoreSentence(s) }))
       .sort((a, b) => b.score - a.score);
 
     // Pick best 1–2 sentences
@@ -424,10 +445,11 @@ const Favorites = () => {
 
               return {
                 city_id: key,
-                city_name: city.city_name,
-                country: city.country_name,
+                city_name: city.city_name ?? "",
+                country: city.country_name ?? "",
                 image: image || undefined,
                 description: description || undefined,
+                addedAt: city.addedAt,
               };
             })
           );
@@ -450,6 +472,18 @@ const Favorites = () => {
     return () => unsubscribe();
   }, []);
 
+  const sortedFavorites = [...favorites].sort((a, b) => {
+    if (sortOption === "alphabetical") {
+      const cityA = a.city_name ?? "";
+      const cityB = b.city_name ?? "";
+      return cityA.localeCompare(cityB);
+    }
+
+    return (
+      (a.addedAt ?? Number.MAX_SAFE_INTEGER) -
+      (b.addedAt ?? Number.MAX_SAFE_INTEGER)
+    );
+  });
   return (
     <ImageBackground
       source={require("../../assets/favorites_page_background.png")}
@@ -560,22 +594,30 @@ const Favorites = () => {
         {/* Favorites list */}
         {!searchOpen && (
           <>
-            {loading && (
-              <PenguinLoader text="Loading your favorite cities!" />
-            )}
+            {loading && <PenguinLoader text="Loading your favorite cities!" />}
             {error && !loading && <PenguinLoader text={error} />}
 
             <ScrollView contentContainerStyle={styles.homeContainer}>
               <Text variant="headlineLarge" style={favoritesStyles.title}>
                 Favorites
               </Text>
-              {!loading && favorites.length > 0 && (
+
+              <View style={favoritesStyles.sortRow}>
+                <TouchableOpacity
+                  onPress={() => setSortMenuOpen(true)}
+                  style={favoritesStyles.sortIconWrapper}
+                >
+                  <Ionicons name="swap-vertical" size={18} color="#444" />
+                </TouchableOpacity>
+              </View>
+
+              {!loading && sortedFavorites.length > 0 && (
                 <View style={favoritesStyles.resultsContainer}>
-                  {favorites.map((city) => (
+                  {sortedFavorites.map((city) => (
                     <Pressable
                       key={city.city_id}
                       onPress={() => {
-                        handlePress(city)
+                        handlePress(city);
                       }}
                       style={favoritesStyles.cityCard}
                     >
@@ -589,7 +631,6 @@ const Favorites = () => {
                         <View style={favoritesStyles.cityCardPlaceholder} />
                       )}
 
-                      {/* Progressive Blur on bottom 1/3 */}
                       <View style={favoritesStyles.cityCardBlurContainer}>
                         <MaskedView
                           maskElement={
@@ -610,14 +651,12 @@ const Favorites = () => {
                         </MaskedView>
                       </View>
 
-                      {/* Text on top of blurred area */}
                       <View style={favoritesStyles.cityCardTextContainer}>
                         <Text style={favoritesStyles.cityCardText}>
                           {city.city_name}, {city.country}
                         </Text>
                       </View>
 
-                      {/* Remove favorite icon */}
                       <Pressable
                         onPress={(e) => {
                           e.stopPropagation();
@@ -638,6 +677,56 @@ const Favorites = () => {
           </>
         )}
 
+        <Modal
+          visible={sortMenuOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSortMenuOpen(false)}
+        >
+          <Pressable
+            style={favoritesStyles.sortMenuOverlay}
+            onPress={() => setSortMenuOpen(false)}
+          >
+            <View style={favoritesStyles.sortMenu}>
+              <TouchableOpacity
+                onPress={() => {
+                  setSortOption("oldest");
+                  setSortMenuOpen(false);
+                }}
+                style={favoritesStyles.sortMenuItem}
+              >
+                <Text
+                  style={[
+                    favoritesStyles.sortMenuText,
+                    sortOption === "oldest" &&
+                      favoritesStyles.sortMenuTextActive,
+                  ]}
+                >
+                  Oldest to Newest
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setSortOption("alphabetical");
+                  setSortMenuOpen(false);
+                }}
+                style={favoritesStyles.sortMenuItem}
+              >
+                <Text
+                  style={[
+                    favoritesStyles.sortMenuText,
+                    sortOption === "alphabetical" &&
+                      favoritesStyles.sortMenuTextActive,
+                  ]}
+                >
+                  Alphabetical
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Modal>
+
         {/* Full-screen dim overlay */}
         <Modal
           visible={cityModalOpen}
@@ -656,7 +745,6 @@ const Favorites = () => {
             {selectedCity && (
               <View style={styles.cityModalContainer}>
                 <ScrollView contentContainerStyle={styles.cityModalContent}>
-
                   {selectedCity.image && (
                     <Image
                       source={{ uri: selectedCity.image }}
@@ -674,7 +762,8 @@ const Favorites = () => {
                   </Text>
 
                   <Text style={styles.cityModalDescription}>
-                    {selectedCity.description || `${selectedCity.city_name} is a destination known for its culture, atmosphere, and local attractions.`}
+                    {selectedCity.description ||
+                      `${selectedCity.city_name} is a destination known for its culture, atmosphere, and local attractions.`}
                   </Text>
                 </ScrollView>
               </View>
