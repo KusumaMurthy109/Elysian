@@ -9,12 +9,7 @@
  * more details and manage their saved places.
  */
 
-import React, { 
-  useEffect, 
-  useState, 
-  useCallback, 
-  useRef 
-} from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   ScrollView,
@@ -38,6 +33,7 @@ import {
   deleteField,
   setDoc,
   getDocs,
+  getDoc,
   collection,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
@@ -114,6 +110,38 @@ const Favorites = () => {
     }
   };
 
+  const getCityData = async (cityId: string) => {
+    try {
+      const cityRef = doc(FIREBASE_DB, "allCities", cityId);
+      const citySnap = await getDoc(cityRef);
+
+      if (!citySnap.exists()) {
+        return {
+          description: undefined,
+          image: undefined,
+        };
+      }
+
+      const cityData = citySnap.data();
+
+      return {
+        description: cityData.description || undefined,
+        image:
+          cityData.image ||
+          cityData.image_url ||
+          cityData.imageUrl ||
+          cityData.url ||
+          undefined,
+      };
+    } catch (err) {
+      console.error("Error fetching city data:", err);
+      return {
+        description: undefined,
+        image: undefined,
+      };
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       // Screen focused → do nothing
@@ -141,216 +169,23 @@ const Favorites = () => {
       if (!user) return;
 
       const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+      const cityData = await getCityData(city.id);
 
-      // 1) Save basic info immediately
       await setDoc(
         userFavoritesRef,
         {
           [city.id]: {
             city_name: city.name,
             country_name: city.country,
+            image: cityData.image || null,
+            description: cityData.description || null,
             addedAt: Date.now(),
           },
         },
         { merge: true }
       );
-
-      // 2) Fetch image + description in background
-      const [image, description] = await Promise.all([
-        fetchUnsplashImage(city.name, city.country),
-        fetchCityInfo(city.name, city.country),
-      ]);
-
-      const patch: { image?: string; description?: string } = {};  
-      if (image) patch.image = image;
-      if (description) patch.description = description;
-
-      // 3️) Save extras if they exist
-      if (Object.keys(patch).length > 0) {
-        await setDoc(
-          userFavoritesRef,
-          {
-            [city.id]: patch,
-          },
-          { merge: true }
-        );
-      }
     } catch (err) {
       console.error("Error adding to favorites:", err);
-    }
-  };
-
-  const fetchUnsplashImage = async (cityName: string, country: string) => {
-    try {
-      const url =
-        `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName
-        )}` + `&country=${encodeURIComponent(country)}`;
-
-      const res = await fetch(url);
-      if (!res.ok) return null;
-
-      const json = await res.json();
-      return json?.data?.imageUrl ?? null;
-    } catch (e) {
-      console.error("Unsplash fetch error:", e);
-      return null;
-    }
-  };
-
-  const fetchWikivoyageIntro = async (
-    cityName: string,
-    country: string
-  ): Promise<string | null> => {
-    const titlesToTry = [
-      cityName,
-      `${cityName}, ${country}`,
-      `${cityName} (${country})`,
-    ];
-
-    for (const title of titlesToTry) {
-      try {
-        const url =
-          `https://en.wikivoyage.org/w/api.php` +
-          `?action=query&format=json&origin=*` +
-          `&prop=extracts&exintro=1&explaintext=1&redirects=1` +
-          `&titles=${encodeURIComponent(title)}`;
-
-        const res = await fetch(url);
-        if (!res.ok) continue;
-
-        const data = await res.json();
-        const pages = data?.query?.pages;
-        if (!pages) continue;
-
-        const page = pages[Object.keys(pages)[0]];
-        const extract = page?.extract;
-
-        if (
-          extract &&
-          !extract.toLowerCase().includes("more than one place") &&
-          !extract.toLowerCase().includes("may refer to")
-        ) {
-          return extract;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    return null;
-  };
-
-  const makeTravelBlurb = (raw: string, cityName: string) => {
-    if (!raw || !raw.trim()) {
-      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
-    }
-    const cleaned = raw
-      .replace(/\s+/g, " ")
-      .replace(/\[[^\]]*\]/g, "") // remove [1], [2]
-      .trim();
-
-    // Split into sentences
-    const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
-
-    if (sentences.length === 0) {
-      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
-    }
-
-    // Scoring helpers
-    const positiveKeywords = [
-      "known for",
-      "famous for",
-      "offers",
-      "features",
-      "boasts",
-      "historic",
-      "vibrant",
-      "beautiful",
-      "coastal",
-      "mountain",
-      "popular",
-      "renowned",
-    ];
-
-    const negativeKeywords = [
-      "danger",
-      "unsafe",
-      "avoid",
-      "warning",
-      "crime",
-      "may refer to",
-      "more than one place",
-      "disambiguation",
-    ];
-
-    const scoreSentence = (s: string) => {
-      let score = 0;
-      const lower = s.toLowerCase();
-
-      if (lower.includes(cityName.toLowerCase())) score += 1;
-      if (positiveKeywords.some((k) => lower.includes(k))) score += 1;
-      if (/^[A-Z]/.test(s.trim())) score += 0.5; // starts clean
-      if (s.length >= 60 && s.length <= 220) score += 1;
-
-      if (negativeKeywords.some((k) => lower.includes(k))) score -= 3;
-      if (s.includes("(")) score -= 0.5;
-      if (/[;:]/.test(s)) score -= 1;
-      if (!/[.!?]$/.test(s)) score -= 1;
-
-      return score;
-    };
-
-    // Score and sort
-    const scored = sentences
-      .map((s) => ({ s, score: scoreSentence(s) }))
-      .sort((a, b) => b.score - a.score);
-
-    // Pick best 1–2 sentences
-    const best = [scored[0]?.s].filter(Boolean);
-
-    if (scored[1]) {
-      const s2 = scored[1].s.trim();
-      const startsClean = /^[A-Z]/.test(s2);
-      const badStart = /^(and|but|however|although)\b/i.test(s2);
-
-      if (startsClean && !badStart && s2.length <= 220) {
-        best.push(s2);
-      }
-    }
-
-    let out = best.join(" ").trim();
-
-    // Ensure final punctuation
-    if (!/[.!?]$/.test(out)) out += ".";
-
-    // Soft length cap (sentence-safe)
-    const maxChars = 260;
-    if (out.length > maxChars) {
-      const parts = out.split(/(?<=[.!?])\s+/);
-      let trimmed = "";
-      for (const p of parts) {
-        if ((trimmed + " " + p).length > maxChars) break;
-        trimmed += (trimmed ? " " : "") + p;
-      }
-      out = trimmed.trim();
-    }
-
-    // Final fallback if somehow empty
-    if (!out) {
-      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
-    }
-
-    return out;
-  };
-
-  const fetchCityInfo = async (cityName: string, country: string) => {
-    try {
-      const raw = await fetchWikivoyageIntro(cityName, country);
-      if (!raw) return undefined;
-      return makeTravelBlurb(raw, cityName);
-    } catch {
-      return undefined;
     }
   };
 
@@ -421,37 +256,19 @@ const Favorites = () => {
           setError(null);
 
           const cityData = snapshot.data() || {};
-          const favoritesArray: Recommendation[] = await Promise.all(
-            Object.keys(cityData).map(async (key) => {
+          const favoritesArray: Recommendation[] = Object.keys(cityData).map(
+            (key) => {
               const city = cityData[key];
-
-              // --- IMAGE (Unsplash only) ---
-              let image = city.image;
-              if (!image) {
-                image = await fetchUnsplashImage(
-                  city.city_name,
-                  city.country_name
-                );
-
-                // Persist if we got one
-                if (image) {
-                  await updateDoc(favoritesRef, {
-                    [`${key}.image`]: image,
-                  });
-                }
-              }
-
-              const description = city.description;
 
               return {
                 city_id: key,
                 city_name: city.city_name ?? "",
                 country: city.country_name ?? "",
-                image: image || undefined,
-                description: description || undefined,
+                image: city.image || undefined,
+                description: city.description || undefined,
                 addedAt: city.addedAt,
               };
-            })
+            }
           );
 
           setFavorites(favoritesArray);
@@ -607,7 +424,7 @@ const Favorites = () => {
                   onPress={() => setSortMenuOpen(true)}
                   style={favoritesStyles.sortIconWrapper}
                 >
-                  <Ionicons name="swap-vertical" size={18} color="#444" />
+                  <Ionicons name="funnel-outline" size={14} color="#444" />
                 </TouchableOpacity>
               </View>
 

@@ -20,7 +20,7 @@ export const favoritesStyles = StyleSheet.create({
 
   itineraryIcon: {
     position: "absolute",
-    top: 75,
+    top: 65,
     right: 90,
     zIndex: 10,
   },
@@ -89,17 +89,20 @@ export const favoritesStyles = StyleSheet.create({
   },
 
   sortRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginBottom: 14,
-    marginTop: -10,
+    position: "absolute",
+    right: 35,
+    top: 85,
+    zIndex: 5,
+    marginTop: -20,
   },
 
   sortIconWrapper: {
-    padding: 8,
-    borderRadius: 999,
-    backgroundColor: "#F3F0FF",
+    width: 26,
+    height: 26,
+    borderRadius: 200,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(255,255,255,0.8)",
   },
 
   sortMenuOverlay: {

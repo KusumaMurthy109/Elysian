@@ -31,6 +31,7 @@ type FavCity = {
   id: string;
   name: string;
   country: string;
+  image?: string;
 };
 type ActivityCategory = "restaurants" | "outdoor" | "arts" | "entertainment";
 
@@ -74,7 +75,7 @@ const Itinerary = () => {
   const isItineraryListMode = !!selectedCity;
 
   const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>(
-    [],
+    []
   );
 
   const showActivitiesUI =
@@ -88,7 +89,7 @@ const Itinerary = () => {
         setSearchQuery("");
         setDropdownOpen(false);
       };
-    }, []),
+    }, [])
   );
 
   // Load favorited cities (userFavorites) in realtime
@@ -123,6 +124,7 @@ const Itinerary = () => {
               id: key,
               name: data[key]?.city_name ?? "",
               country: data[key]?.country_name ?? "",
+              image: data[key]?.image ?? undefined,
             }))
             .filter((c) => c.name && c.country);
 
@@ -141,7 +143,7 @@ const Itinerary = () => {
         setError("Failed to load favorite cities.");
         setFavoritesCities([]);
         setLoading(false);
-      },
+      }
     );
 
     return () => unsubscribe();
@@ -151,7 +153,7 @@ const Itinerary = () => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
     return favoritesCities.filter((c) =>
-      `${c.name}, ${c.country}`.toLowerCase().includes(q),
+      `${c.name}, ${c.country}`.toLowerCase().includes(q)
     );
   }, [favoritesCities, searchQuery]);
 
@@ -187,7 +189,7 @@ const Itinerary = () => {
   const visibleActivities = useMemo(() => {
     if (selectedFilters.length === 0) return activityOptions; // no filters = show all
     return activityOptions.filter((a) =>
-      selectedFilters.includes(a.category as ActivityCategory),
+      selectedFilters.includes(a.category as ActivityCategory)
     );
   }, [activityOptions, selectedFilters]);
 
@@ -205,7 +207,7 @@ const Itinerary = () => {
             city: city.name,
             country: city.country,
           }),
-        },
+        }
       );
 
       if (!res.ok) throw new Error("Failed to fetch activities.");
@@ -236,13 +238,14 @@ const Itinerary = () => {
       await addDoc(itineraryRef, {
         city: selectedCity.name,
         country: selectedCity.country,
+        imageUrl: selectedCity.image || null,
         activities: selectedActivities.map((a) => ({
           name: a,
-          likes: [], // empty until users start liking
+          likes: [],
         })),
         updatedAt: new Date(),
         ownerId: user.uid,
-        sharedWith: [], // Empty until shared with someone.
+        sharedWith: [],
       });
 
       // console.log("Itinerary saved successfully!");
@@ -411,10 +414,7 @@ const Itinerary = () => {
                         onPress={() =>
                           setSelectedFilters(
                             (prev) =>
-                              toggleInArray(
-                                prev,
-                                f.value,
-                              ) as ActivityCategory[],
+                              toggleInArray(prev, f.value) as ActivityCategory[]
                           )
                         }
                         style={[
@@ -451,7 +451,7 @@ const Itinerary = () => {
                           key={a.name}
                           onPress={() =>
                             setSelectedActivities((prev) =>
-                              toggleInArray(prev, a.name),
+                              toggleInArray(prev, a.name)
                             )
                           }
                           style={itineraryStyles.itineraryActivityRow}
