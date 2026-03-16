@@ -126,12 +126,7 @@ const Favorites = () => {
 
       return {
         description: cityData.description || undefined,
-        image:
-          cityData.image ||
-          cityData.image_url ||
-          cityData.imageUrl ||
-          cityData.url ||
-          undefined,
+        image: cityData.url || undefined,
       };
     } catch (err) {
       console.error("Error fetching city data:", err);

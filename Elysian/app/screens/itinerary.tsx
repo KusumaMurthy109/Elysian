@@ -31,7 +31,6 @@ type FavCity = {
   id: string;
   name: string;
   country: string;
-  image?: string;
 };
 type ActivityCategory = "restaurants" | "outdoor" | "arts" | "entertainment";
 
@@ -124,7 +123,6 @@ const Itinerary = () => {
               id: key,
               name: data[key]?.city_name ?? "",
               country: data[key]?.country_name ?? "",
-              image: data[key]?.image ?? undefined,
             }))
             .filter((c) => c.name && c.country);
 
@@ -238,7 +236,6 @@ const Itinerary = () => {
       await addDoc(itineraryRef, {
         city: selectedCity.name,
         country: selectedCity.country,
-        imageUrl: selectedCity.image || null,
         activities: selectedActivities.map((a) => ({
           name: a,
           likes: [],

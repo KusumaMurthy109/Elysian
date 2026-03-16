@@ -70,9 +70,26 @@ const UserItineraries = () => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const doubleTap = useRef<number | null>(null);
+  const getCityImage = async (city: string, country: string) => {
+    try {
+      const citiesSnap = await getDocs(collection(FIREBASE_DB, "allCities"));
+
+      const match = citiesSnap.docs.find((docSnap) => {
+        const data = docSnap.data();
+        return data.city_name === city && data.country_name === country;
+      });
+
+      if (!match) return null;
+
+      const cityData = match.data();
+      return cityData.url || null;
+    } catch (error) {
+      console.error("Error fetching city image from allCities:", error);
+      return null;
+    }
+  };
 
   /* ------------------ HOOKS ------------------ */
-
   useEffect(() => {
     const currentUser = FIREBASE_AUTH.currentUser;
     if (!currentUser) return;
@@ -87,10 +104,22 @@ const UserItineraries = () => {
       where("sharedWith", "array-contains", currentUser.uid)
     );
 
-    const unsubOwned = onSnapshot(qOwned, (ownedSnap) => {
+    const unsubOwned = onSnapshot(qOwned, async (ownedSnap) => {
       const ownedData: Itinerary[] = ownedSnap.docs.map((docSnap) => ({
         id: docSnap.id,
         ...(docSnap.data() as Omit<Itinerary, "id">),
+      }));
+
+      const imageEntries = await Promise.all(
+        ownedData.map(async (itin) => {
+          const image = await getCityImage(itin.city, itin.country);
+          return [itin.id, image] as const;
+        })
+      );
+
+      setCityImages((prev) => ({
+        ...prev,
+        ...Object.fromEntries(imageEntries),
       }));
 
       setItineraries((prev) => [
@@ -100,10 +129,22 @@ const UserItineraries = () => {
       setLoading(false);
     });
 
-    const unsubShared = onSnapshot(qShared, (sharedSnap) => {
+    const unsubShared = onSnapshot(qShared, async (sharedSnap) => {
       const sharedData: Itinerary[] = sharedSnap.docs.map((docSnap) => ({
         id: docSnap.id,
         ...(docSnap.data() as Omit<Itinerary, "id">),
+      }));
+
+      const imageEntries = await Promise.all(
+        sharedData.map(async (itin) => {
+          const image = await getCityImage(itin.city, itin.country);
+          return [itin.id, image] as const;
+        })
+      );
+
+      setCityImages((prev) => ({
+        ...prev,
+        ...Object.fromEntries(imageEntries),
       }));
 
       setItineraries((prev) => [
@@ -165,6 +206,10 @@ const UserItineraries = () => {
   }, [shareModalOpen]);
 
   /* ------------------ FUNCTIONS ------------------ */
+
+  const [cityImages, setCityImages] = useState<{
+    [key: string]: string | null;
+  }>({});
 
   const handleSearchUsers = async (text: string) => {
     setSearchQuery(text);
@@ -289,13 +334,20 @@ const UserItineraries = () => {
                   onPress={() => {
                     const now = Date.now();
                     if (doubleTap.current && now - doubleTap.current < 300) {
-                      setOpenItinerary(itin);
+                      setOpenItinerary({
+                        ...itin,
+                        imageUrl: cityImages[itin.id] ?? null,
+                      });
                     }
                     doubleTap.current = now;
                   }}
                 >
                   <ImageBackground
-                    source={itin.imageUrl ? { uri: itin.imageUrl } : undefined}
+                    source={
+                      cityImages[itin.id]
+                        ? { uri: cityImages[itin.id]! }
+                        : undefined
+                    }
                     style={profileStyles.scrollCard}
                   >
                     <TouchableOpacity
