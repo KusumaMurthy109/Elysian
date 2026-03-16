@@ -51,42 +51,14 @@ export type Activity = {
   likes: string[];
 };
 
-const fetchUnsplashImage = async (cityName: string, country: string) => {
-  try {
-    const url =
-      `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-        cityName,
-      )}` + `&country=${encodeURIComponent(country)}`;
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      console.log("Fetch failed:", res.status);
-      return null;
-    }
-
-    const json = await res.json();
-
-    console.log("API response:", json);
-
-    return json?.data?.imageUrl ?? null;
-  } catch (e) {
-    console.error("Unsplash fetch error:", e);
-    return null;
-  }
-};
-
 const UserItineraries = () => {
-  const [itineraries, setItineraries] = useState<any[]>([]);
+  const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unsplashImageUrl, setUnsplashImageUrl] = useState<{
-    [key: string]: string | null;
-  }>({});
 
   const [openItinerary, setOpenItinerary] = useState<Itinerary | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(
-    null,
+    null
   );
   const [newActivity, setNewActivity] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -98,41 +70,58 @@ const UserItineraries = () => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const doubleTap = useRef<number | null>(null);
+  const getCityImage = async (city: string, country: string) => {
+    try {
+      const citiesSnap = await getDocs(collection(FIREBASE_DB, "allCities"));
+
+      const match = citiesSnap.docs.find((docSnap) => {
+        const data = docSnap.data();
+        return data.city_name === city && data.country_name === country;
+      });
+
+      if (!match) return null;
+
+      const cityData = match.data();
+      return cityData.url || null;
+    } catch (error) {
+      console.error("Error fetching city image from allCities:", error);
+      return null;
+    }
+  };
 
   /* ------------------ HOOKS ------------------ */
-
   useEffect(() => {
     const currentUser = FIREBASE_AUTH.currentUser;
     if (!currentUser) return;
 
     const qOwned = query(
       collection(FIREBASE_DB, "itineraries"),
-      where("ownerId", "==", currentUser.uid),
+      where("ownerId", "==", currentUser.uid)
     );
 
     const qShared = query(
       collection(FIREBASE_DB, "itineraries"),
-      where("sharedWith", "array-contains", currentUser.uid),
+      where("sharedWith", "array-contains", currentUser.uid)
     );
 
     const unsubOwned = onSnapshot(qOwned, async (ownedSnap) => {
-      const ownedData = ownedSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as any),
+      const ownedData: Itinerary[] = ownedSnap.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Itinerary, "id">),
       }));
 
-      const imageGet = ownedData.map(async (itin) => {
-        const img = await fetchUnsplashImage(itin.city, itin.country);
-        return { id: itin.id, img };
-      });
+      const imageEntries = await Promise.all(
+        ownedData.map(async (itin) => {
+          const image = await getCityImage(itin.city, itin.country);
+          return [itin.id, image] as const;
+        })
+      );
 
-      const result_images = await Promise.all(imageGet);
-      const imageMap: { [key: string]: string | null } = {};
-      result_images.forEach((r) => {
-        imageMap[r.id] = r.img;
-      });
+      setCityImages((prev) => ({
+        ...prev,
+        ...Object.fromEntries(imageEntries),
+      }));
 
-      setUnsplashImageUrl((prev) => ({ ...prev, ...imageMap }));
       setItineraries((prev) => [
         ...ownedData,
         ...prev.filter((i) => i.ownerId !== currentUser.uid),
@@ -141,27 +130,28 @@ const UserItineraries = () => {
     });
 
     const unsubShared = onSnapshot(qShared, async (sharedSnap) => {
-      const sharedData = sharedSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as any),
+      const sharedData: Itinerary[] = sharedSnap.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Itinerary, "id">),
       }));
 
-      const imageGet = sharedData.map(async (itin) => {
-        const img = await fetchUnsplashImage(itin.city, itin.country);
-        return { id: itin.id, img };
-      });
+      const imageEntries = await Promise.all(
+        sharedData.map(async (itin) => {
+          const image = await getCityImage(itin.city, itin.country);
+          return [itin.id, image] as const;
+        })
+      );
 
-      const result_images = await Promise.all(imageGet);
-      const imageMap: { [key: string]: string | null } = {};
-      result_images.forEach((r) => {
-        imageMap[r.id] = r.img;
-      });
+      setCityImages((prev) => ({
+        ...prev,
+        ...Object.fromEntries(imageEntries),
+      }));
 
-      setUnsplashImageUrl((prev) => ({ ...prev, ...imageMap }));
       setItineraries((prev) => [
         ...prev.filter((i) => i.ownerId === currentUser.uid),
         ...sharedData,
       ]);
+      setLoading(false);
     });
 
     return () => {
@@ -200,7 +190,7 @@ const UserItineraries = () => {
     if (!openItinerary) return;
     const fetchOwnerUsername = async () => {
       const snap = await getDoc(
-        doc(FIREBASE_DB, "users", openItinerary.ownerId),
+        doc(FIREBASE_DB, "users", openItinerary.ownerId)
       );
       if (snap.exists()) setOwnerUsername(snap.data().username);
     };
@@ -217,6 +207,10 @@ const UserItineraries = () => {
 
   /* ------------------ FUNCTIONS ------------------ */
 
+  const [cityImages, setCityImages] = useState<{
+    [key: string]: string | null;
+  }>({});
+
   const handleSearchUsers = async (text: string) => {
     setSearchQuery(text);
     if (text.trim() === "") return setSearchResults([]);
@@ -224,7 +218,7 @@ const UserItineraries = () => {
     if (!selectedItinerary) return;
     // Fetch itinerary data
     const itinSnap = await getDoc(
-      doc(FIREBASE_DB, "itineraries", selectedItinerary.id),
+      doc(FIREBASE_DB, "itineraries", selectedItinerary.id)
     );
     if (!itinSnap.exists()) return;
     const itinData = itinSnap.data() as any;
@@ -236,12 +230,12 @@ const UserItineraries = () => {
     const q1 = query(
       collection(FIREBASE_DB, "users"),
       where("username", ">=", lower),
-      where("username", "<=", lower + "\uf8ff"),
+      where("username", "<=", lower + "\uf8ff")
     );
     const q2 = query(
       collection(FIREBASE_DB, "users"),
       where("username", ">=", upper),
-      where("username", "<=", upper + "\uf8ff"),
+      where("username", "<=", upper + "\uf8ff")
     );
 
     const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
@@ -334,8 +328,6 @@ const UserItineraries = () => {
       <ScrollView style={{ flex: 1 }}>
         <View style={profileStyles.scrollContainer}>
           {itineraries.map((itin) => {
-            const imageUrl = unsplashImageUrl[itin.id];
-
             return (
               <View key={itin.id} style={profileStyles.scrollGrid}>
                 <Pressable
@@ -344,14 +336,18 @@ const UserItineraries = () => {
                     if (doubleTap.current && now - doubleTap.current < 300) {
                       setOpenItinerary({
                         ...itin,
-                        imageUrl: unsplashImageUrl[itin.id] ?? null,
+                        imageUrl: cityImages[itin.id] ?? null,
                       });
                     }
                     doubleTap.current = now;
                   }}
                 >
                   <ImageBackground
-                    source={imageUrl ? { uri: imageUrl } : undefined}
+                    source={
+                      cityImages[itin.id]
+                        ? { uri: cityImages[itin.id]! }
+                        : undefined
+                    }
                     style={profileStyles.scrollCard}
                   >
                     <TouchableOpacity

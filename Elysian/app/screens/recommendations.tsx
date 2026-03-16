@@ -16,11 +16,10 @@ import {
   PanResponder,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, Button } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { styles } from "../styles/app_styles.styles";
 import { recommendationStyles } from "../styles/recommendations.styles";
-import { Animated, Easing } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Animated } from "react-native";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
@@ -44,6 +43,7 @@ interface Recommendation {
   score: number;
   description?: string;
   image?: string;
+  city_attrs?: string | null;
   addedAt?: number;
 }
 
@@ -64,9 +64,6 @@ const Recommendations = () => {
   const doubleTap = useRef<number | null>(null);
   const [currentCity, setCurrentCity] = useState<Recommendation | null>(null);
   const currentCityRef = useRef<Recommendation | null>(null);
-  const [unsplashImageUrl, setUnsplashImageUrl] = useState<string | null>(null);
-  // This will set the tags for the current city.
-  const [currentCityAttr, setCurrentCityAttr] = useState<string | null>(null);
   const glassAvailable = isLiquidGlassAvailable();
   // Need to get the width and height of screen for the images to fit full page.
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -74,226 +71,6 @@ const Recommendations = () => {
   useEffect(() => {
     currentCityRef.current = currentCity;
   }, [currentCity]);
-  useEffect(() => {
-    const loadCityAttributes = async () => {
-      if (!currentCity) return;
-
-      const attrs = await getCityAttrs(currentCity.city_id);
-      setCurrentCityAttr(attrs);
-    };
-
-    loadCityAttributes();
-  }, [currentCity]);
-
-  const fetchWikivoyageIntro = async (
-    cityName: string,
-    country: string
-  ): Promise<string | null> => {
-    const titlesToTry = [
-      cityName,
-      `${cityName}, ${country}`,
-      `${cityName} (${country})`,
-    ];
-
-    for (const title of titlesToTry) {
-      try {
-        const url =
-          `https://en.wikivoyage.org/w/api.php` +
-          `?action=query&format=json&origin=*` +
-          `&prop=extracts&exintro=1&explaintext=1&redirects=1` +
-          `&titles=${encodeURIComponent(title)}`;
-
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const pages = data?.query?.pages;
-        if (!pages) continue;
-
-        const page = pages[Object.keys(pages)[0]];
-        const extract = page?.extract;
-
-        if (
-          extract &&
-          !extract.toLowerCase().includes("more than one place") &&
-          !extract.toLowerCase().includes("may refer to")
-        ) {
-          return extract;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    return null;
-  };
-
-  const shorten = (text: string, sentences = 2, maxChars = 240) => {
-    const cleaned = text.replace(/\s+/g, " ").trim();
-    if (!cleaned) return "";
-
-    // Take N sentences first
-    const parts = cleaned.split(". ");
-    let out = parts.slice(0, sentences).join(". ");
-    if (!out.endsWith(".")) out += ".";
-
-    // If still too long, hard cap, but end cleanly
-    if (out.length > maxChars) {
-      out = out.slice(0, maxChars).trimEnd();
-      out = out.replace(/\s+\S*$/, ""); // drop partial last word
-      // Prefer ending on sentence punctuation if we can
-      const lastPunct = Math.max(
-        out.lastIndexOf("."),
-        out.lastIndexOf("!"),
-        out.lastIndexOf("?")
-      );
-      if (lastPunct > 60) out = out.slice(0, lastPunct + 1);
-      else out += "...";
-    }
-
-    return out;
-  };
-
-  const fetchCityInfo = async (cityName: string, country: string) => {
-    try {
-      // Wikivoyage only (text)
-      const voyText = await fetchWikivoyageIntro(cityName, country);
-
-      const descriptionRaw = voyText || "";
-      const description = descriptionRaw
-        ? makeTravelBlurb(descriptionRaw, cityName)
-        : "No description available.";
-
-      // IMPORTANT: no wikipedia image fallback at all
-      return { description, image: undefined };
-    } catch (err) {
-      console.error("Error fetching city info:", err);
-      return { description: "No description available.", image: undefined };
-    }
-  };
-
-  const makeTravelBlurb = (raw: string, cityName: string) => {
-    if (!raw || !raw.trim()) {
-      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
-    }
-    const cleaned = raw
-      .replace(/\s+/g, " ")
-      .replace(/\[[^\]]*\]/g, "") // remove [1], [2]
-      .trim();
-
-    // Split into sentences
-    const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(Boolean);
-
-    if (sentences.length === 0) {
-      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
-    }
-
-    // Scoring helpers
-    const positiveKeywords = [
-      "known for",
-      "famous for",
-      "offers",
-      "features",
-      "boasts",
-      "historic",
-      "vibrant",
-      "beautiful",
-      "coastal",
-      "mountain",
-      "popular",
-      "renowned",
-    ];
-
-    const negativeKeywords = [
-      "danger",
-      "unsafe",
-      "avoid",
-      "warning",
-      "crime",
-      "may refer to",
-      "more than one place",
-      "disambiguation",
-    ];
-
-    const scoreSentence = (s: string) => {
-      let score = 0;
-      const lower = s.toLowerCase();
-
-      if (lower.includes(cityName.toLowerCase())) score += 1;
-      if (positiveKeywords.some((k) => lower.includes(k))) score += 1;
-      if (/^[A-Z]/.test(s.trim())) score += 0.5; // starts clean
-      if (s.length >= 60 && s.length <= 220) score += 1;
-
-      if (negativeKeywords.some((k) => lower.includes(k))) score -= 3;
-      if (s.includes("(")) score -= 0.5;
-      if (/[;:]/.test(s)) score -= 1;
-      if (!/[.!?]$/.test(s)) score -= 1;
-
-      return score;
-    };
-
-    // Score and sort
-    const scored = sentences
-      .map((s) => ({ s, score: scoreSentence(s) }))
-      .sort((a, b) => b.score - a.score);
-
-    // Pick best 1–2 sentences
-    const best = [scored[0]?.s].filter(Boolean);
-
-    if (scored[1]) {
-      const s2 = scored[1].s.trim();
-      const startsClean = /^[A-Z]/.test(s2);
-      const badStart = /^(and|but|however|although)\b/i.test(s2);
-
-      if (startsClean && !badStart && s2.length <= 220) {
-        best.push(s2);
-      }
-    }
-
-    let out = best.join(" ").trim();
-
-    // Ensure final punctuation
-    if (!/[.!?]$/.test(out)) out += ".";
-
-    // Soft length cap (sentence-safe)
-    const maxChars = 260;
-    if (out.length > maxChars) {
-      const parts = out.split(/(?<=[.!?])\s+/);
-      let trimmed = "";
-      for (const p of parts) {
-        if ((trimmed + " " + p).length > maxChars) break;
-        trimmed += (trimmed ? " " : "") + p;
-      }
-      out = trimmed.trim();
-    }
-
-    // Final fallback if somehow empty
-    if (!out) {
-      return `${cityName} is a destination known for its culture, atmosphere, and local attractions.`;
-    }
-
-    return out;
-  };
-
-  const fetchUnsplashImage = async (cityName: string, country: string) => {
-    try {
-      const url =
-        `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName
-        )}` + `&country=${encodeURIComponent(country)}`;
-
-      const res = await fetch(url);
-      // console.log("Res:");
-      // console.log(res);
-      if (!res.ok) return null;
-
-      const json = await res.json();
-      // console.log(json?.data?.imageUrl);
-      return json?.data?.imageUrl ?? null;
-    } catch (e) {
-      console.error("Unsplash fetch error:", e);
-      return null;
-    }
-  };
 
   useEffect(() => {
     const loadInitial = async () => {
@@ -304,15 +81,14 @@ const Recommendations = () => {
         if (!user) throw new Error("No user");
 
         const city = await fetchNextCity(user.uid);
-        const extra = await fetchCityInfo(city.city_name, city.country);
+        const cityData = await getCityData(city.city_id);
 
-        setUnsplashImageUrl(null);
-
-        const uImg = await fetchUnsplashImage(city.city_name, city.country);
-        setUnsplashImageUrl(uImg);
-
-        setCurrentCity({ ...city, ...extra });
-        // console.log(currentCity);
+        setCurrentCity({
+          ...city,
+          description: cityData.description,
+          image: cityData.image || undefined,
+          city_attrs: cityData.city_attrs,
+        });
       } catch (err) {
         console.error(err);
         setError("Failed to get recommendations");
@@ -340,33 +116,28 @@ const Recommendations = () => {
         {
           [`${cityId}`]: {
             ...city,
-            image: unsplashImageUrl || null,
+            image: currentCityRef.current?.image || null,
             description: currentCityRef.current?.description || null,
             addedAt: Date.now(),
           },
         },
         { merge: true }
       );
-      // await sendSwipe(user.uid, cityId, true); // Update backend with the swipe
 
       const nextCity = await fetchNextCity(user.uid);
-      const extra = await fetchCityInfo(nextCity.city_name, nextCity.country);
+      const cityData = await getCityData(nextCity.city_id);
 
-      setUnsplashImageUrl(null);
-
-      const uImg = await fetchUnsplashImage(
-        nextCity.city_name,
-        nextCity.country
-      );
-      setUnsplashImageUrl(uImg);
-
-      setCurrentCity({ ...nextCity, ...extra });
+      setCurrentCity({
+        ...nextCity,
+        description: cityData.description,
+        image: cityData.image || undefined,
+        city_attrs: cityData.city_attrs,
+      });
     } catch (error) {
       console.error("Encountered an error while saving your favorites:", error);
       alert("Error, There was an error while saving your favorites.");
     }
   };
-
   const leftSwipe = async (cityId: string, city: City) => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -379,40 +150,55 @@ const Recommendations = () => {
     try {
       const userDocRef = doc(FIREBASE_DB, "userDislikes", user.uid);
       await setDoc(userDocRef, { [`${cityId}`]: city }, { merge: true });
-      // await sendSwipe(user.uid, cityId, false); // Update backend with the swipe
+
       const nextCity = await fetchNextCity(user.uid);
-      const extra = await fetchCityInfo(nextCity.city_name, nextCity.country);
+      const cityData = await getCityData(nextCity.city_id);
 
-      setUnsplashImageUrl(null);
-      const uImg = await fetchUnsplashImage(
-        nextCity.city_name,
-        nextCity.country
-      );
-      setUnsplashImageUrl(uImg);
-
-      setCurrentCity({ ...nextCity, ...extra });
+      setCurrentCity({
+        ...nextCity,
+        description: cityData.description,
+        image: cityData.image || undefined,
+        city_attrs: cityData.city_attrs,
+      });
     } catch (error) {
       console.error("Encountered an error while saving your dislikes:", error);
       alert("Error, There was an error while saving your dislikes.");
     }
   };
 
-  const getCityAttrs = async (cityId: string) => {
+  const getCityData = async (cityId: string) => {
     try {
       const docRef = doc(FIREBASE_DB, "allCities", cityId);
       const cityResp = await getDoc(docRef);
+
       if (!cityResp.exists()) {
         console.warn("City not found:", cityId);
-        return null;
+        return {
+          description: "No description available.",
+          image: null,
+          city_attrs: null,
+        };
       }
+
       const cityData = cityResp.data();
-      return cityData.city_attrs || null;
+
+      return {
+        description: cityData.description || "No description available.",
+        image:
+          cityData.image ||
+          cityData.image_url ||
+          cityData.imageUrl ||
+          cityData.url ||
+          null,
+        city_attrs: cityData.city_attrs || null,
+      };
     } catch (error) {
-      console.error(
-        "Encountered an error while getting city attributes",
-        error
-      );
-      alert("Error, There was an error while getting city attributes");
+      console.error("Encountered an error while getting city data", error);
+      return {
+        description: "No description available.",
+        image: null,
+        city_attrs: null,
+      };
     }
   };
 
@@ -545,20 +331,17 @@ const Recommendations = () => {
             onPress={() => {
               const now = Date.now();
               if (doubleTap.current && now - doubleTap.current < 300) {
-                setSelectedCity({
-                  ...currentCity,
-                  image: unsplashImageUrl || undefined,
-                });
+                setSelectedCity(currentCity);
                 setCityModalOpen(true);
               }
               doubleTap.current = now;
             }}
           >
             {/* This is to make the full-screen image. */}
-            {unsplashImageUrl || currentCity.image ? (
+            {currentCity.image ? (
               <View style={recommendationStyles.cityImageContainerRec}>
                 <Image
-                  source={{ uri: unsplashImageUrl || currentCity.image }}
+                  source={{ uri: currentCity.image }}
                   style={recommendationStyles.cityImageRecommendation}
                   resizeMode="cover"
                 />
@@ -589,23 +372,31 @@ const Recommendations = () => {
                 {currentCity.city_name}, {"\n"}
                 {currentCity.country}
               </Text>
-              {currentCityAttr && (
+              {currentCity.city_attrs && (
                 <View style={recommendationStyles.cityTagContainer}>
-                  {currentCityAttr.split("|").map((tag, index) =>
-                    glassAvailable ? ( // Check if glass UI is available.
-                      <GlassView
-                        key={index}
-                        style={recommendationStyles.glassTag}
-                      >
-                        <Text style={recommendationStyles.tagText}>{tag}</Text>
-                      </GlassView>
-                    ) : (
-                      // If there is no Glass UI available on the phone, do regular UI.
-                      <View key={index} style={recommendationStyles.tag}>
-                        <Text style={recommendationStyles.tagText}>{tag}</Text>
-                      </View>
-                    )
-                  )}
+                  {currentCity.city_attrs
+                    .split("|")
+                    .map((tag) => tag.trim())
+                    .filter(Boolean)
+                    .map((tag, index) =>
+                      glassAvailable ? ( // Check if glass UI is available.
+                        <GlassView
+                          key={index}
+                          style={recommendationStyles.glassTag}
+                        >
+                          <Text style={recommendationStyles.tagText}>
+                            {tag}
+                          </Text>
+                        </GlassView>
+                      ) : (
+                        // If there is no Glass UI available on the phone, do regular UI.
+                        <View key={index} style={recommendationStyles.tag}>
+                          <Text style={recommendationStyles.tagText}>
+                            {tag}
+                          </Text>
+                        </View>
+                      )
+                    )}
                 </View>
               )}
             </View>

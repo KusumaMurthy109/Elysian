@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
 
   button: {
@@ -347,7 +347,7 @@ export const styles = StyleSheet.create({
 
   searchOverlay: {
     position: "absolute",
-    top: 0, // Align with itinerary icon
+    top: -9, // Align with itinerary icon
     right: 0,
     width: "100%",
     paddingHorizontal: 15,
