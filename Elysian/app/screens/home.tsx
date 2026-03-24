@@ -8,62 +8,547 @@
 
 import React, { useState, useEffect } from "react";
 import {
+  View,
   Text,
+  Image,
   ImageBackground,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import {GlassView} from "expo-glass-effect";
+import * as ImagePicker from "expo-image-picker";
+import { styles } from "../styles/app_styles.styles";
+import { homeStyles } from "../styles/home.styles";
+import { FIREBASE_DB } from "../../FirebaseConfig";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  increment,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+  arrayUnion, 
+  arrayRemove,
+} from "firebase/firestore";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { GlassView } from "expo-glass-effect";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { styles } from "../styles/app_styles.styles";
-import { uploadMethod } from "../services/postsService";
-import { usePosts } from "../hooks/usePosts";
-import PostCard from "../components/PostCard";
 import type { HomeStackParamList } from "./navigation_bar";
-import { homeStyles } from "../styles/home.styles";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { getAuth } from "firebase/auth";
+
+// This defines what the post object should look like
+type Post = {
+  id: string;
+  urls: string[]; // Allow users to upload multiple pictures.
+  uploader: string;
+  uid: string;
+  city: {
+    id: string;
+    name: string;
+    country: string;
+  };
+  review: string;
+  ratingValue: number;
+  timestamp: number;
+  likeCount?: number;
+};
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
-
 const Home = () => {
+  const [posts, setPosts] = useState<Post[]>([]); // Initializes post as an empty array which is then updated by setPosts
+  const [expandedReview, setExpandedReview] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [userFavorites, setUserFavorites] = useState<{
+    [key: string]: boolean;
+  }>({});
   const navigation = useNavigation<HomeNavigationProp>();
-  const {posts} = usePosts ();
+  const [postImageIndices, setPostImageIndices] = useState<{
+    [postId: string]: number;
+  }>({});
+  const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
+  const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>({});
+  const currentUser = getAuth().currentUser;
+
+  // Sync posts from Firestore
+  useEffect(() => {
+    const q = query(
+      collection(FIREBASE_DB, "posts"),
+      orderBy("timestamp", "desc"),
+    );
+
+    // Store the function that stops listening into the variable unsubscribe
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data: Post[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Post, "id">),
+      }));
+      setPosts(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sync userFavorites from Firestore
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+    const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
+      const data = snapshot.data() || {};
+      const favs: { [key: string]: boolean } = {};
+      Object.keys(data).forEach((key) => {
+        favs[key] = true;
+      });
+      setUserFavorites(favs);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // onSnapshot to listen for user likes
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const unsubscribeFunctions: (() => void)[] = [];
+
+    posts.forEach((post) => {
+      const likeRef = doc(FIREBASE_DB, "posts", post.id, "likes", user.uid);
+
+      const unsubscribe = onSnapshot(likeRef, (snapshot) => {
+        setUserLikes((prev) => ({
+          ...prev,
+          [post.id]: snapshot.exists(), // If document exist, the user liked the post, otherwise does not exist
+        }));
+      });
+
+      unsubscribeFunctions.push(unsubscribe);
+    });
+
+    return () => unsubscribeFunctions.forEach((unsub) => unsub()); // Stops listening to Firestore
+  }, [posts]); // Runs when posts update
+
+  // Updates likeCount on posts database
+  const likesOnPost = async (postId: string) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const postRef = doc(FIREBASE_DB, "posts", postId);
+      const likeRef = doc(FIREBASE_DB, "posts", postId, "likes", user.uid);
+
+      if (userLikes[postId]) {
+        // Check if user already liked, then unlike
+        await deleteDoc(likeRef);
+        await updateDoc(postRef, {
+          likeCount: increment(-1),
+        });
+      } else {
+        // Otherwise post is liked
+        await setDoc(likeRef, { liked: true }); // Create like document
+        await updateDoc(postRef, {
+          likeCount: increment(1),
+        });
+      }
+    } catch (error) {
+      console.error("Error liking:", error);
+    }
+  };
+
+  const uploadMethod = () => {
+    Alert.alert("Create a Post", "Choose Upload Options:", [
+      { text: "Take Photo", onPress: takePhoto },
+      { text: "Choose from Album", onPress: fromAlbum },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  // Request for access to the camera.
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission denied", "Camera access is required.");
+      return;
+    }
+    // If granted permission, then wait for the camera picture and get result.
+    const selectedImage = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+    });
+
+    if (!selectedImage.canceled) {
+      createPost([selectedImage.assets[0].uri]); // Upload the picture taken.
+    }
+  };
+
+  const fromAlbum = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "Need access to photos in order to upload images",
+      );
+      return;
+    }
+    // Open phone gallery and compress images for faster upload
+    const selectedImage = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
+      quality: 0.8,
+    });
+
+    if (!selectedImage.canceled) {
+      const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
+      createPost(uris);
+    }
+  };
+
+  const createPost = (localURIs: string[]) => {
+    navigation.navigate("CreatePost", { imageURIs: localURIs });
+  };
+
+  const handleReview = (postId: string) => {
+    setExpandedReview((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
+  };
+
+  // Add city to userFavorites
+  const addCity = async (city: {
+    id: string;
+    name: string;
+    country: string;
+  }) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        console.error("User not signed in.");
+        return;
+      }
+      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      await setDoc(
+        userFavoritesRef,
+        {
+          [city.id]: {
+            city_name: city.name,
+            country_name: city.country,
+          },
+        },
+        { merge: true },
+      );
+    } catch (err) {
+      console.error("Error adding to favorites:", err);
+    }
+  };
+
+  // Remove city from userFavorites
+  const removeCity = async (city: {
+    id: string;
+    name: string;
+    country: string;
+  }) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      await setDoc(
+        userFavoritesRef,
+        {
+          [city.id]: deleteField(),
+        },
+        { merge: true },
+      );
+    } catch (err) {
+      console.error("Error removing from favorites:", err);
+    }
+  };
+
+  const onScrollImage = (
+    postId: string,
+    offsetX: number,
+    imageWidth: number,
+  ) => {
+    const index = Math.round(offsetX / imageWidth);
+    setPostImageIndices((prev) => ({
+      ...prev,
+      [postId]: index,
+    }));
+  };
+
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    const userRef = doc(FIREBASE_DB, "users", user.uid);
+
+    const unsubscribe = onSnapshot(userRef, (snapshot) => {
+      const data = snapshot.data();
+      const friendsArray = data?.friends || [];
+
+      const friendMap: { [uid: string]: boolean } = {};
+      friendsArray.forEach((uid: string) => {
+        friendMap[uid] = true;
+      });
+
+      setUserFriends(friendMap);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const addFriend = async (friendUid: string) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) return;
+      if (friendUid === user.uid) return;
+
+      const userRef = doc(FIREBASE_DB, "users", user.uid);
+
+      const isFriend = userFriends[friendUid];
+
+      await setDoc(
+        userRef,
+        {
+          friends: isFriend
+            ? arrayRemove(friendUid)   // remove friend
+            : arrayUnion(friendUid),   // add friend
+        },
+        { merge: true }
+      );
+
+    } catch (error) {
+      console.error("Error updating friend:", error);
+    }
+  };
 
   return (
     <ImageBackground
       source={require("../../assets/home_page_background.png")}
-      style={{flex:1}}
+      style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <SafeAreaView edges = {["top"]}>
+      <SafeAreaView edges={["top"]}>
         <FlatList
           data={posts}
           keyExtractor={(item) => item.id}
-          contentContainerStyle = {homeStyles.homeContainer}
+          contentContainerStyle={homeStyles.homeContainer}
           ListHeaderComponent={
-            <Text style={homeStyles.title}>
-              Explore{"\n"}Together
-            </Text>
+            <Text style={homeStyles.title}>Explore{"\n"}Together</Text>
           }
-          renderItem={({ item }) => (
-            <PostCard post={item} />
-          )}
+          renderItem={({ item }) => {
+            // Get current image index from parent state
+            const currentIndex = postImageIndices[item.id] || 0;
+
+            return (
+              <View style={homeStyles.postContainer}>
+                {/* Image */}
+                <View style={homeStyles.imageContainer}>
+                  <FlatList
+                    data={item.urls}
+                    horizontal={item.urls.length > 1}
+                    pagingEnabled={item.urls.length > 1}
+                    showsHorizontalScrollIndicator={false}
+                    bounces={false}
+                    keyExtractor={(uri, index) => uri + index}
+                    onScroll={
+                      item.urls.length > 1
+                        ? (event) =>
+                            onScrollImage(
+                              item.id,
+                              event.nativeEvent.contentOffset.x,
+                              homeStyles.cityImage.width,
+                            )
+                        : undefined
+                    }
+                    scrollEventThrottle={16}
+                    renderItem={({ item: uri }) => (
+                      <Image
+                        source={{ uri }}
+                        style={homeStyles.cityImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                  />
+
+                  {/* Progressive Blur on bottom - only on first image */}
+                  {currentIndex === 0 && (
+                    <View style={homeStyles.postBlurContainer}>
+                      <MaskedView
+                        maskElement={
+                          <LinearGradient
+                            colors={["transparent", "rgba(255,255,255,0.9)"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={{ flex: 1 }}
+                          />
+                        }
+                        style={{ flex: 1 }}
+                      >
+                        <BlurView
+                          intensity={100}
+                          tint="dark"
+                          style={{ flex: 1 }}
+                        />
+                      </MaskedView>
+                    </View>
+                  )}
+
+                  {/* Scroll indicators (only if multiple images) */}
+                  {item.urls.length > 1 && (
+                    <View style={homeStyles.scrollIndicatorContainer}>
+                      {item.urls.map((_, i) => (
+                        <View
+                          key={i}
+                          style={[
+                            homeStyles.scrollDot,
+                            i === currentIndex && homeStyles.activeScrollDot,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  )}
+
+                  {/* City, Country overlay - hide if not first image */}
+                  {currentIndex === 0 && item.city && (
+                    <View style={homeStyles.cityOverlay}>
+                      <Text style={homeStyles.cityFont}>{item.city.name}</Text>
+                      <View style={homeStyles.pinIcon}>
+                        <MaterialCommunityIcons
+                          name="map-marker-outline"
+                          size={22}
+                          color="#fff"
+                        />
+                        <Text style={homeStyles.countryFont}>
+                          {item.city.country}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Rating */}
+                  {item.ratingValue !== undefined && (
+                    <View style={homeStyles.ratingOverlay}>
+                      <View style={homeStyles.ratingTag}>
+                        <Text style={homeStyles.ratingFont}>
+                          {item.ratingValue.toFixed(1)}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name="star-face"
+                          size={20}
+                          color="#000"
+                        />
+                      </View>
+                    </View>
+                  )}
+                </View>
+
+                {/* Uploader, review, date */}
+                <View style={homeStyles.contentContainer}>
+                  <View>
+                    <Text style={homeStyles.uploader}>@{item.uploader}</Text> 
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => handleReview(item.id)}
+                    >
+                      <Text
+                        style={homeStyles.reviewFont}
+                        numberOfLines={expandedReview[item.id] ? undefined : 2}
+                        ellipsizeMode="tail"
+                      >
+                        {item.review}
+                      </Text>
+                    </TouchableOpacity>
+                    <Text style={homeStyles.date}>
+                      {new Date(item.timestamp).toLocaleDateString()}
+                    </Text>
+                  </View>
+
+                  <View style={homeStyles.postIcons}>
+                    {item.uid !== currentUser?.uid && (
+                          <TouchableOpacity onPress={() => addFriend(item.uid)}>
+                            <Ionicons
+                              name="people-circle-outline"
+                              size={29}
+                              color={userFriends[item.uid] ? "#63a4e1" : "#000"}
+                            />
+                          </TouchableOpacity>
+                        )}
+                    <TouchableOpacity onPress={() => likesOnPost(item.id)}>
+                      <Ionicons
+                        name={userLikes[item.id] ? "heart" : "heart-outline"}
+                        size={28}
+                        color={userLikes[item.id] ? "#EB7D87" : "#000"}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (!item.city) return;
+
+                        const postCity = {
+                          id: item.city.id,
+                          name: item.city.name,
+                          country: item.city.country,
+                        };
+
+                        if (userFavorites[item.city.id]) {
+                          removeCity(postCity);
+                        } else {
+                          addCity(postCity);
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          item.city && userFavorites[item.city.id]
+                            ? "bookmark"
+                            : "bookmark-outline"
+                        }
+                        size={28}
+                        color={"#000"}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            );
+          }}
         />
 
-        <TouchableOpacity 
-          style={styles.topRightIcon}
-          onPress={() => uploadMethod(navigation)}
-        >
+        {/* Upload button */}
+        <TouchableOpacity style={styles.topRightIcon} onPress={uploadMethod}>
           <GlassView style={styles.glassButton}>
             <Ionicons name="add" size={26} color="#000" />
           </GlassView>
         </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>
-  )
+  );
 };
 
 export default Home;
