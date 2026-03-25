@@ -1,3 +1,7 @@
+/* 
+File: user_posts.tsx
+Function: This is the user's posts subtab screen component for the Profile page. 
+*/
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -27,6 +31,7 @@ import { styles } from "../styles/app_styles.styles";
 import { homeStyles } from "../styles/home.styles";
 import { profileStyles } from "../styles/profile.styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { doc, deleteDoc } from "firebase/firestore";
 
 export type Post = {
   id: string;
@@ -55,6 +60,7 @@ const UserPosts = ({ userId }: UserPostsProps) => {
   const [openPost, setOpenPost] = useState<Post | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const doubleTap = useRef<number | null>(null);
+  const [deletePost, setDeletePost] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) {
@@ -85,6 +91,15 @@ const UserPosts = ({ userId }: UserPostsProps) => {
     doubleTap.current = now;
   };
 
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await deleteDoc(doc(FIREBASE_DB, "posts", postId));
+      setDeletePost(null);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
   if (loading) {
     return (
       <View style={itinerarySubTabStyles.itineraryLoading}>
@@ -111,60 +126,80 @@ const UserPosts = ({ userId }: UserPostsProps) => {
   return (
     <>
       <ScrollView style={{ flex: 1 }}>
-        <View style={profileStyles.scrollContainer}>
-          {posts.map((post) => {
-            const imageUrl = post.urls?.[0];
-            return (
-              <View key={post.id} style={profileStyles.scrollGrid}>
-                <Pressable onPress={() => handlePress(post)}>
-                  <ImageBackground
-                    source={imageUrl ? { uri: imageUrl } : undefined}
-                    style={profileStyles.scrollCard}
+        <Pressable onPress={() => setDeletePost(null)}>
+          <View style={profileStyles.scrollContainer}>
+            {posts.map((post) => {
+              const imageUrl = post.urls?.[0];
+              return (
+                <View key={post.id} style={profileStyles.scrollGrid}>
+                  <Pressable 
+                    onPress={() => handlePress(post)}
+                    onLongPress={() => setDeletePost(post.id)}
+                    delayLongPress={300}
                   >
-                    <View style={profileStyles.likeOverlay}>
-                      <View style={profileStyles.likeTag}>
-                        <Text style={profileStyles.likeCountText}>
-                          {post.likeCount ?? 0}
-                        </Text>
-                        <Ionicons
-                          name={post.likeCount ? "heart" : "heart-outline"}
-                          size={17}
-                          color={post.likeCount ? "#EB7D87" : "#000"}
-                        />
-                      </View>
-                    </View>
-                    <View style={profileStyles.scrollCardBlurContainer}>
-                      <MaskedView
-                        maskElement={
-                          <LinearGradient
-                            colors={["transparent", "rgba(255,255,255,0.9)"]}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 0, y: 1 }}
-                            style={{ flex: 1 }}
-                          />
-                        }
-                        style={{ flex: 1 }}
+                    <View style={profileStyles.scrollCard}>
+                      <ImageBackground
+                        source={imageUrl ? { uri: imageUrl } : undefined}
+                        style={profileStyles.scrollCard}
                       >
-                        <BlurView
-                          intensity={100}
-                          tint="dark"
-                          style={{ flex: 1 }}
-                        />
-                      </MaskedView>
-                      <View style={profileStyles.cardCityTextContainer}>
-                        <Text style={profileStyles.cardCityText}>
-                          {post.city?.name}, {"\n"}
-                          {post.city?.country}
-                        </Text>
-                      </View>
+                        <View style={profileStyles.likeOverlay}>
+                          <View style={profileStyles.likeTag}>
+                            <Text style={profileStyles.likeCountText}>
+                              {post.likeCount ?? 0}
+                            </Text>
+                            <Ionicons
+                              name={post.likeCount ? "heart" : "heart-outline"}
+                              size={17}
+                              color={post.likeCount ? "#EB7D87" : "#000"}
+                            />
+                          </View>
+                        </View>
+                        <View style={profileStyles.scrollCardBlurContainer}>
+                          <MaskedView
+                            maskElement={
+                              <LinearGradient
+                                colors={["transparent", "rgba(255,255,255,0.9)"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 0, y: 1 }}
+                                style={{ flex: 1 }}
+                              />
+                            }
+                            style={{ flex: 1 }}
+                          >
+                            <BlurView
+                              intensity={100}
+                              tint="dark"
+                              style={{ flex: 1 }}
+                            />
+                          </MaskedView>
+                          <View style={profileStyles.cardCityTextContainer}>
+                            <Text style={profileStyles.cardCityText}>
+                              {post.city?.name}, {"\n"}
+                              {post.city?.country}
+                            </Text>
+                          </View>
+                        </View>
+                      </ImageBackground>
+                      
+                      {/* Delete Overlay */}
+                      {deletePost === post.id && (
+                        <View style={profileStyles.deleteOverlay}>
+                          <Pressable
+                            onPress={() => handleDeletePost(post.id)}
+                          >
+                            <Ionicons name="trash" size={40} color="#fff" />
+                          </Pressable>
+                        </View>
+                      )}
                     </View>
-                  </ImageBackground>
-                </Pressable>
-              </View>
-            );
-          })}
-        </View>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        </Pressable>
       </ScrollView>
+
       {openPost && (
         <Modal
           visible

@@ -24,6 +24,7 @@ import {
   query,
   updateDoc,
   where,
+  deleteDoc,
 } from "firebase/firestore";
 import { styles } from "../styles/app_styles.styles";
 import { TextInput } from "react-native-paper";
@@ -88,6 +89,8 @@ const UserItineraries = () => {
       return null;
     }
   };
+
+  const [deleteItinerary, setDeleteItinerary] = useState<string | null>(null);
 
   /* ------------------ HOOKS ------------------ */
   useEffect(() => {
@@ -211,6 +214,15 @@ const UserItineraries = () => {
     [key: string]: string | null;
   }>({});
 
+  const handleDeleteItinerary = async (itineraryId: string) => {
+    try {
+      await deleteDoc(doc(FIREBASE_DB, "itineraries", itineraryId));
+      setDeleteItinerary(null);
+    } catch (error) {
+      console.error("Error deleting itinerary:", error);
+    }
+  };
+
   const handleSearchUsers = async (text: string) => {
     setSearchQuery(text);
     if (text.trim() === "") return setSearchResults([]);
@@ -326,75 +338,97 @@ const UserItineraries = () => {
   return (
     <>
       <ScrollView style={{ flex: 1 }}>
-        <View style={profileStyles.scrollContainer}>
-          {itineraries.map((itin) => {
-            return (
-              <View key={itin.id} style={profileStyles.scrollGrid}>
-                <Pressable
-                  onPress={() => {
-                    const now = Date.now();
-                    if (doubleTap.current && now - doubleTap.current < 300) {
-                      setOpenItinerary({
-                        ...itin,
-                        imageUrl: cityImages[itin.id] ?? null,
-                      });
-                    }
-                    doubleTap.current = now;
-                  }}
-                >
-                  <ImageBackground
-                    source={
-                      cityImages[itin.id]
-                        ? { uri: cityImages[itin.id]! }
-                        : undefined
-                    }
-                    style={profileStyles.scrollCard}
+        <Pressable onPress={() => setDeleteItinerary(null)}>
+          <View style={profileStyles.scrollContainer}>
+            {itineraries.map((itin) => {
+              return (
+                <View key={itin.id} style={profileStyles.scrollGrid}>
+                  <Pressable
+                    onPress={() => {
+                      if (deleteItinerary) return;
+
+                      const now = Date.now();
+                      if (doubleTap.current && now - doubleTap.current < 300) {
+                        setOpenItinerary({
+                          ...itin,
+                          imageUrl: cityImages[itin.id] ?? null,
+                        });
+                      }
+                      doubleTap.current = now;
+                    }}
+                    onLongPress={() => {
+                      if (itin.ownerId !== currentUser?.uid) return; // Check if user is creator of itinerary
+                      setDeleteItinerary(itin.id);
+                    }}
+                    delayLongPress={300}
                   >
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedItinerary(itin);
-                        setShareModalOpen(true);
-                      }}
-                    >
-                      <View style={itinerarySubTabStyles.shareOverlay}>
-                        <View style={itinerarySubTabStyles.shareTag}>
-                          <Ionicons name="person-add" size={17} color="#000" />
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-
-                    <View style={profileStyles.scrollCardBlurContainer}>
-                      <MaskedView
-                        maskElement={
-                          <LinearGradient
-                            colors={["transparent", "rgba(255,255,255,0.9)"]}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 0, y: 1 }}
-                            style={{ flex: 1 }}
-                          />
+                    <View style={profileStyles.scrollCard}>
+                      <ImageBackground
+                        source={
+                          cityImages[itin.id]
+                            ? { uri: cityImages[itin.id]! }
+                            : undefined
                         }
-                        style={{ flex: 1 }}
+                        style={profileStyles.scrollCard}
                       >
-                        <BlurView
-                          intensity={100}
-                          tint="dark"
-                          style={{ flex: 1 }}
-                        />
-                      </MaskedView>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedItinerary(itin);
+                            setShareModalOpen(true);
+                          }}
+                        >
+                          <View style={itinerarySubTabStyles.shareOverlay}>
+                            <View style={itinerarySubTabStyles.shareTag}>
+                              <Ionicons name="person-add" size={17} color="#000" />
+                            </View>
+                          </View>
+                        </TouchableOpacity>
 
-                      <View style={profileStyles.cardCityTextContainer}>
-                        <Text style={profileStyles.cardCityText}>
-                          {itin.city}, {"\n"}
-                          {itin.country}
-                        </Text>
-                      </View>
+                        <View style={profileStyles.scrollCardBlurContainer}>
+                          <MaskedView
+                            maskElement={
+                              <LinearGradient
+                                colors={["transparent", "rgba(255,255,255,0.9)"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 0, y: 1 }}
+                                style={{ flex: 1 }}
+                              />
+                            }
+                            style={{ flex: 1 }}
+                          >
+                            <BlurView
+                              intensity={100}
+                              tint="dark"
+                              style={{ flex: 1 }}
+                            />
+                          </MaskedView>
+
+                          <View style={profileStyles.cardCityTextContainer}>
+                            <Text style={profileStyles.cardCityText}>
+                              {itin.city}, {"\n"}
+                              {itin.country}
+                            </Text>
+                          </View>
+                        </View>
+                      </ImageBackground>
+
+                      {/* Delete Overlay */}
+                      {deleteItinerary === itin.id && (
+                        <View style={profileStyles.deleteOverlay}>
+                          <Pressable
+                            onPress={() => handleDeleteItinerary(itin.id)}
+                          >
+                            <Ionicons name="trash" size={40} color="#fff" />
+                          </Pressable>
+                        </View>
+                      )}
                     </View>
-                  </ImageBackground>
-                </Pressable>
-              </View>
-            );
-          })}
-        </View>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        </Pressable>
       </ScrollView>
 
       {/* ITINERARY MODAL */}

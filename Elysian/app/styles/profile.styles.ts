@@ -212,6 +212,7 @@ export const profileStyles = StyleSheet.create({
     aspectRatio: 1,
     borderRadius: 20,
     overflow: "hidden",
+    position: "relative",
   },
 
   scrollCardBlurContainer: {
@@ -328,6 +329,18 @@ export const profileStyles = StyleSheet.create({
 
   tabBar: {
     backgroundColor: "transparent",
+  },
+  
+  deleteOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });
 
