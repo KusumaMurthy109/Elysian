@@ -683,122 +683,132 @@ const CreatePost = () => {
           )}
         </View>
 
-        {/* Tag Friends */}
-        <View style={createPostStyles.bodyContainer}>
-          <TextInput
-            placeholder="Tag Friends"
-            value={tagInput}
-            onChangeText={(text) => {
-              const previousText = tagInput;
-              setTagInput(text);
+        {friends.length > 0 && (
+          <>
+            <View style={createPostStyles.bodyContainer}>
+              <TextInput
+                placeholder="Tag Friends"
+                value={tagInput}
+                onChangeText={(text) => {
+                  const previousText = tagInput;
+                  setTagInput(text);
 
-              // Split into words
-              const words = text.split(" ");
-              const lastWord = words[words.length - 1];
-              
-              // Check if we're typing in a new word (not modifying an existing tag)
-              const isTypingNewWord = !text.endsWith(" ") && lastWord !== undefined;
-              
-              // Check if we're deleting into a tag
-              const isDeleting = text.length < previousText.length;
-              const previousWords = previousText.split(" ");
-              const previousLastWord = previousWords[previousWords.length - 1];
-              const isDeletingTag = isDeleting && 
-                                    previousLastWord && 
-                                    previousLastWord.startsWith("@") &&
-                                    lastWord && 
-                                    lastWord.startsWith("@");
-              
-              let query = "";
-              let shouldShowDropdown = false;
-              
-              if (isTypingNewWord && !isDeleting) {
-                // Typing a new word - only show dropdown if previous character is space or start
-                const lastWordIndex = text.lastIndexOf(lastWord);
-                const charBeforeLastWord = lastWordIndex > 0 ? text[lastWordIndex - 1] : null;
-                const isValidContext = lastWordIndex === 0 || charBeforeLastWord === " ";
-                
-                if (isValidContext && lastWord) {
-                  query = lastWord.startsWith("@") ? lastWord.slice(1) : lastWord;
-                  shouldShowDropdown = query.length > 0;
-                }
-              } else if (isDeletingTag && lastWord) {
-                // Deleting characters from a tag - show dropdown to allow changing selection
-                query = lastWord.startsWith("@") ? lastWord.slice(1) : lastWord;
-                shouldShowDropdown = true; // Show dropdown even if query is empty to allow re-selection
-              }
-              
-              setTagQuery(query);
-              setTagDropdownOpen(shouldShowDropdown);
-            }}
-            onKeyPress={({ nativeEvent }) => {
-              if (nativeEvent.key === "Backspace" && tagQuery === "") {
-                // delete last tagged username
-                if (tagFriends.length > 0) {
-                  const removed = tagFriends[tagFriends.length - 1];
-                  setTagFriends(tagFriends.slice(0, -1));
+                  const words = text.split(" ");
+                  const lastWord = words[words.length - 1];
 
-                  // remove username from input
-                  const words = tagInput.trim().split(" ");
-                  const newWords = words.filter((w) => w.replace("@", "") !== removed);
-                  setTagInput(newWords.join(" ") + (newWords.length ? " " : ""));
-                }
-              }
-            }}
-            style={createPostStyles.tagFriendsInput}
-            mode="outlined"
-            theme={inputTheme}
-            left={<TextInput.Icon icon="account-plus-outline" color="#000" />}
-          />
+                  const isTypingNewWord =
+                    !text.endsWith(" ") && lastWord !== undefined;
 
-          {tagDropdownOpen && (
-            <View style={createPostStyles.dropdown}>
-              <ScrollView keyboardShouldPersistTaps="handled">
-                {(() => {
-                  // filter friends by current query, exclude already tagged
-                  const filtered = friends.filter(
-                    (friend) =>
-                      friend.username
-                        .toLowerCase()
-                        .includes(tagQuery.toLowerCase()) &&
-                      !tagFriends.includes(friend.username)
-                  );
+                  const isDeleting = text.length < previousText.length;
+                  const previousWords = previousText.split(" ");
+                  const previousLastWord =
+                    previousWords[previousWords.length - 1];
 
-                  if (filtered.length === 0) {
-                    return (
-                      <View style={createPostStyles.dropdownItem}>
-                        <Text style={styles.searchResultNoneText}>No Results</Text>
-                      </View>
-                    );
+                  const isDeletingTag =
+                    isDeleting &&
+                    previousLastWord &&
+                    previousLastWord.startsWith("@") &&
+                    lastWord &&
+                    lastWord.startsWith("@");
+
+                  let query = "";
+                  let shouldShowDropdown = false;
+
+                  if (isTypingNewWord && !isDeleting) {
+                    const lastWordIndex = text.lastIndexOf(lastWord);
+                    const charBeforeLastWord =
+                      lastWordIndex > 0 ? text[lastWordIndex - 1] : null;
+
+                    const isValidContext =
+                      lastWordIndex === 0 || charBeforeLastWord === " ";
+
+                    if (isValidContext && lastWord) {
+                      query = lastWord.startsWith("@")
+                        ? lastWord.slice(1)
+                        : lastWord;
+                      shouldShowDropdown = lastWord.startsWith("@");
+                    }
+                  } else if (isDeletingTag && lastWord) {
+                    query = lastWord.startsWith("@")
+                      ? lastWord.slice(1)
+                      : lastWord;
+                    shouldShowDropdown = true;
                   }
 
-                  return filtered.map((user) => (
-                    <Pressable
-                      key={user.id}
-                      style={createPostStyles.dropdownItem}
-                      onPress={() => {
-                        // Add to tagFriends
-                        setTagFriends((prev) => [...prev, user.username]);
+                  setTagQuery(query);
+                  setTagDropdownOpen(shouldShowDropdown);
+                }}
+                onKeyPress={({ nativeEvent }) => {
+                  if (nativeEvent.key === "Backspace" && tagQuery === "") {
+                    if (tagFriends.length > 0) {
+                      const removed = tagFriends[tagFriends.length - 1];
+                      setTagFriends(tagFriends.slice(0, -1));
 
-                        // Replace last word in input with selected username
-                        const words = tagInput.split(" ");
-                        words[words.length - 1] = `@${user.username}`;
-                        const newText = words.join(" ") + " "; // keep cursor at end
-                        setTagInput(newText);
+                      const words = tagInput.trim().split(" ");
+                      const newWords = words.filter(
+                        (w) => w.replace("@", "") !== removed
+                      );
+                      setTagInput(
+                        newWords.join(" ") + (newWords.length ? " " : "")
+                      );
+                    }
+                  }
+                }}
+                style={createPostStyles.tagFriendsInput}
+                mode="outlined"
+                theme={inputTheme}
+                left={
+                  <TextInput.Icon icon="account-plus-outline" color="#000" />
+                }
+        />
 
-                        // reset query but keep input focused
-                        setTagQuery("");
-                        setTagDropdownOpen(false);
-                      }}
-                    >
-                      <Text variant="bodyLarge">{user.username}</Text>
-                    </Pressable>
-                  ));
-                })()}
-              </ScrollView>
+              {tagDropdownOpen && (
+                <View style={createPostStyles.dropdown}>
+                  <ScrollView keyboardShouldPersistTaps="handled">
+                    {(() => {
+                      const filtered = friends.filter(
+                        (friend) =>
+                          friend.username
+                            .toLowerCase()
+                            .includes(tagQuery.toLowerCase()) &&
+                          !tagFriends.includes(friend.username)
+                      );
+
+                      if (filtered.length === 0) {
+                        return (
+                          <View style={createPostStyles.dropdownItem}>
+                            <Text style={styles.searchResultNoneText}>
+                              No Results
+                            </Text>
+                          </View>
+                        );
+                      }
+
+                      return filtered.map((user) => (
+                        <Pressable
+                          key={user.id}
+                          style={createPostStyles.dropdownItem}
+                          onPress={() => {
+                            setTagFriends((prev) => [...prev, user.username]);
+
+                            const words = tagInput.split(" ");
+                            words[words.length - 1] = `@${user.username}`;
+                            setTagInput(words.join(" ") + " ");
+
+                            setTagQuery("");
+                            setTagDropdownOpen(false);
+                          }}
+                        >
+                          <Text variant="bodyLarge">@{user.username}</Text>
+                        </Pressable>
+                      ));
+                    })()}
+                  </ScrollView>
+                </View>
+              )}
             </View>
-          )}
-        </View>
+          </>
+        )}
 
         <TextInput
           placeholder="Write your review..."

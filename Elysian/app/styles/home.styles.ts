@@ -52,14 +52,14 @@ export const homeStyles = StyleSheet.create({
 
   cityOverlay: {
     position: "absolute",
-    top: 120,
+    top: 140,
     left: 20,
     bottom: 20,
     pointerEvents: "none",
   },
 
   cityFont: {
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: "600",
     color: "#fff",
   },
