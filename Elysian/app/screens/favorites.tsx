@@ -39,6 +39,7 @@ import {
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
 import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 import { BlurView } from "expo-blur";
@@ -419,7 +420,7 @@ const Favorites = () => {
                   onPress={() => setSortMenuOpen(true)}
                   style={favoritesStyles.sortIconWrapper}
                 >
-                  <Ionicons name="funnel-outline" size={14} color="#444" />
+                  <MaterialCommunityIcons name="sort" size={20} color="#000" />
                 </TouchableOpacity>
               </View>
 

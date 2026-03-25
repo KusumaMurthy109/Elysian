@@ -39,6 +39,7 @@ export type Post = {
     country: string;
   };
   review: string;
+  tagFriends: string[],
   ratingValue: number;
   timestamp: number;
   likeCount?: number;
@@ -295,6 +296,19 @@ const UserPosts = ({ userId }: UserPostsProps) => {
                 {/* CONTENT SECTION (unchanged) */}
                 <View style={homeStyles.contentContainer}>
                   <Text style={homeStyles.uploader}>@{openPost.uploader}</Text>
+
+                  {openPost.tagFriends && openPost.tagFriends.length > 0 && (
+                    <Text style={homeStyles.tagFriends}>
+                      {openPost.tagFriends.map((friend, index) => (
+                        <Text key={friend}>
+                          @{friend}
+                          {index < openPost.tagFriends.length - 1 && (
+                            <Text style={homeStyles.tagFriendsDivider}> | </Text>
+                          )}
+                        </Text>
+                      ))}
+                    </Text>
+                  )}
 
                   <Text style={homeStyles.reviewFont}>{openPost.review}</Text>
 

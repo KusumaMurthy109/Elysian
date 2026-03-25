@@ -169,4 +169,15 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#fff",
   },
+
+  tagFriends: {
+    fontSize: 15,
+    color: '#333',
+    marginTop: 10,
+  },
+
+  tagFriendsDivider: {
+    fontSize: 20,
+    color: '#333'
+  }
 });

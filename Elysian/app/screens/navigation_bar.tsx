@@ -6,6 +6,7 @@ Function: This is the Navigation Bar component for the Home and Profile screen.
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigatorScreenParams } from "@react-navigation/native";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 import { styles } from "../styles/app_styles.styles";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -110,43 +111,61 @@ export default function NavigationBar() {
   return (
     // Create the navigation bar
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused }) => {
-          let iconName: string;
+      screenOptions={({ route }) => {
+        // Determine currently focused nested screen
+        const routeName = getFocusedRouteNameFromRoute(route) ?? "";
 
-          switch (route.name) {
-            case "Home":
-              iconName = focused ? "home" : "home-outline";
-              break;
-            case "Recommendations":
-              iconName = focused ? "airplane" : "airplane-outline";
-              break;
-            case "Favorites":
-              iconName = focused ? "bookmark" : "bookmark-outline";
-              break;
-            case "Profile":
-              iconName = focused ? "person-circle" : "person-circle-outline";
-              break;
-            default:
-              iconName = "help-circle-outline";
-          }
+        // Define which screens are "main" for each tab
+        const mainScreens: { [key: string]: string[] } = {
+          Home: ["HomeMain"],
+          Favorites: ["FavoritesMain"],
+          Profile: ["ProfileMain"],
+          Recommendations: [], // single screen tab
+        };
 
-          return (
-            <Icon
-              name={iconName}
-              size={30}
-              color={focused ? "#FFFFFF" : "#807f7fff"}
-            />
-          );
-        },
+        const isMainScreen = mainScreens[route.name]?.includes(routeName) || routeName === "";
 
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: styles.navBar,
-        tabBarItemStyle: styles.navBarIcons,
-        tabBarBackground: () => null,
-      })}
+        return {
+          tabBarIcon: ({ focused }) => {
+            let iconName: string;
+
+            switch (route.name) {
+              case "Home":
+                iconName = focused ? "home" : "home-outline";
+                break;
+              case "Recommendations":
+                iconName = focused ? "airplane" : "airplane-outline";
+                break;
+              case "Favorites":
+                iconName = focused ? "bookmark" : "bookmark-outline";
+                break;
+              case "Profile":
+                iconName = focused ? "person-circle" : "person-circle-outline";
+                break;
+              default:
+                iconName = "help-circle-outline";
+            }
+
+            return (
+              <Icon
+                name={iconName}
+                size={30}
+                color={focused ? "#FFFFFF" : "#807f7fff"}
+              />
+            );
+          },
+
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarItemStyle: styles.navBarIcons,
+          tabBarBackground: () => null,
+
+          // Hide tab bar for any non-main nested screens
+          tabBarStyle: isMainScreen ? styles.navBar : { display: "none" },
+        };
+      }}
     >
+
       {/* Define individual tab pages */}
       <Tab.Screen
         name="Home"

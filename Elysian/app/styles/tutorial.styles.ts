@@ -25,13 +25,11 @@ export const tutorialStyles = StyleSheet.create({
         backgroundColor: "white",
     },
 
-
-
     image: {
         width: "100%",
         height: "100%",
         resizeMode: "cover",
-        paddingBottom: 15,
+        paddingBottom: 40,
     },
 
     content: {
@@ -41,20 +39,21 @@ export const tutorialStyles = StyleSheet.create({
         alignItems: "center",
     },
 
-
-
     title: {
         fontSize: 28,
         fontWeight: "bold",
-        marginBottom: 12,
+        marginBottom:20,
+        paddingHorizontal: 20,
         textAlign: "center",
     },
+
     description: {
         fontSize: 18,
+        fontWeight: 500,
         textAlign: "center",
-        marginBottom: 40,
-        paddingHorizontal: 20,
-        color: "#444",
+        marginBottom: 30,
+        paddingHorizontal: 30,
+        color: "#63a4e1",
     },
 
 

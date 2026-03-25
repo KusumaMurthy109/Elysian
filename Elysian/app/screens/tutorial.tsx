@@ -16,13 +16,13 @@ export default function Tutorial() {
     // All tutorial content lives here
     const pages = [
         {
-            image: require("../../assets/tutorial1.png"),
+            image: require("../../assets/tutorial1.jpg"),
             title: "Life is short and the world is wide",
             description:
                 "At Elysian, we customize your preferences to generate potential travel destinations all over the world.",
         },
         {
-            image: require("../../assets/tutorial2.png"),
+            image: require("../../assets/tutorial2.jpg"),
             title: "It's a big world out there, go explore",
             description:
                 "Share your adventures and learn about places others have been through their posts.",

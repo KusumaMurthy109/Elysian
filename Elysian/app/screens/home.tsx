@@ -57,6 +57,7 @@ type Post = {
     country: string;
   };
   review: string;
+  tagFriends: string[],
   ratingValue: number;
   timestamp: number;
   likeCount?: number;
@@ -471,7 +472,21 @@ const Home = () => {
                 {/* Uploader, review, date */}
                 <View style={homeStyles.contentContainer}>
                   <View>
-                    <Text style={homeStyles.uploader}>@{item.uploader}</Text> 
+                    <Text style={homeStyles.uploader}>@{item.uploader}</Text>
+
+                    {item.tagFriends && item.tagFriends.length > 0 && (
+                      <Text style={homeStyles.tagFriends}>
+                        {item.tagFriends.map((friend, index) => (
+                          <Text key={friend}>
+                            @{friend}
+                            {index < item.tagFriends.length - 1 && (
+                              <Text style={homeStyles.tagFriendsDivider}> | </Text>
+                            )}
+                          </Text>
+                        ))}
+                      </Text>
+                    )}
+
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => handleReview(item.id)}
@@ -484,6 +499,7 @@ const Home = () => {
                         {item.review}
                       </Text>
                     </TouchableOpacity>
+                    
                     <Text style={homeStyles.date}>
                       {new Date(item.timestamp).toLocaleDateString()}
                     </Text>

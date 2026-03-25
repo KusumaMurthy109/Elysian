@@ -38,6 +38,29 @@ export const createPostStyles = StyleSheet.create({
     marginHorizontal: 10,
   },
 
+  imageWrapper: {
+    position: "relative",
+    marginRight: 10,
+  },
+
+  removeButton: {
+    position: "absolute",
+    top: -6,
+    right: 2,
+    backgroundColor: "white",
+    borderRadius: 12,
+    zIndex: 10,
+  },
+
+  addImageCard: {
+    width: 130,
+    height: 130,
+    borderRadius: 20,
+    backgroundColor: "#d3d3d3", // light gray
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   imageRow: {
     flexDirection: "row",
     paddingHorizontal: 16,
@@ -51,9 +74,15 @@ export const createPostStyles = StyleSheet.create({
     marginRight: 10,
   },
 
-  input: {
+  locationInput: {
     marginHorizontal: 12,
     marginTop: 30,
+    marginBottom: 10,
+  },
+
+  tagFriendsInput: {
+    marginHorizontal: 12,
+    marginTop: 10,
     marginBottom: 10,
   },
 

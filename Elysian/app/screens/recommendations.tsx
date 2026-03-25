@@ -184,12 +184,7 @@ const Recommendations = () => {
 
       return {
         description: cityData.description || "No description available.",
-        image:
-          cityData.image ||
-          cityData.image_url ||
-          cityData.imageUrl ||
-          cityData.url ||
-          null,
+        image: cityData.url || null,
         city_attrs: cityData.city_attrs || null,
       };
     } catch (error) {

@@ -102,14 +102,13 @@ export const favoritesStyles = StyleSheet.create({
     borderRadius: 200,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(255,255,255,0.8)",
   },
 
   sortMenuOverlay: {
     position: "absolute",
-    top: 0,
+    top: 25,
     left: 0,
-    right: 0,
+    right: 10,
     bottom: 0,
     zIndex: 20,
   },

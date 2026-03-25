@@ -4,7 +4,7 @@ Function: Allow users to add the location, a review, and generate a rating.
 */
 
 import React, { useEffect, useState, useRef } from "react";
-import { View, Image, Pressable, ScrollView, Keyboard } from "react-native";
+import { View, Image, Pressable, ScrollView, Keyboard, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
 import { styles, inputTheme } from "../styles/app_styles.styles";
@@ -29,6 +29,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 import type { HomeStackParamList } from "./navigation_bar";
 import PenguinLoader from "./penguin_loader";
+import * as ImagePicker from "expo-image-picker";
 
 type CreatePostRouteProp = RouteProp<HomeStackParamList, "CreatePost">;
 
@@ -43,11 +44,22 @@ const CreatePost = () => {
   const route = useRoute<CreatePostRouteProp>();
   const imageURIs = route.params?.imageURIs;
 
+  const [postImages, setPostImages] = useState<string[]>(imageURIs || []);
+
+
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
+
   const [review, setReview] = useState("");
+  
+  const [tagQuery, setTagQuery] = useState("");
+  const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
+  const [tagInput, setTagInput] = useState("");
+  const [friends, setFriends] = useState<{ id: string; username: string }[]>([]);
+  const [tagFriends, setTagFriends] = useState<string[]>([]);
+
   const [feedBack, setFeedback] = useState<
     "LIKE" | "NEUTRAL" | "DISLIKE" | null
   >(null);
@@ -71,6 +83,95 @@ const CreatePost = () => {
   const [uploading, setUploading] = useState(false); // Tracks whether an image is currently uploading
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+
+  // Go back to home if there are no images
+  useEffect(() => {
+    if (postImages.length === 0) {
+      navigation.goBack();
+    }
+  }, [postImages]);
+
+  // Function to remove an image
+  const removeImage = (index: number) => {
+    const newImages = [...postImages];
+    newImages.splice(index, 1);
+    setPostImages(newImages);
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission denied", "Camera access is required.");
+      return;
+    }
+
+    const selectedImage = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+    });
+
+    if (!selectedImage.canceled) {
+      setPostImages([...postImages, selectedImage.assets[0].uri]);
+    }
+  };
+
+  const fromAlbum = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "Need access to photos in order to upload images",
+      );
+      return;
+    }
+
+    const currentLimit = 10 - postImages.length;
+
+    const selectedImage = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      selectionLimit: currentLimit,
+      quality: 0.8,
+    });
+
+    if (!selectedImage.canceled) {
+      const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
+      setPostImages([...postImages, ...uris]);
+    }
+  };
+
+  const fetchFriends = async () => {
+    try {
+      const uid = getAuth().currentUser?.uid;
+      if (!uid) return;
+
+      const userRef = doc(FIREBASE_DB, "users", uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) return;
+
+      const userData = userSnap.data();
+
+      const friends = userData.friends || [];
+
+      const friendPromises = friends.map(async (friendId: string) => {
+        const friendRef = doc(FIREBASE_DB, "users", friendId);
+        const friendSnap = await getDoc(friendRef);
+
+        if (!friendSnap.exists()) return null;
+
+        return {
+          id: friendSnap.id,
+          username: friendSnap.data().username,
+        };
+      });
+
+      const friendList = (await Promise.all(friendPromises)).filter(Boolean);
+
+      setFriends(friendList);
+    } catch (err) {
+      console.error("Error fetching friends:", err);
+    }
+  };
 
   const fetchAllCities = async () => {
     try {
@@ -107,6 +208,7 @@ const CreatePost = () => {
   };
 
   useEffect(() => {
+    fetchFriends();
     fetchAllCities();
     const auth = getAuth();
     const user = onAuthStateChanged(auth, async (user) => {
@@ -139,27 +241,19 @@ const CreatePost = () => {
     };
   }, []);
 
-  const fetchUnsplashImage = async (cityName: string, country: string) => {
+  const getCityImage = async (cityId: string) => {
     try {
-      const url =
-        `https://capstone-team-generated-group30-project.onrender.com/api/city-image?city=${encodeURIComponent(
-          cityName,
-        )}` + `&country=${encodeURIComponent(country)}`;
+      const docRef = doc(FIREBASE_DB, "allCities", cityId);
+      const cityResp = await getDoc(docRef);
 
-      const res = await fetch(url);
-
-      if (!res.ok) {
-        console.log("Fetch failed:", res.status);
+      if (!cityResp.exists()) {
         return null;
       }
 
-      const json = await res.json();
+      const cityData = cityResp.data();
 
-      console.log("API response:", json);
-
-      return json?.data?.imageUrl ?? null;
-    } catch (e) {
-      console.error("Unsplash fetch error:", e);
+      return cityData.url || null;
+    } catch (error) {
       return null;
     }
   };
@@ -172,19 +266,13 @@ const CreatePost = () => {
 
       // Fetch new city image ONLY if not cached
       if (!newImg) {
-        newImg = await fetchUnsplashImage(
-          comparison.new_city.city_name,
-          comparison.new_city.country_name,
-        );
+        newImg = await getCityImage(comparison.new_city.id);
 
         newCityImageRef.current = newImg;
       }
 
       // Always fetch existing city image (it changes)
-      const existingImg = await fetchUnsplashImage(
-        comparison.existing_city.city_name,
-        comparison.existing_city.country_name,
-      );
+      const existingImg = await getCityImage(comparison.existing_city.id);
 
       setComparisonImages({
         new: newImg,
@@ -244,6 +332,7 @@ const CreatePost = () => {
           country: selectedCity.country,
         },
         review: review,
+        tagFriends: tagFriends,
         ratingValue: ratingValue,
         timestamp: Date.now(),
       });
@@ -308,6 +397,7 @@ const CreatePost = () => {
       setRatingCompleted(false);
       setPendingRatingUpdates(null);
       setReview("");
+      setTagFriends([]);
       navigation.goBack();
     } catch (err) {
       alert("Failed to submit post. Please try again.");
@@ -486,18 +576,41 @@ const CreatePost = () => {
         </Text>
 
         {imageURIs && imageURIs.length > 0 && (
+          // Image row with cancel buttons + add card
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={createPostStyles.imageRow}
           >
-            {imageURIs.map((uri, index) => (
-              <Image
-                key={`${uri}-${index}`}
-                source={{ uri }}
-                style={createPostStyles.imagePreview}
-              />
+            {postImages.map((uri, index) => (
+              <View key={uri} style={createPostStyles.imageWrapper}>
+                <Image source={{ uri }} style={createPostStyles.imagePreview} />
+
+                {/* Cancel button */}
+                <Pressable
+                  style={createPostStyles.removeButton}
+                  onPress={() => removeImage(index)}
+                >
+                  <Ionicons name="remove-circle" size={24} color="#000" />
+                </Pressable>
+              </View>
             ))}
+
+            {/* Add new image card */}
+            {postImages.length < 10 && (
+              <Pressable
+                style={createPostStyles.addImageCard}
+                onPress={() =>
+                  Alert.alert("Create a Post", "Choose Upload Options:", [
+                        { text: "Take Photo", onPress: takePhoto },
+                        { text: "Choose from Album", onPress: fromAlbum },
+                        { text: "Cancel", style: "cancel" },
+                  ])
+                }
+              >
+                <Ionicons name="add" size={40} color="#fff" />
+              </Pressable>
+            )}
           </ScrollView>
         )}
 
@@ -519,7 +632,7 @@ const CreatePost = () => {
               const match = findMatchingCity(searchQuery);
               setSelectedCity(match);
             }}
-            style={createPostStyles.input}
+            style={createPostStyles.locationInput}
             mode="outlined"
             underlineColor="transparent"
             activeUnderlineColor="transparent"
@@ -562,6 +675,123 @@ const CreatePost = () => {
                       <Text variant="bodyLarge">
                         {city.name}, {city.country}
                       </Text>
+                    </Pressable>
+                  ));
+                })()}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+
+        {/* Tag Friends */}
+        <View style={createPostStyles.bodyContainer}>
+          <TextInput
+            placeholder="Tag Friends"
+            value={tagInput}
+            onChangeText={(text) => {
+              const previousText = tagInput;
+              setTagInput(text);
+
+              // Split into words
+              const words = text.split(" ");
+              const lastWord = words[words.length - 1];
+              
+              // Check if we're typing in a new word (not modifying an existing tag)
+              const isTypingNewWord = !text.endsWith(" ") && lastWord !== undefined;
+              
+              // Check if we're deleting into a tag
+              const isDeleting = text.length < previousText.length;
+              const previousWords = previousText.split(" ");
+              const previousLastWord = previousWords[previousWords.length - 1];
+              const isDeletingTag = isDeleting && 
+                                    previousLastWord && 
+                                    previousLastWord.startsWith("@") &&
+                                    lastWord && 
+                                    lastWord.startsWith("@");
+              
+              let query = "";
+              let shouldShowDropdown = false;
+              
+              if (isTypingNewWord && !isDeleting) {
+                // Typing a new word - only show dropdown if previous character is space or start
+                const lastWordIndex = text.lastIndexOf(lastWord);
+                const charBeforeLastWord = lastWordIndex > 0 ? text[lastWordIndex - 1] : null;
+                const isValidContext = lastWordIndex === 0 || charBeforeLastWord === " ";
+                
+                if (isValidContext && lastWord) {
+                  query = lastWord.startsWith("@") ? lastWord.slice(1) : lastWord;
+                  shouldShowDropdown = query.length > 0;
+                }
+              } else if (isDeletingTag && lastWord) {
+                // Deleting characters from a tag - show dropdown to allow changing selection
+                query = lastWord.startsWith("@") ? lastWord.slice(1) : lastWord;
+                shouldShowDropdown = true; // Show dropdown even if query is empty to allow re-selection
+              }
+              
+              setTagQuery(query);
+              setTagDropdownOpen(shouldShowDropdown);
+            }}
+            onKeyPress={({ nativeEvent }) => {
+              if (nativeEvent.key === "Backspace" && tagQuery === "") {
+                // delete last tagged username
+                if (tagFriends.length > 0) {
+                  const removed = tagFriends[tagFriends.length - 1];
+                  setTagFriends(tagFriends.slice(0, -1));
+
+                  // remove username from input
+                  const words = tagInput.trim().split(" ");
+                  const newWords = words.filter((w) => w.replace("@", "") !== removed);
+                  setTagInput(newWords.join(" ") + (newWords.length ? " " : ""));
+                }
+              }
+            }}
+            style={createPostStyles.tagFriendsInput}
+            mode="outlined"
+            theme={inputTheme}
+            left={<TextInput.Icon icon="account-plus-outline" color="#000" />}
+          />
+
+          {tagDropdownOpen && (
+            <View style={createPostStyles.dropdown}>
+              <ScrollView keyboardShouldPersistTaps="handled">
+                {(() => {
+                  // filter friends by current query, exclude already tagged
+                  const filtered = friends.filter(
+                    (friend) =>
+                      friend.username
+                        .toLowerCase()
+                        .includes(tagQuery.toLowerCase()) &&
+                      !tagFriends.includes(friend.username)
+                  );
+
+                  if (filtered.length === 0) {
+                    return (
+                      <View style={createPostStyles.dropdownItem}>
+                        <Text style={styles.searchResultNoneText}>No Results</Text>
+                      </View>
+                    );
+                  }
+
+                  return filtered.map((user) => (
+                    <Pressable
+                      key={user.id}
+                      style={createPostStyles.dropdownItem}
+                      onPress={() => {
+                        // Add to tagFriends
+                        setTagFriends((prev) => [...prev, user.username]);
+
+                        // Replace last word in input with selected username
+                        const words = tagInput.split(" ");
+                        words[words.length - 1] = `@${user.username}`;
+                        const newText = words.join(" ") + " "; // keep cursor at end
+                        setTagInput(newText);
+
+                        // reset query but keep input focused
+                        setTagQuery("");
+                        setTagDropdownOpen(false);
+                      }}
+                    >
+                      <Text variant="bodyLarge">{user.username}</Text>
                     </Pressable>
                   ));
                 })()}
