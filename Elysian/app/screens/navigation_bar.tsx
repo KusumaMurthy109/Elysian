@@ -17,15 +17,17 @@ import Profile from "./profile";
 import Itinerary from "./itinerary";
 import ProfilePreferences from "./profile_preferences";
 import CreatePost from "./create_post";
+import ItineraryCoPlanning from "./itinerary_coplanning";
 
 export type FavoritesStackParamList = {
   FavoritesMain: undefined;
   Itinerary: undefined;
 };
 
-type ProfileStackParamList = {
+export type ProfileStackParamList = {
   ProfileMain: undefined;
   ProfilePreferences: undefined;
+  ItineraryCoPlanning: { itineraryId: string; imageUrl?: string | null };
 };
 
 export type HomeStackParamList = {
@@ -45,7 +47,7 @@ export type RootTabParamList = {
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 const FavoritesStack = createNativeStackNavigator();
-const ProfilesStack = createNativeStackNavigator();
+const ProfilesStack = createNativeStackNavigator<ProfileStackParamList>();
 const HomeStack = createNativeStackNavigator();
 
 function FavoritesStackScreen() {
@@ -78,6 +80,12 @@ function ProfileStackScreen() {
         component={ProfilePreferences}
         options={{ headerShown: false }}
       />
+      <ProfilesStack.Screen
+        name="ItineraryCoPlanning"
+        component={ItineraryCoPlanning}
+        options={{ headerShown: false }}
+      />
+
     </ProfilesStack.Navigator>
   );
 }

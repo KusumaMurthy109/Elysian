@@ -36,6 +36,16 @@ import { BlurView } from "expo-blur";
 import { profileStyles } from "../styles/profile.styles";
 import { getAuth } from "firebase/auth";
 import { GlassView } from "expo-glass-effect";
+import { useNavigation } from "@react-navigation/native";
+import ItineraryCoPlanning from "./itinerary_coplanning";
+import { ProfileStackParamList } from "./navigation_bar";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+type ProfileNav = NativeStackNavigationProp<
+  ProfileStackParamList,
+  "ProfileMain"
+>;
+
 
 export type Itinerary = {
   id: string;
@@ -67,6 +77,8 @@ const UserItineraries = () => {
   const [addedUserId, setAddedUserId] = useState<string | null>(null);
   const [sharedUsernames, setSharedUsernames] = useState<string[]>([]);
   const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
+  const navigation = useNavigation<ProfileNav>();
+
 
   const auth = getAuth();
   const currentUser = auth.currentUser;
@@ -391,11 +403,12 @@ const UserItineraries = () => {
 
                       const now = Date.now();
                       if (doubleTap.current && now - doubleTap.current < 300) {
-                        setOpenItinerary({
-                          ...itin,
-                          imageUrl: cityImages[itin.id] ?? null,
+                        navigation.navigate("ItineraryCoPlanning", {
+                          itineraryId: itin.id,
+                          imageUrl: cityImages[itin.id],
                         });
                       }
+
                       doubleTap.current = now;
                     }}
                     onLongPress={() => {
@@ -480,144 +493,6 @@ const UserItineraries = () => {
         </Pressable>
       </ScrollView>
 
-      {/* ITINERARY MODAL */}
-      <Modal
-        visible={!!openItinerary}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setOpenItinerary(null)}
-      >
-        {openItinerary && (
-          <View style={styles.modalDimOverlay}>
-            <Pressable
-              style={{
-                position: "absolute",
-                width: "100%",
-                height: "100%",
-              }}
-              onPress={() => setOpenItinerary(null)}
-            />
-
-            <View style={styles.cityModalContainer}>
-              <ScrollView contentContainerStyle={styles.cityModalContent}>
-                {openItinerary.imageUrl ? (
-                  <Image
-                    source={{ uri: openItinerary.imageUrl }}
-                    style={styles.cityModalImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.cityModalImage,
-                      { backgroundColor: "#e0e0e0" },
-                    ]}
-                  />
-                )}
-
-                <Text style={styles.cityModalTitle}>
-                  {openItinerary.city}, {openItinerary.country}
-                </Text>
-
-                <Text style={itinerarySubTabStyles.sharedWithText}>
-                  Created by:{" @"}
-                  <Text style={itinerarySubTabStyles.sharedWithNames}>
-                    {ownerUsername}
-                  </Text>
-                </Text>
-
-                <Text style={itinerarySubTabStyles.sharedWithText}>
-                  Shared with:{" "}
-                  <Text style={itinerarySubTabStyles.sharedWithNames}>
-                    {sharedUsernameList}
-                  </Text>
-                </Text>
-                <Text style={itinerarySubTabStyles.activityLabelText}>
-                  Activities:
-                </Text>
-
-                <View style={itinerarySubTabStyles.activitiesContainer}>
-                  {openItinerary.activities.map((a, i) => (
-                    <View key={i} style={itinerarySubTabStyles.activityRow}>
-                      <Text style={itinerarySubTabStyles.activityBullet}>
-                        •
-                      </Text>
-
-                      <Text style={itinerarySubTabStyles.activityText}>
-                        {a.name}
-                      </Text>
-
-                      <View style={itinerarySubTabStyles.likeContainer}>
-                        <TouchableOpacity onPress={() => handleToggleLike(i)}>
-                          <Ionicons
-                            name={
-                              a.likes.includes(currentUser?.uid ?? "")
-                                ? "thumbs-up"
-                                : "thumbs-up-outline"
-                            }
-                            size={20}
-                            color={
-                              a.likes.includes(currentUser?.uid ?? "")
-                                ? "#33375D"
-                                : "#807f7fff"
-                            }
-                          />
-                        </TouchableOpacity>
-
-                        <Text style={itinerarySubTabStyles.likeCount}>
-                          {a.likes.length}
-                        </Text>
-
-                        <TouchableOpacity
-                          onPress={() => handleRemoveActivity(i)}
-                          style={{ marginLeft: 10 }}
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={20}
-                            color="#807f7fff"
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-
-                <View style={{ overflow: "hidden" }}>
-                  <View style={itinerarySubTabStyles.addActivityContainer}>
-                    {/* Glass pill input */}
-                    <GlassView style={itinerarySubTabStyles.activityInputBar}>
-                      <TextInput
-                        placeholder="Add an activity..."
-                        placeholderTextColor="#666"
-                        value={newActivity}
-                        onChangeText={setNewActivity}
-                        style={styles.searchInput}
-                        mode="flat"
-                        underlineColor="transparent"
-                        activeUnderlineColor="transparent"
-                        caretHidden={false}
-                        selectionColor="#000"
-                      />
-                    </GlassView>
-
-                    {/* Glass circular + button */}
-                    <TouchableOpacity
-                      onPress={addActivityToItinerary}
-                      activeOpacity={0.8}
-                      style={{ marginLeft: 10 }}
-                    >
-                      <GlassView style={styles.glassButton}>
-                        <Ionicons name="add" size={24} color="#000" />
-                      </GlassView>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </ScrollView>
-            </View>
-          </View>
-        )}
-      </Modal>
 
       {/* SHARE MODAL */}
       <Modal
