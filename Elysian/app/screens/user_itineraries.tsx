@@ -302,6 +302,48 @@ const UserItineraries = () => {
     setOpenItinerary((prev) => ({ ...prev!, activities: updatedActivities }));
   };
 
+  const handleRemoveActivity = async (indexToRemove: number) => {
+    if (!openItinerary) return;
+
+    try {
+      // If this is the last activity, delete the whole itinerary
+      if (openItinerary.activities.length === 1) {
+        await deleteDoc(doc(FIREBASE_DB, "itineraries", openItinerary.id));
+
+        setItineraries((prev) =>
+          prev.filter((itinerary) => itinerary.id !== openItinerary.id)
+        );
+
+        setOpenItinerary(null);
+        return;
+      }
+
+      // Otherwise, just remove the selected activity
+      const updatedActivities = openItinerary.activities.filter(
+        (_, index) => index !== indexToRemove
+      );
+
+      await updateDoc(doc(FIREBASE_DB, "itineraries", openItinerary.id), {
+        activities: updatedActivities,
+        updatedAt: new Date(),
+      });
+
+      setOpenItinerary((prev) =>
+        prev ? { ...prev, activities: updatedActivities } : prev
+      );
+
+      setItineraries((prev) =>
+        prev.map((itinerary) =>
+          itinerary.id === openItinerary.id
+            ? { ...itinerary, activities: updatedActivities }
+            : itinerary
+        )
+      );
+    } catch (error) {
+      console.error("Error removing activity:", error);
+    }
+  };
+
   const sharedUsernameList =
     sharedUsernames.length > 0
       ? sharedUsernames.map((username) => `@${username}`).join(", ")
@@ -379,7 +421,11 @@ const UserItineraries = () => {
                         >
                           <View style={itinerarySubTabStyles.shareOverlay}>
                             <View style={itinerarySubTabStyles.shareTag}>
-                              <Ionicons name="person-add" size={17} color="#000" />
+                              <Ionicons
+                                name="person-add"
+                                size={17}
+                                color="#000"
+                              />
                             </View>
                           </View>
                         </TouchableOpacity>
@@ -388,7 +434,10 @@ const UserItineraries = () => {
                           <MaskedView
                             maskElement={
                               <LinearGradient
-                                colors={["transparent", "rgba(255,255,255,0.9)"]}
+                                colors={[
+                                  "transparent",
+                                  "rgba(255,255,255,0.9)",
+                                ]}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 0, y: 1 }}
                                 style={{ flex: 1 }}
@@ -498,7 +547,6 @@ const UserItineraries = () => {
                         {a.name}
                       </Text>
 
-                      {/* Right side fixed container */}
                       <View style={itinerarySubTabStyles.likeContainer}>
                         <TouchableOpacity onPress={() => handleToggleLike(i)}>
                           <Ionicons
@@ -519,6 +567,17 @@ const UserItineraries = () => {
                         <Text style={itinerarySubTabStyles.likeCount}>
                           {a.likes.length}
                         </Text>
+
+                        <TouchableOpacity
+                          onPress={() => handleRemoveActivity(i)}
+                          style={{ marginLeft: 10 }}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={20}
+                            color="#807f7fff"
+                          />
+                        </TouchableOpacity>
                       </View>
                     </View>
                   ))}
