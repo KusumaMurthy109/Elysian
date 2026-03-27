@@ -7,6 +7,7 @@ import {
   Alert,
   Image,
   Keyboard,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput, Button } from "react-native-paper";
@@ -21,11 +22,14 @@ import { GlassView } from "expo-glass-effect";
 import { itineraryStyles } from "../styles/itinerary.styles";
 import { styles } from "../styles/app_styles.styles";
 import type { FavoritesStackParamList } from "./navigation_bar";
+import { Calendar } from "react-native-calendars";
+
 
 import { getAuth } from "firebase/auth";
 import { addDoc, collection, doc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import PenguinLoader from "./penguin_loader";
+import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
 
 type FavCity = {
   id: string;
@@ -38,6 +42,15 @@ type Activity = {
   name: string;
   category: ActivityCategory;
 };
+
+type CalendarDay = {
+  dateString: string;
+  day: number;
+  month: number;
+  year: number;
+  timestamp: number;
+};
+
 
 const FILTER_OPTIONS: { label: string; value: ActivityCategory }[] = [
   { label: "Restaurant", value: "restaurants" },
@@ -55,6 +68,15 @@ const Itinerary = () => {
   const [favoritesCities, setFavoritesCities] = useState<FavCity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // This is to add the start and end dates and save them.
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [tripStart, setTripStart] = useState("");
+  const [tripEnd, setTripEnd] = useState("");
+  const [pendingCity, setPendingCity] = useState<FavCity | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+
 
   // Favorites-style search UI state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -76,6 +98,7 @@ const Itinerary = () => {
   const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>(
     []
   );
+
 
   const showActivitiesUI =
     !activitiesLoading && !activitiesError && activityOptions.length > 0;
@@ -157,13 +180,89 @@ const Itinerary = () => {
 
   const handleSelectCity = (city: FavCity) => {
     closeSearch();
-
-    // Switch to itinerary list mode
-    setSelectedCity(city);
-    setSelectedActivities([]); // Clear old selections
-    setSelectedFilters([]); // Clear filters
-    getActivities(city);
+    setPendingCity(city);      // store city temporarily
+    setDateModalVisible(true); // open modal    
   };
+
+  const onDayPress = (day: CalendarDay) => {
+    const date = day.dateString;
+
+    // If no start date yet OR both dates already selected → reset
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(date);
+      setEndDate(null);
+      return;
+    }
+
+    // If selecting an end date earlier than start → swap
+    if (new Date(date) < new Date(startDate)) {
+      setEndDate(startDate);
+      setStartDate(date);
+      return;
+    }
+
+    // Normal case
+    setEndDate(date);
+  };
+
+  const getMarkedDates = () => {
+    if (!startDate) return {};
+
+    let marked: any = {
+      [startDate]: {
+        startingDay: true,
+        color: "#4c8bf5",
+        textColor: "white",
+      },
+    };
+
+    if (endDate) {
+      marked[endDate] = {
+        endingDay: true,
+        color: "#4c8bf5",
+        textColor: "white",
+      };
+
+      // Fill in between
+      let current = new Date(startDate);
+      const end = new Date(endDate);
+
+      current.setDate(current.getDate() + 1);
+
+      while (current < end) {
+        const dateStr = current.toISOString().split("T")[0];
+        marked[dateStr] = {
+          color: "#a9c7ff",
+          textColor: "white",
+        };
+        current.setDate(current.getDate() + 1);
+      }
+    }
+
+    return marked;
+  };
+
+
+
+  const confirmDates = () => {
+    if (!startDate || !endDate) {
+      Alert.alert("Missing dates", "Please select a start and end date.");
+      return;
+    }
+
+    setTripStart(startDate);
+    setTripEnd(endDate);
+
+    setDateModalVisible(false);
+    // Fetch city after date is confirmed.
+    if (pendingCity) {
+      setSelectedCity(pendingCity);
+      getActivities(pendingCity);
+    }
+  };
+
+
+
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -240,6 +339,8 @@ const Itinerary = () => {
           name: a,
           likes: [],
         })),
+        tripStart,
+        tripEnd,
         updatedAt: new Date(),
         ownerId: user.uid,
         sharedWith: [],
@@ -423,7 +524,7 @@ const Itinerary = () => {
                           style={[
                             itineraryStyles.itineraryPillText,
                             selected &&
-                              itineraryStyles.itineraryPillTextSelected,
+                            itineraryStyles.itineraryPillTextSelected,
                           ]}
                         >
                           {f.label}
@@ -457,7 +558,7 @@ const Itinerary = () => {
                             style={[
                               itineraryStyles.itineraryCheckbox,
                               checked &&
-                                itineraryStyles.itineraryCheckboxChecked,
+                              itineraryStyles.itineraryCheckboxChecked,
                             ]}
                           />
                           <Text style={itineraryStyles.itineraryActivityText}>
@@ -484,6 +585,60 @@ const Itinerary = () => {
           </View>
         </>
       )}
+      {/* DATE MODAL */}
+      <Modal
+        visible={dateModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDateModalVisible(false)}
+      >
+        <View style={styles.modalDimOverlay}>
+          {/* Tap outside to close */}
+          <Pressable
+            style={{ position: "absolute", width: "100%", height: "100%" }}
+            onPress={() => setDateModalVisible(false)}
+          />
+
+          <View style={itineraryStyles.dateModalContainer}>
+            <View style={{ width: "100%" }}>
+
+              <Text style={itinerarySubTabStyles.shareTitle}>
+                Travel Dates
+              </Text>
+
+              <Text style={itinerarySubTabStyles.shareCitySubtitle}>
+                {pendingCity?.name}, {pendingCity?.country}
+              </Text>
+
+              {/* Calendar Date Range Picker */}
+              <GlassView
+                style={itineraryStyles.calendarContainer}
+              >
+                <Calendar
+                  onDayPress={onDayPress}
+                  markingType="period"
+                  markedDates={getMarkedDates()}
+                  minDate={new Date().toLocaleDateString("en-CA")}
+                  style={{
+                    borderRadius: 20,
+                    overflow: "hidden",
+                  }}
+                />
+              </GlassView>
+
+              <Button
+                mode="contained"
+                onPress={confirmDates}
+                style={[styles.button, { marginTop: 35 }]}
+                labelStyle={styles.buttonLabel}
+              >
+                Continue
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 };

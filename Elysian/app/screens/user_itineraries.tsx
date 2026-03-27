@@ -37,7 +37,6 @@ import { profileStyles } from "../styles/profile.styles";
 import { getAuth } from "firebase/auth";
 import { GlassView } from "expo-glass-effect";
 import { useNavigation } from "@react-navigation/native";
-import ItineraryCoPlanning from "./itinerary_coplanning";
 import { ProfileStackParamList } from "./navigation_bar";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
