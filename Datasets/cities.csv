@@ -195,3 +195,75 @@ c192,Caracas,Venezuela,South America,City|Nature,Summer|Fall|Winter,Budget Frien
 c193,Sana'a,Yemen,Asia,City|Historical,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Moderate|Quiet
 c194,Lusaka,Zambia,Africa,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
 c195,Harare,Zimbabwe,Africa,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c196,San Francisco,United States,North America,City,Fall|Spring|Summer,Mid-Range|Luxury|Premium,Busy|Moderate
+c197,Seattle,United States,North America,City|Nature,Fall|Spring|Summer,Mid-Range|Luxury,Moderate|Quiet
+c198,Boston,United States,North America,City|Historical,Fall|Spring|Summer,Mid-Range|Luxury,Moderate|Quiet
+c199,Miami,United States,North America,Beach|City,Spring|Summer|Winter,Mid-Range|Luxury|Premium,Busy|Moderate
+c200,Las Vegas,United States,North America,City,Spring|Summer|Fall,Mid-Range|Luxury|Premium,Busy|Moderate
+c201,San Diego,United States,North America,Beach|City,Fall|Spring|Summer,Mid-Range|Luxury,Moderate|Quiet
+c202,Montreal,Canada,North America,City|Historical,Fall|Spring|Summer,Mid-Range|Luxury,Moderate|Quiet
+c203,Calgary,Canada,North America,City|Nature,Fall|Spring|Summer|Winter,Mid-Range|Luxury,Quiet
+c204,Rio de Janeiro,Brazil,South America,Beach|City|Nature,Fall|Spring|Summer,Mid-Range|Luxury,Busy|Moderate
+c205,Medellin,Colombia,South America,City|Nature,Fall|Spring|Summer,Budget Friendly|Mid-Range,Moderate|Quiet
+c206,Munich,Germany,Europe,City|Historical,Fall|Spring|Summer,Mid-Range|Luxury,Moderate|Quiet
+c207,Hamburg,Germany,Europe,City,Fall|Spring|Summer,Mid-Range|Luxury,Moderate|Quiet
+c208,Milan,Italy,Europe,City,Fall|Spring|Summer,Mid-Range|Luxury|Premium,Busy|Moderate
+c209,Naples,Italy,Europe,City|Historical,Spring|Summer|Fall,Budget Friendly|Mid-Range,Busy|Moderate
+c210,Porto,Portugal,Europe,City|Historical,Fall|Spring|Summer,Budget Friendly|Mid-Range,Moderate|Quiet
+c211,Nice,France,Europe,Beach|City,Spring|Summer|Fall,Luxury|Premium,Moderate|Quiet
+c212,Oslo,Norway,Europe,City|Nature,Spring|Summer|Fall|Winter,Luxury|Premium,Quiet
+c213,Bergen,Norway,Europe,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c214,Yokohama,Japan,Asia,City,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
+c215,Busan,South Korea,Asia,Beach|City,Spring|Summer|Fall,Mid-Range|Luxury,Busy|Moderate
+c216,Shenzhen,China,Asia,City,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Busy|Moderate
+c217,Chengdu,China,Asia,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c218,Hyderabad,India,Asia,City|Historical|Religious,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Busy|Moderate
+c219,Chennai,India,Asia,Beach|City|Religious,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Busy|Moderate
+c220,Abu Dhabi,United Arab Emirates,Asia,City|Beach,Spring|Summer|Fall|Winter,Luxury|Premium,Moderate|Quiet
+c221,Phuket,Thailand,Asia,Beach|City,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Busy|Moderate
+c222,Chiang Mai,Thailand,Asia,City|Nature,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Moderate|Quiet
+c223,Cape Canaveral,United States,North America,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c224,Anchorage,United States,North America,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c225,Innsbruck,Austria,Europe,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c226,Split,Croatia,Europe,Beach|City,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c227,Doha,Qatar,Asia,City,Spring|Summer|Fall|Winter,Luxury|Premium,Moderate|Quiet
+c228,San Jose,United States,North America,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c229,Denver,United States,North America,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
+c230,Austin,United States,North America,City,Spring|Fall,Mid-Range|Luxury,Busy|Moderate
+c231,Orlando,United States,North America,City,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Busy|Moderate
+c232,Philadelphia,United States,North America,City|Historical,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c233,Portland,United States,North America,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c234,Minneapolis,United States,North America,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c235,Quebec City,Canada,North America,City|Historical,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c236,Ottawa,Canada,North America,City,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
+c237,Edmonton,Canada,North America,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c238,Curitiba,Brazil,South America,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c239,Salvador,Brazil,South America,Beach|City|Historical,Spring|Summer|Fall,Mid-Range|Luxury,Busy|Moderate
+c240,Quito,Ecuador,South America,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c241,Guayaquil,Ecuador,South America,City|Beach,Spring|Summer|Fall,Mid-Range|Luxury,Busy|Moderate
+c242,Punta Cana,Dominican Republic,Caribbean,Beach|City,Spring|Summer|Fall|Winter,Luxury|Premium,Moderate|Quiet
+c243,Cancun,Mexico,North America,Beach|City,Spring|Summer|Fall|Winter,Mid-Range|Luxury|Premium,Busy|Moderate
+c244,Tulum,Mexico,North America,Beach|City,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
+c245,Marseille,France,Europe,Beach|City,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c246,Bordeaux,France,Europe,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Quiet
+c247,Cologne,Germany,Europe,City|Historical,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c248,Frankfurt,Germany,Europe,City,Spring|Summer|Fall,Mid-Range|Luxury,Busy|Moderate
+c249,Bologna,Italy,Europe,City|Historical,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c250,Turin,Italy,Europe,City,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c251,Valencia,Spain,Europe,Beach|City,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c252,Malaga,Spain,Europe,Beach|City,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c253,Rotterdam,Netherlands,Europe,City,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c254,Antwerp,Belgium,Europe,City|Historical,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c255,Salzburg,Austria,Europe,City|Historical|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c256,Interlaken,Switzerland,Europe,Adventure|Nature,Spring|Summer|Fall|Winter,Luxury|Premium,Quiet
+c257,Lucerne,Switzerland,Europe,City|Nature,Spring|Summer|Fall|Winter,Luxury|Premium,Quiet
+c258,Jeju City,South Korea,Asia,Beach|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c259,Sapporo,Japan,Asia,City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Quiet
+c260,Fukuoka,Japan,Asia,City,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
+c261,Hangzhou,China,Asia,City|Nature,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c262,Xi'an,China,Asia,City|Historical,Spring|Summer|Fall,Mid-Range|Luxury,Moderate|Quiet
+c263,Pune,India,Asia,City,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Moderate|Quiet
+c264,Jaipur,India,Asia,City|Historical|Religious,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Busy|Moderate
+c265,Kochi,India,Asia,Beach|City|Historical,Spring|Summer|Fall|Winter,Budget Friendly|Mid-Range,Moderate|Quiet
+c266,Muscat,Oman,Asia,Beach|City,Spring|Summer|Fall|Winter,Luxury|Premium,Moderate|Quiet
+c267,Perth,Australia,Oceania,Beach|City|Nature,Spring|Summer|Fall|Winter,Mid-Range|Luxury,Moderate|Quiet
