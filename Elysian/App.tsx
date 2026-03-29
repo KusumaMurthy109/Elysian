@@ -37,8 +37,6 @@ function AccountCreationStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileLanding" component={ProfileLanding} />
-      <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
-      <Stack.Screen name="Tutorial" component={Tutorial} />
     </Stack.Navigator>
   );
 }
