@@ -11,26 +11,30 @@ import {
   Keyboard,
   Pressable,
   ImageBackground,
+  Alert,
 } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { inputTheme, styles, selectedColors } from "../styles/app_styles.styles";
 import { doc, setDoc } from "firebase/firestore";
-import { FIREBASE_DB } from "../../FirebaseConfig";
-import { getAuth } from "firebase/auth";
+import { FIREBASE_DB, FIREBASE_AUTH } from "../../FirebaseConfig";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { createPostStyles } from "../styles/create_post.styles";
-import Tutorial from "./tutorial"
 
 // Define the type for Home screen navigation prop
 export type RootParamList = {
-  ProfileSetup: undefined;
-  Home: undefined;
-  NavigationBar: undefined;
+  ProfileSetup: {
+    name: string;
+    email: string;
+    password: string;
+    username: string;
+  };
   Tutorial: undefined;
 };
 
 // Define the type for Home screen navigation prop
+type ProfileSetupRouteProp = RouteProp<RootParamList, "ProfileSetup">;
 type ProfileSetUpScreenProp = NativeStackNavigationProp<
   RootParamList,
   "ProfileSetup"
@@ -41,6 +45,8 @@ const ProfileSetup = () => {
   // Initialize navigation with type safety
   // test
   const navigation = useNavigation<ProfileSetUpScreenProp>();
+  const route = useRoute<ProfileSetupRouteProp>();
+  const { name, email, password, username } = route.params;
 
   // List of questions for user
   const questions = [
@@ -237,24 +243,39 @@ const ProfileSetup = () => {
     }
   };
 
-  // Handles submission of answers and stores it in Firebase
-  const handleSubmit = async (finalResponses: {
-    [key: number]: string[] | string;
-  }) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user) {
-      alert("Error, User must be signed in!");
-      return;
-    }
-
+  const handleFinish = async (finalResponses: { [key: number]: string[] | string }) => {
     try {
-      const userDocRef = doc(FIREBASE_DB, "userProfiles", user.uid);
-      await setDoc(userDocRef, { responses: finalResponses }, { merge: true });
-    } catch (error) {
-      console.error("Encountered an error while saving your answer:", error);
-      alert("Error, There was an error while saving your answers.");
+      // Create new user with email and password in Firebase
+      const userCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      await updateProfile(user, { displayName: name });
+      await setDoc(doc(FIREBASE_DB, "users", user.uid), {
+        username: username,
+        createdAt: new Date(),
+        accountCreationComplete: false,
+        name: user.displayName,
+      });
+
+      await updateProfile(user, {displayName: name });
+
+      await setDoc(doc(FIREBASE_DB, "users", user.uid), {
+        username,
+        name,
+        email,
+        createdAt: new Date(),
+        accountCreationComplete: true,
+      });
+      await setDoc(doc(FIREBASE_DB, "userProfiles", user.uid), {
+        responses: finalResponses,
+      });
+      navigation.navigate("Tutorial");
+    }
+    catch (error: any) {
+      Alert.alert("Sign Up Failed", error.message);
     }
   };
 
@@ -300,23 +321,8 @@ const ProfileSetup = () => {
           ? typedAnswer
           : chosenAnswers[currentQuestionIndex],
       };
-      handleSubmit(finalResponses);
+      handleFinish(finalResponses);
       console.log("All User Responses: ", responses); // Print response
-
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user) {
-        alert("Error, User must be signed in!");
-        return;
-      }
-
-      await setDoc(
-        doc(FIREBASE_DB, "users", user.uid),
-        { profileResponses: finalResponses },
-        { merge: true }
-      );
-      navigation.navigate("Tutorial");
     }
 
   };
