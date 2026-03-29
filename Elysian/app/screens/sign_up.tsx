@@ -15,22 +15,25 @@ import { TextInput, Button, Text } from "react-native-paper";
 import React, { useState, useEffect } from "react";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { styles, inputTheme } from "../styles/app_styles.styles";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 
 // Define the navigation parameter list
 export type RootParamList = {
   Login: undefined;
-  Home: undefined;
-  SignUp: undefined;
-  ProfileLanding: undefined;
+  ProfileSetup: {
+    name: string;
+    email: string;
+    password: string;
+    username: string;
+  };
 };
 
 // Define the type for Home screen navigation prop
-type SignUpScreenProp = NativeStackNavigationProp<RootParamList, "SignUp">;
+type SignUpScreenProp = NativeStackNavigationProp<RootParamList, "ProfileSetup">;
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -49,33 +52,41 @@ const SignUp = () => {
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert("Passwords length should be at least 6 characters", "Re-enter your password.");
+      return;
+    }
+
     // Check that password and confirmPassword matches
     if (password !== confirmPassword) {
       Alert.alert("Passwords do not match", "Re-enter your password.");
+      return;
     }
 
     setLoading(true);
 
     try {
-      // Create new user with email and password in Firebase
-      const userCredential = await createUserWithEmailAndPassword(
-        FIREBASE_AUTH,
+      const usersRef = collection(FIREBASE_DB, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+      console.log("Here");
+
+      if (!querySnapshot.empty){
+        Alert.alert("Email Already Registerd", "An account already exists with this email.");
+        setLoading(false);
+        return;
+      }
+      console.log("Here Now");
+      
+      
+      navigation.navigate("ProfileSetup", {
+        name,
         email,
         password,
-      );
-      const user = userCredential.user;
-      await updateProfile(user, { displayName: name });
-      await setDoc(doc(FIREBASE_DB, "users", user.uid), {
-        username: username,
-        createdAt: new Date(),
-        accountCreationComplete: false,
-        name: user.displayName,
+        username
       });
-
-      // Below line should remember user name in session, but not sure if working.
-      // await updateProfile(user, { displayName: name });
     } catch (error: any) {
-      Alert.alert("Sign Up Failed", error.message);
+      Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
     }
