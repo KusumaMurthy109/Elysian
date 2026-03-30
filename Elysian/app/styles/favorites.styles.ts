@@ -91,7 +91,7 @@ export const favoritesStyles = StyleSheet.create({
   sortRow: {
     position: "absolute",
     right: 35,
-    top: 85,
+    top: 80,
     zIndex: 5,
     marginTop: -20,
   },
@@ -144,4 +144,10 @@ export const favoritesStyles = StyleSheet.create({
     color: "#000",
     fontWeight: "700",
   },
+
+  divider: {
+    height: 0.5,
+    backgroundColor: "#C7C7CC",
+    marginHorizontal: 12,
+  }
 });

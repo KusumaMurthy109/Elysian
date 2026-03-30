@@ -20,7 +20,7 @@ import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { TextInput } from "react-native-paper";
 import { GlassView } from "expo-glass-effect";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { itineraryStyles } from "../styles/itinerary.styles";
 import { getAuth } from "firebase/auth";
 
 
@@ -41,10 +41,6 @@ type Itinerary = {
     sharedWith: string[];
 };
 
-
-
-
-/* ------------------ SCREEN ------------------ */
 
 const ItineraryCoPlanning = ({ route, navigation }: any) => {
     const { itineraryId, imageUrl } = route.params;
@@ -92,7 +88,6 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
             ? sharedUsernames.map((u) => `@${u}`).join(", ")
             : "None";
 
-    /* ------------------ HANDLERS ------------------ */
 
     const addActivity = async () => {
         if (!newActivity.trim()) return;
@@ -145,11 +140,8 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
         });
     };
 
-    /* ------------------ UI ------------------ */
-
     return (
-        <View style={{ flex: 1, backgroundColor: "#fff" }}>
-
+        <View style={styles.solidSafeArea}>
             {/* BACK BUTTON */}
             <View style={styles.topLeftIcon}>
                 <Pressable onPress={() => navigation.goBack()}>
@@ -161,13 +153,22 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
 
             <ScrollView
                 contentContainerStyle={{
-                    paddingTop: 130, // space for back button
                     paddingHorizontal: 20,
                     paddingBottom: 40,
                 }}
             >
+                <View 
+                    style={{alignItems: "center",
+                            paddingHorizontal: 18,
+                            paddingTop: 80,
+                            paddingBottom: 30}}
+                >
+                    <Text style={itineraryStyles.itineraryCityName}>
+                        Co-Plan Trip
+                    </Text>
+                </View>
 
-                {/* IMAGE — using your existing style */}
+                {/* IMAGE */}
                 {imageUrl ? (
                     <Image
                         source={{ uri: imageUrl }}

@@ -519,6 +519,8 @@ const Favorites = () => {
                 </Text>
               </TouchableOpacity>
 
+              <View style={favoritesStyles.divider} />
+
               <TouchableOpacity
                 onPress={() => {
                   setSortOption("alphabetical");

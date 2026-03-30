@@ -16,6 +16,7 @@ import Favorites from "./favorites";
 import Profile from "./profile";
 import Itinerary from "./itinerary";
 import ProfilePreferences from "./profile_preferences";
+import ManageFriends from "./manage_friends";
 import CreatePost from "./create_post";
 import ItineraryCoPlanning from "./itinerary_coplanning";
 
@@ -28,6 +29,7 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   ProfilePreferences: undefined;
   ItineraryCoPlanning: { itineraryId: string; imageUrl?: string | null };
+  ManageFriends: undefined;
 };
 
 export type HomeStackParamList = {
@@ -85,7 +87,11 @@ function ProfileStackScreen() {
         component={ItineraryCoPlanning}
         options={{ headerShown: false }}
       />
-
+      <ProfilesStack.Screen
+        name="ManageFriends"
+        component={ManageFriends}
+        options={{ headerShown: false}}
+      />
     </ProfilesStack.Navigator>
   );
 }

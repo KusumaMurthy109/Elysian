@@ -56,10 +56,6 @@ export type RootParamList = {
   Profile: undefined;
   Login: undefined;
 };
-type SearchUser = {
-  uid: string;
-  username: string;
-};
 
 // Define the type for Profile screen navigation prop
 type ProfileScreenProp = NativeStackNavigationProp<RootParamList, "Profile">;
@@ -77,6 +73,9 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uloading, setUploading] = useState(true);
   const [loadingUser, setLoadingUser] = useState(true);
+
+  const [menuVisible, setMenuVisible] = useState(false);
+
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -225,8 +224,19 @@ const Profile = () => {
 
   // When handleViewPrefernces is called (menu icon pressed) it goes to profile_preferences.tsx page
   const handleViewPreferences = () => {
+    setMenuVisible(false)
     navigation.navigate("ProfilePreferences" as never);
   };
+
+  const handleManageFriends = () => {
+    setMenuVisible(false);
+    navigation.navigate("ManageFriends" as never);
+  };
+
+  const handleLogout = async () => {
+    setMenuVisible(false);
+    await FIREBASE_AUTH.signOut();
+};
 
   return (
     <Pressable onPress={Keyboard.dismiss} style={profileStyles.dismissKeyboardConstainer}>
@@ -241,13 +251,58 @@ const Profile = () => {
           <View style={profileStyles.halfCircleCutout} />
         </View>
         <View style={styles.topRightIcon}>
-          <TouchableOpacity onPress={() => handleViewPreferences()}>
+          <TouchableOpacity onPress={() => setMenuVisible(prev => !prev)}>
             {/* Menu button */}
             <GlassView style={styles.glassButton}>
               <Ionicons name="ellipsis-vertical" size={26} color="#000" />
             </GlassView>
           </TouchableOpacity>
         </View>
+
+        <Modal visible={menuVisible} transparent animationType="fade">
+          <Pressable
+            style={profileStyles.sortMenuOverlay}
+            onPress={() => setMenuVisible(false)}
+          >
+            <GlassView style={profileStyles.sortMenu}>
+              
+              {/* Preferences */}
+              <TouchableOpacity
+                onPress={handleViewPreferences}
+                style={profileStyles.sortMenuItem}
+              >
+                <Text style={profileStyles.sortMenuText}>
+                  Preferences
+                </Text>
+              </TouchableOpacity>
+
+              <View style={profileStyles.divider} />
+
+              {/* Friends */}
+              <TouchableOpacity
+                onPress={handleManageFriends}
+                style={profileStyles.sortMenuItem}
+              >
+                <Text style={profileStyles.sortMenuText}>
+                  Friends
+                </Text>
+              </TouchableOpacity>
+
+              <View style={profileStyles.divider} />
+
+              {/* Logout */}
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={profileStyles.sortMenuItem}
+              >
+                <Text style={[profileStyles.sortMenuText, { color: "red" }]}>
+                  Log Out
+                </Text>
+              </TouchableOpacity>
+
+            </GlassView>
+          </Pressable>
+        </Modal>
 
         <ScrollView>
           {/* Profile image and edit button */}

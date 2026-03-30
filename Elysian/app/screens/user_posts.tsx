@@ -102,8 +102,13 @@ const UserPosts = ({ userId }: UserPostsProps) => {
 
   if (loading) {
     return (
-      <View style={itinerarySubTabStyles.itineraryLoading}>
-        <ActivityIndicator size="large" />
+      <View style={itinerarySubTabStyles.itineraryEmpty}>
+        <Image
+          source={require("../../assets/penguin.png")}
+          style={profileStyles.emptyPageImage}
+          resizeMode="contain"
+        />
+        <Text style={itinerarySubTabStyles.emptyText}>Loading...</Text>
       </View>
     );
   }

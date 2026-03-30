@@ -182,13 +182,6 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFFDFC",
   },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-    color: "#1B1E28",
-  },
-
   loader: {
     marginTop: 20,
   },

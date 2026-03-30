@@ -7,7 +7,6 @@
  * Used in profile related components across the app.
  */
 
-import { TabActions } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 
 export const profileStyles = StyleSheet.create({
@@ -342,5 +341,71 @@ export const profileStyles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
+
+  sortRow: {
+    position: "absolute",
+    right: 35,
+    top: 85,
+    zIndex: 5,
+    marginTop: -20,
+  },
+
+  sortIconWrapper: {
+    width: 26,
+    height: 26,
+    borderRadius: 200,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  sortMenuOverlay: {
+    position: "absolute",
+    top: 70,
+    left: 0,
+    right: 10,
+    bottom: 0,
+    zIndex: 20,
+  },
+
+  sortMenu: {
+    position: "absolute",
+    top: 60,
+    right: 20,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingVertical: 8,
+    minWidth: 170,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 5,
+    zIndex: 30,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+  },
+
+  sortMenuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+
+  sortMenuText: {
+    fontSize: 15,
+    color: "#000",
+  },
+
+  sortMenuTextActive: {
+    fontSize: 15,
+    color: "#000",
+    fontWeight: "700",
+  },
+
+  divider: {
+    height: 0.5,
+    backgroundColor: "#C7C7CC",
+    marginHorizontal: 12,
+  }
 });
 
