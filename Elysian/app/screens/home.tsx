@@ -334,7 +334,7 @@ const Home = () => {
     }
 
     if (userFreinds[friendUid]) {
-      Alert.alert("You are already freinds with this user.");
+      Alert.alert("You are already friends with this user.");
       return;
     }
 
