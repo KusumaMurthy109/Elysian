@@ -41,20 +41,20 @@ const FriendsTab = () => {
     setLoading(true);
 
     try {
-      const userSnap = await getDoc(doc(FIREBASE_DB, "users", currentUser.uid));
-      const data = userSnap.data();
+      const userInfo = await getDoc(doc(FIREBASE_DB, "users", currentUser.uid));
+      const data = userInfo.data();
       const friendIds: string[] = data?.friends || [];
 
-      const friendSnaps = await Promise.all(
+      const friendInfo = await Promise.all(
         friendIds.map(uid => getDoc(doc(FIREBASE_DB, "users", uid)))
       );
 
-      const friendData: Friend[] = friendSnaps
-      .filter(snap => snap.exists())
-      .map(snap => {
-        const fData = snap.data();
+      const friendData: Friend[] = friendInfo
+      .filter(info => info.exists())
+      .map(info => {
+        const fData = info.data();
         return {
-          uid: snap.id,
+          uid: info.id,
           name: fData.name,
           username: fData.username
         };
@@ -192,12 +192,8 @@ const RequestsTab = () => {
       const senderSnap = await getDoc(senderRef);
       const userData = userSnap.data();
       const senderData = senderSnap.data();
-      const updatedRequests = (userData?.friendRequests || []).filter(
-        (req: any) => req.from !== friendUid
-      );
-      const updatedSent = (senderData?.friendRequestsSent || []).filter(
-        (req: any) => req.to !== currentUser.uid
-      );
+      const updatedRequests = (userData?.friendRequests || []).filter((req: any) => req.from !== friendUid);
+      const updatedSent = (senderData?.friendRequestsSent || []).filter((req: any) => req.to !== currentUser.uid);
 
       const updatedUserFriends = Array.from( new Set([...(userData?.friends || []), friendUid]));
       const updatedSenderFriends = Array.from(new Set([...(senderData?.friends || []), currentUser.uid]));
@@ -231,20 +227,12 @@ const RequestsTab = () => {
       const userData = userSnap.data();
       const senderData = senderSnap.data();
 
-      const updatedRequests = (userData?.friendRequests || []).filter(
-        (req: any) => req.from !== friendUid
-      );
-      const updatedSent = (senderData?.friendRequestsSent || []).filter(
-        (req: any) => req.to !== currentUser.uid
-      );
+      const updatedRequests = (userData?.friendRequests || []).filter((req: any) => req.from !== friendUid);
+      const updatedSent = (senderData?.friendRequestsSent || []).filter((req: any) => req.to !== currentUser.uid);
 
-      await updateDoc(userRef, {
-        friendRequests: updatedRequests,
-      });
+      await updateDoc(userRef, {friendRequests: updatedRequests});
 
-      await updateDoc(senderRef, {
-        friendRequestsSent: updatedSent,
-      });
+      await updateDoc(senderRef, {friendRequestsSent: updatedSent});
 
       setFriendRequests((prev) => prev.filter((f) => f.uid !== friendUid));
     }
