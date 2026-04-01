@@ -6,7 +6,7 @@
  *
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import {
   View,
   Text,
@@ -80,6 +80,8 @@ const Home = () => {
   const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
   const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>({});
   const currentUser = getAuth().currentUser;
+  const [userFreinds, setUserFreinds] = useState<{[uid:string]:boolean}>({});
+  const [friendRequestsSent, setFreindRequestsSent] = useState<{[uid:string]:boolean}>({});
 
   // Sync posts from Firestore
   useEffect(() => {
@@ -301,50 +303,59 @@ const Home = () => {
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
-
     if (!user) return;
 
     const userRef = doc(FIREBASE_DB, "users", user.uid);
 
     const unsubscribe = onSnapshot(userRef, (snapshot) => {
       const data = snapshot.data();
-      const friendsArray = data?.friends || [];
+      const friendsArray: string[] = data?.friends || [];
 
       const friendMap: { [uid: string]: boolean } = {};
-      friendsArray.forEach((uid: string) => {
-        friendMap[uid] = true;
-      });
-
+      friendsArray.forEach(uid => friendMap[uid] = true);
       setUserFriends(friendMap);
+
+      const sentRequests: {to: string} [] = data?.friendRequestsSent || [];
+      const sentMap: {[uid: string]: boolean} = {};
+      sentRequests.forEach(req => sentMap[req.to] = true);
+      setFreindRequestsSent(sentMap);
     });
 
     return () => unsubscribe();
   }, []);
 
   const addFriend = async (friendUid: string) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if(!user) return;
+    if (friendUid === user.uid) {
+      Alert.alert("Cannot send a freind request to yourself.");
+      return;
+    }
+
+    if (userFreinds[friendUid]) {
+      Alert.alert("You are already freinds with this user.");
+      return;
+    }
+
+    if (friendRequestsSent[friendUid]) {
+      Alert.alert("Firend reuest already sent!");
+      return;
+    }
+
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
+      const senderRef = doc(FIREBASE_DB, "users", user.uid);
+      const recipientRef = doc(FIREBASE_DB, "users", friendUid);
+      const timestamp = Date.now();
 
-      if (!user) return;
-      if (friendUid === user.uid) return;
+      await updateDoc(recipientRef, {friendRequests: arrayUnion({from: user.uid, timestamp}),});
+      await updateDoc(senderRef, {friendRequestsSent: arrayUnion({to: friendUid, timestamp}),})
 
-      const userRef = doc(FIREBASE_DB, "users", user.uid);
-
-      const isFriend = userFriends[friendUid];
-
-      await setDoc(
-        userRef,
-        {
-          friends: isFriend
-            ? arrayRemove(friendUid)   // remove friend
-            : arrayUnion(friendUid),   // add friend
-        },
-        { merge: true }
-      );
-
-    } catch (error) {
-      console.error("Error updating friend:", error);
+      Alert.alert("Friend request sent!")
+    } 
+    catch (error) {
+      console.error("Error sending friend request:", error);
+      Alert.alert("Failed to sent freind request.");
     }
   };
 
@@ -507,11 +518,11 @@ const Home = () => {
 
                   <View style={homeStyles.postIcons}>
                     {item.uid !== currentUser?.uid && (
-                          <TouchableOpacity onPress={() => addFriend(item.uid)}>
+                          <TouchableOpacity onPress={() => addFriend(item.uid)} disabled={userFreinds[item.uid] || friendRequestsSent[item.uid]}>
                             <Ionicons
-                              name="people-circle-outline"
+                              name= {userFriends[item.uid] ? "people-circle" : friendRequestsSent[item.uid] ? "time-outline" : "people-circle-outline" }
                               size={29}
-                              color={userFriends[item.uid] ? "#63a4e1" : "#000"}
+                              color={userFriends[item.uid] ? "#63a4e1" : friendRequestsSent[item.uid] ? "#ccc" : "#000"}
                             />
                           </TouchableOpacity>
                         )}
