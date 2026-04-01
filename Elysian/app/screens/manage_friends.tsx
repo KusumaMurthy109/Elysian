@@ -274,7 +274,7 @@ const RequestsTab = () => {
             </View>
             <View style={manageFriendsStyles.iconContainer}>
               <TouchableOpacity onPress={() => approveRequest(friend.uid)}>
-                <Ionicons name="checkmark" size={24} color="#000" />
+                <Ionicons name="checkmark-sharp" size={24} color="#000" />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => rejectRequest(friend.uid)}>
                 <Ionicons name="close" size={24} color="#000" />
@@ -377,7 +377,7 @@ const RequestsSentTab = () => {
             resizeMode="contain"
           />
           <Text style={manageFriendsStyles.emptyText}>
-            No Friends Added
+            No Friends Requested
           </Text>
         </View>
       ) : (
