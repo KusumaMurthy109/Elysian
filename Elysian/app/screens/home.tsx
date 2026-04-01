@@ -33,6 +33,7 @@ import {
   deleteField,
   arrayUnion, 
   arrayRemove,
+  getDoc,
 } from "firebase/firestore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -80,8 +81,8 @@ const Home = () => {
   const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
   const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>({});
   const currentUser = getAuth().currentUser;
-  const [userFreinds, setUserFreinds] = useState<{[uid:string]:boolean}>({});
   const [friendRequestsSent, setFreindRequestsSent] = useState<{[uid:string]:boolean}>({});
+  const [friendRequestsReceieved, setFriendRequestsReceieved] = useState <{[uid:string]: boolean}>({});
 
   // Sync posts from Firestore
   useEffect(() => {
@@ -319,6 +320,11 @@ const Home = () => {
       const sentMap: {[uid: string]: boolean} = {};
       sentRequests.forEach(req => sentMap[req.to] = true);
       setFreindRequestsSent(sentMap);
+
+      const incomingReqs: {from: string, timestamp: number} [] = data?.friendRequests || [];
+      const receieved: {[uid:string]: boolean} = {};
+      incomingReqs.forEach(req => receieved[req.from] = true);
+      setFriendRequestsReceieved(receieved);
     });
 
     return () => unsubscribe();
@@ -328,36 +334,33 @@ const Home = () => {
     const auth = getAuth();
     const user = auth.currentUser;
     if(!user) return;
-    if (friendUid === user.uid) {
-      Alert.alert("Cannot send a freind request to yourself.");
-      return;
-    }
-
-    if (userFreinds[friendUid]) {
-      Alert.alert("You are already friends with this user.");
-      return;
-    }
-
-    if (friendRequestsSent[friendUid]) {
-      Alert.alert("Firend reuest already sent!");
+    if (friendUid === user.uid || userFriends[friendUid] || friendRequestsSent[friendUid]) {
       return;
     }
 
     try {
       const senderRef = doc(FIREBASE_DB, "users", user.uid);
-      const recipientRef = doc(FIREBASE_DB, "users", friendUid);
+      const recRef = doc(FIREBASE_DB, "users", friendUid);
+      const rec = await getDoc(recRef);
+      const recData = rec.data();
+      const pendingStatus = (recData?.friendRequests || []).some((req: any) => req.from === user.uid);
       const timestamp = Date.now();
 
-      await updateDoc(recipientRef, {friendRequests: arrayUnion({from: user.uid, timestamp}),});
+      if (pendingStatus) {
+        Alert.alert("A friend request is already pending from this user.");
+        return;
+      }
+
+      await updateDoc(recRef, {friendRequests: arrayUnion({from: user.uid, timestamp}),});
       await updateDoc(senderRef, {friendRequestsSent: arrayUnion({to: friendUid, timestamp}),})
 
       Alert.alert("Friend request sent!")
     } 
     catch (error) {
       console.error("Error sending friend request:", error);
-      Alert.alert("Failed to sent freind request.");
     }
   };
+
 
   return (
     <ImageBackground
@@ -518,11 +521,11 @@ const Home = () => {
 
                   <View style={homeStyles.postIcons}>
                     {item.uid !== currentUser?.uid && (
-                          <TouchableOpacity onPress={() => addFriend(item.uid)} disabled={userFreinds[item.uid] || friendRequestsSent[item.uid]}>
+                          <TouchableOpacity onPress={() => addFriend(item.uid)} disabled={userFriends[item.uid] || friendRequestsSent[item.uid] || friendRequestsReceieved[item.uid]}>
                             <Ionicons
-                              name= {userFriends[item.uid] ? "people-circle" : friendRequestsSent[item.uid] ? "time-outline" : "people-circle-outline" }
+                              name= {userFriends[item.uid] ? "people-circle" : friendRequestsSent[item.uid]  || friendRequestsReceieved[item.uid] ? "time-outline" : "people-circle-outline" }
                               size={29}
-                              color={userFriends[item.uid] ? "#63a4e1" : friendRequestsSent[item.uid] ? "#ccc" : "#000"}
+                              color={userFriends[item.uid] ? "#63a4e1" : friendRequestsSent[item.uid] || friendRequestsReceieved[item.uid] ? "#ccc" : "#000"}
                             />
                           </TouchableOpacity>
                         )}

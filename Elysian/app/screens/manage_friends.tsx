@@ -27,6 +27,15 @@ const FriendsTab = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadFriends();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   const loadFriends = async () => {
     if (!currentUser) return;
     setLoading(true);
@@ -47,7 +56,7 @@ const FriendsTab = () => {
         return {
           uid: snap.id,
           name: fData.name,
-          username: fData.useername
+          username: fData.username
         };
       });
       
@@ -277,10 +286,10 @@ const RequestsTab = () => {
             </View>
             <View style={manageFriendsStyles.iconContainer}>
               <TouchableOpacity onPress={() => approveRequest(friend.uid)}>
-                <Ionicons name="checkmark" size={24} color="green" />
+                <Ionicons name="checkmark" size={24} color="#000" />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => rejectRequest(friend.uid)}>
-                <Ionicons name="close" size={24} color="red" />
+                <Ionicons name="close" size={24} color="#000" />
               </TouchableOpacity>
             </View>
           </View>
@@ -288,6 +297,116 @@ const RequestsTab = () => {
       )}
     </ScrollView>
   );
+}
+
+const RequestsSentTab = () => {
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
+  const [sentRequests, setSentRequests] = useState<Friend[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadSentRequests();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  const loadSentRequests = async () => {
+    if (!currentUser) return;
+    setLoading(true);
+    try {
+      const userSnap = await getDoc(doc(FIREBASE_DB, "users", currentUser.uid));
+      const data = userSnap.data();
+      const sent = data?.friendRequestsSent || [];
+
+      const sentUsers: Friend[] = [];
+      for (const req of sent) {
+        const toUid = req.to;
+        const userSnap = await getDoc(doc(FIREBASE_DB, "users", toUid));
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          sentUsers.push({
+            uid: toUid,
+            name: userData.name,
+            username: userData.username,
+          });
+        }
+      }
+      setSentRequests(sentUsers);
+    }
+    catch (error) {
+      console.error("error loading sent requests:", error);
+      setSentRequests([]);
+    }
+    setLoading(false);
+  };
+
+  const removeRequest = async (friendUid: string) => {
+    if (!currentUser) return;
+
+    try {
+      const userRef = doc (FIREBASE_DB, "users", currentUser.uid);
+      const recRef = doc (FIREBASE_DB, "users", friendUid);
+      const userInfo = await getDoc(userRef);
+      const recInfo = await getDoc(recRef);
+      const userData = userInfo.data();
+      const recData = recInfo.data();
+      const updatedSent = (userData?.friendRequestsSent || []).filter((req: any) => req.to !== friendUid);
+      const updatedRequests = (recData?.friendRequests || []).filter((req:any) => req.from !== currentUser.uid);
+
+      await updateDoc(userRef, {friendRequestsSent: updatedSent});
+      await updateDoc(recRef, {friendRequests: updatedRequests});
+
+      setSentRequests(prev => prev.filter(f => f.uid !== friendUid));
+    }
+    catch (error) {
+      console.error("Error unsending request:", error);
+    }
+  };
+
+  return (
+     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
+      {loading ? (
+        <View style={manageFriendsStyles.friendEmpty}>
+          <Image
+            source={require("../../assets/penguin.png")}
+            style={manageFriendsStyles.emptyPageImage}
+            resizeMode="contain"
+          />
+          <Text style={manageFriendsStyles.emptyText}>
+            Loading...
+          </Text>
+        </View>
+      ) : sentRequests.length === 0 ? (
+        <View style={manageFriendsStyles.friendEmpty}>
+          <Image
+            source={require("../../assets/penguin.png")}
+            style={manageFriendsStyles.emptyPageImage}
+            resizeMode="contain"
+          />
+          <Text style={manageFriendsStyles.emptyText}>
+            No Friends Added
+          </Text>
+        </View>
+      ) : (
+        sentRequests.map((friend) => (
+          <View key={friend.uid} style={manageFriendsStyles.friendRow}>
+            <View>
+              <Text style={manageFriendsStyles.friendName}>{friend.name}</Text>
+              <Text style={manageFriendsStyles.friendUsername}>@{friend.username}</Text>
+            </View>
+            <TouchableOpacity onPress={() => removeRequest(friend.uid)}>
+              <Ionicons name="remove" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
+    </ScrollView>
+  )
 }
 
 const subTab = createMaterialTopTabNavigator();
@@ -332,10 +451,19 @@ const ManageFriends = () => {
             />
 
             <subTab.Screen
-              name="Requests"
+              name="Received"
               children={() => (
                 <View style={manageFriendsStyles.tabContent}>
                   <RequestsTab/>
+                </View>
+              )}
+            />
+
+            <subTab.Screen
+              name="Sent"
+              children={() => (
+                <View style={manageFriendsStyles.tabContent}>
+                  <RequestsSentTab/>
                 </View>
               )}
             />
