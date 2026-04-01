@@ -36,20 +36,24 @@ const FriendsTab = () => {
       const data = userSnap.data();
       const friendIds: string[] = data?.friends || [];
 
-      const friendData: Friend[] = [];
-      for (const uid of friendIds) {
-        const fSnap = await getDoc(doc(FIREBASE_DB, "users", uid));
-        if (fSnap.exists()) {
-          const fData = fSnap.data();
-          friendData.push({
-            uid,
-            name: fData.name,
-            username: fData.username
-          });
-        }
-      }
+      const friendSnaps = await Promise.all(
+        friendIds.map(uid => getDoc(doc(FIREBASE_DB, "users", uid)))
+      );
+
+      const friendData: Friend[] = friendSnaps
+      .filter(snap => snap.exists())
+      .map(snap => {
+        const fData = snap.data();
+        return {
+          uid: snap.id,
+          name: fData.name,
+          username: fData.useername
+        };
+      });
+      
       setFriends(friendData);
-    } catch (err) {
+    } 
+    catch (err) {
       console.error("Error loading friends:", err);
       setFriends([]);
     }
@@ -125,11 +129,42 @@ const RequestsTab = () => {
   const [friendRequests, setFriendRequests] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadFriendRequests();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   const loadFriendRequests = async () => {
     if (!currentUser) return;
     setLoading(true);
+    try {
+      const userSnap = await getDoc(doc(FIREBASE_DB, "users", currentUser.uid));
+      const data = userSnap.data();
+      const requests = data?.friendRequests || [];
+      const requestUsers: Friend[] = [];
+      for (const req of requests) {
+        const senderUid = req.from;
+        const senderSnap = await getDoc(doc(FIREBASE_DB, "users", senderUid));
+        if (senderSnap.exists()) {
+          const senderData = senderSnap.data();
+          requestUsers.push({
+            uid: senderUid,
+            name: senderData.name,
+            username: senderData.username,
+          });
+        }
+      }
+      setFriendRequests(requestUsers);
+    }
+    catch (error) {
+      console.error("Error loading ferind requests:", error);
+      setFriendRequests([]);
+    }
 
-    // Firebase code
     setLoading(false);
   };
 
@@ -139,10 +174,74 @@ const RequestsTab = () => {
 
   // Approve friend request and add friends to user documents
   const approveRequest = async (friendUid: string) => {
+    if (!currentUser) return;
+
+    try {
+      const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
+      const senderRef = doc(FIREBASE_DB, "users", friendUid);
+      const userSnap = await getDoc(userRef);
+      const senderSnap = await getDoc(senderRef);
+      const userData = userSnap.data();
+      const senderData = senderSnap.data();
+      const updatedRequests = (userData?.friendRequests || []).filter(
+        (req: any) => req.from !== friendUid
+      );
+      const updatedSent = (senderData?.friendRequestsSent || []).filter(
+        (req: any) => req.to !== currentUser.uid
+      );
+
+      const updatedUserFriends = Array.from( new Set([...(userData?.friends || []), friendUid]));
+      const updatedSenderFriends = Array.from(new Set([...(senderData?.friends || []), currentUser.uid]));
+
+      await updateDoc(userRef, {
+        friendRequests: updatedRequests,
+        friends: updatedUserFriends,
+      });
+
+      await updateDoc(senderRef, {
+        friendRequestsSent: updatedSent,
+        friends: updatedSenderFriends,
+      });
+
+      setFriendRequests((prev) => prev.filter((f) => f.uid !== friendUid));
+    }
+    catch (error) {
+      console.error("Error approving request:", error);
+    }
   };
 
   // Reject friend request and remove friend request from user document
   const rejectRequest = async (friendUid: string) => {
+    if (!currentUser) return;
+
+    try {
+      const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
+      const senderRef = doc(FIREBASE_DB, "users", friendUid);
+      const userSnap = await getDoc(userRef);
+      const senderSnap = await getDoc(senderRef);
+      const userData = userSnap.data();
+      const senderData = senderSnap.data();
+
+      const updatedRequests = (userData?.friendRequests || []).filter(
+        (req: any) => req.from !== friendUid
+      );
+      const updatedSent = (senderData?.friendRequestsSent || []).filter(
+        (req: any) => req.to !== currentUser.uid
+      );
+
+      await updateDoc(userRef, {
+        friendRequests: updatedRequests,
+      });
+
+      await updateDoc(senderRef, {
+        friendRequestsSent: updatedSent,
+      });
+
+      setFriendRequests((prev) => prev.filter((f) => f.uid !== friendUid));
+    }
+    catch (error) {
+      console.error("Error rejecting request:", error);
+    }
   };
 
   return (
@@ -178,10 +277,10 @@ const RequestsTab = () => {
             </View>
             <View style={manageFriendsStyles.iconContainer}>
               <TouchableOpacity onPress={() => approveRequest(friend.uid)}>
-                <Ionicons name="remove" size={24} color="#000" />
+                <Ionicons name="checkmark" size={24} color="green" />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => rejectRequest(friend.uid)}>
-                <Ionicons name="close" size={24} color="#000" />
+                <Ionicons name="close" size={24} color="red" />
               </TouchableOpacity>
             </View>
           </View>
