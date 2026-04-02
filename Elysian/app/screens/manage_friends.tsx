@@ -737,9 +737,6 @@ const ManageFriends = () => {
                     handleSearchUsers(text);
                   }}
                   style={manageFriendsStyles.friendsSearchInput}
-                  mode="flat"
-                  underlineColor="transparent"
-                  activeUnderlineColor="transparent"
                   autoFocus
                   caretHidden={false}
                   selectionColor="#000"
