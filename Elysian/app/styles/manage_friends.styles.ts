@@ -40,6 +40,7 @@ export const manageFriendsStyles = StyleSheet.create({
     backgroundColor: "transparent",
     fontSize: 16,
     height: 48,
+    paddingHorizontal: 12,
   },
 
   searchResultsWrapper: {
@@ -56,6 +57,7 @@ export const manageFriendsStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e7e7e7",
     backgroundColor: "transparent",
+    borderRadius: 14,
   },
 
   searchUserRow: {
