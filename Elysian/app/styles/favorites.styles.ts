@@ -149,5 +149,5 @@ export const favoritesStyles = StyleSheet.create({
     height: 0.5,
     backgroundColor: "#C7C7CC",
     marginHorizontal: 12,
-  }
+  },
 });

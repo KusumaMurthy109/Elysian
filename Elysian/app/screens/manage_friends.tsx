@@ -7,6 +7,8 @@ import {
   Image,
   TextInput,
   ImageBackground,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -44,8 +46,13 @@ type FriendRequestReceived = {
   timestamp?: number;
 };
 
-// Friends Tab
-const FriendsTab = () => {
+const SubTab = createMaterialTopTabNavigator();
+
+const FriendsTab = ({
+  onRelationshipsChanged,
+}: {
+  onRelationshipsChanged: () => Promise<void>;
+}) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -133,6 +140,7 @@ const FriendsTab = () => {
       });
 
       setFriends((prev) => prev.filter((f) => f.uid !== friendUid));
+      await onRelationshipsChanged();
     } catch (err) {
       console.error("Error removing friend:", err);
     }
@@ -161,7 +169,7 @@ const FriendsTab = () => {
       ) : (
         friends.map((friend) => (
           <View key={friend.uid} style={manageFriendsStyles.friendRow}>
-            <View>
+            <View style={manageFriendsStyles.friendInfo}>
               <Text style={manageFriendsStyles.friendName}>{friend.name}</Text>
               <Text style={manageFriendsStyles.friendUsername}>
                 @{friend.username}
@@ -177,8 +185,11 @@ const FriendsTab = () => {
   );
 };
 
-// Requests Tab
-const RequestsTab = () => {
+const RequestsTab = ({
+  onRelationshipsChanged,
+}: {
+  onRelationshipsChanged: () => Promise<void>;
+}) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -277,6 +288,7 @@ const RequestsTab = () => {
       });
 
       setFriendRequests((prev) => prev.filter((f) => f.uid !== friendUid));
+      await onRelationshipsChanged();
     } catch (error) {
       console.error("Error approving request:", error);
     }
@@ -307,6 +319,7 @@ const RequestsTab = () => {
       await updateDoc(senderRef, { friendRequestsSent: updatedSent });
 
       setFriendRequests((prev) => prev.filter((f) => f.uid !== friendUid));
+      await onRelationshipsChanged();
     } catch (error) {
       console.error("Error rejecting request:", error);
     }
@@ -335,7 +348,7 @@ const RequestsTab = () => {
       ) : (
         friendRequests.map((friend) => (
           <View key={friend.uid} style={manageFriendsStyles.friendRow}>
-            <View>
+            <View style={manageFriendsStyles.friendInfo}>
               <Text style={manageFriendsStyles.friendName}>{friend.name}</Text>
               <Text style={manageFriendsStyles.friendUsername}>
                 @{friend.username}
@@ -356,7 +369,11 @@ const RequestsTab = () => {
   );
 };
 
-const RequestsSentTab = () => {
+const RequestsSentTab = ({
+  onRelationshipsChanged,
+}: {
+  onRelationshipsChanged: () => Promise<void>;
+}) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -440,6 +457,7 @@ const RequestsSentTab = () => {
       await updateDoc(recRef, { friendRequests: updatedRequests });
 
       setSentRequests((prev) => prev.filter((f) => f.uid !== friendUid));
+      await onRelationshipsChanged();
     } catch (error) {
       console.error("Error unsending request:", error);
     }
@@ -470,7 +488,7 @@ const RequestsSentTab = () => {
       ) : (
         sentRequests.map((friend) => (
           <View key={friend.uid} style={manageFriendsStyles.friendRow}>
-            <View>
+            <View style={manageFriendsStyles.friendInfo}>
               <Text style={manageFriendsStyles.friendName}>{friend.name}</Text>
               <Text style={manageFriendsStyles.friendUsername}>
                 @{friend.username}
@@ -485,8 +503,6 @@ const RequestsSentTab = () => {
     </ScrollView>
   );
 };
-
-const SubTab = createMaterialTopTabNavigator();
 
 const ManageFriends = () => {
   const auth = getAuth();
@@ -504,6 +520,15 @@ const ManageFriends = () => {
   const [receivedMap, setReceivedMap] = useState<{ [uid: string]: boolean }>(
     {}
   );
+
+  const closeSearch = () => {
+    Keyboard.dismiss();
+    setSearchOpen(false);
+    setSearchText("");
+    setSearchResults([]);
+    setDropdownOpen(false);
+    setSearchLoading(false);
+  };
 
   const loadRelationshipMaps = async () => {
     if (!currentUser) return;
@@ -546,8 +571,6 @@ const ManageFriends = () => {
   }, []);
 
   const handleSearchUsers = async (text: string) => {
-    setSearchText(text);
-
     if (!currentUser) return;
 
     const trimmed = text.trim().toLowerCase();
@@ -555,6 +578,7 @@ const ManageFriends = () => {
     if (!trimmed) {
       setSearchResults([]);
       setDropdownOpen(false);
+      setSearchLoading(false);
       return;
     }
 
@@ -628,11 +652,7 @@ const ManageFriends = () => {
         friendRequestsSent: arrayUnion({ to: friendUid, timestamp }),
       });
 
-      setSentMap((prev) => ({
-        ...prev,
-        [friendUid]: true,
-      }));
-
+      await loadRelationshipMaps();
       await handleSearchUsers(searchText);
     } catch (error) {
       console.error("Error sending friend request:", error);
@@ -649,23 +669,29 @@ const ManageFriends = () => {
         {!searchOpen ? (
           <>
             <View style={manageFriendsStyles.normalHeader}>
-              <Pressable onPress={() => currentUser && navigation.goBack()}>
-                <GlassView style={styles.glassButton}>
-                  <Ionicons
-                    name="return-up-back-outline"
-                    size={26}
-                    color="#000"
-                  />
-                </GlassView>
-              </Pressable>
+              <View style={manageFriendsStyles.headerSide}>
+                <Pressable onPress={() => currentUser && navigation.goBack()}>
+                  <GlassView style={styles.glassButton}>
+                    <Ionicons
+                      name="return-up-back-outline"
+                      size={26}
+                      color="#000"
+                    />
+                  </GlassView>
+                </Pressable>
+              </View>
 
-              <Text style={manageFriendsStyles.titleText}>Manage Friends</Text>
+              <Text style={manageFriendsStyles.headerTitle}>
+                Manage Friends
+              </Text>
 
-              <TouchableOpacity onPress={() => setSearchOpen(true)}>
-                <GlassView style={styles.glassButton}>
-                  <Ionicons name="search" size={26} color="#000" />
-                </GlassView>
-              </TouchableOpacity>
+              <View style={manageFriendsStyles.headerSide}>
+                <TouchableOpacity onPress={() => setSearchOpen(true)}>
+                  <GlassView style={styles.glassButton}>
+                    <Ionicons name="search" size={26} color="#000" />
+                  </GlassView>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={manageFriendsStyles.tabContainer}>
@@ -681,7 +707,9 @@ const ManageFriends = () => {
                   name="Friends"
                   children={() => (
                     <View style={manageFriendsStyles.tabContent}>
-                      <FriendsTab />
+                      <FriendsTab
+                        onRelationshipsChanged={loadRelationshipMaps}
+                      />
                     </View>
                   )}
                 />
@@ -690,7 +718,9 @@ const ManageFriends = () => {
                   name="Received"
                   children={() => (
                     <View style={manageFriendsStyles.tabContent}>
-                      <RequestsTab />
+                      <RequestsTab
+                        onRelationshipsChanged={loadRelationshipMaps}
+                      />
                     </View>
                   )}
                 />
@@ -699,7 +729,9 @@ const ManageFriends = () => {
                   name="Sent"
                   children={() => (
                     <View style={manageFriendsStyles.tabContent}>
-                      <RequestsSentTab />
+                      <RequestsSentTab
+                        onRelationshipsChanged={loadRelationshipMaps}
+                      />
                     </View>
                   )}
                 />
@@ -707,117 +739,101 @@ const ManageFriends = () => {
             </View>
           </>
         ) : (
-          <>
-            <View style={manageFriendsStyles.searchHeader}>
-              <Pressable
-                onPress={() => {
-                  setSearchOpen(false);
-                  setSearchText("");
-                  setSearchResults([]);
-                  setDropdownOpen(false);
-                }}
-              >
-                <GlassView style={styles.glassButton}>
-                  <Ionicons
-                    name="return-up-back-outline"
-                    size={26}
-                    color="#000"
-                  />
-                </GlassView>
-              </Pressable>
+          <TouchableWithoutFeedback onPress={closeSearch}>
+            <View style={{ flex: 1 }}>
+              <View style={manageFriendsStyles.searchHeader}>
+                <TouchableWithoutFeedback onPress={() => {}}>
+                  <View style={{ flex: 1 }}>
+                    <GlassView style={styles.searchBarInline}>
+                      <TextInput
+                        placeholder="Search users..."
+                        placeholderTextColor="#807f7fff"
+                        value={searchText}
+                        onChangeText={(text) => {
+                          setSearchText(text);
+                          handleSearchUsers(text);
+                        }}
+                        style={styles.searchInput}
+                        autoFocus
+                        caretHidden={false}
+                        selectionColor="#000"
+                      />
+                    </GlassView>
+                  </View>
+                </TouchableWithoutFeedback>
 
-              <GlassView style={manageFriendsStyles.friendsSearchBar}>
-                <TextInput
-                  placeholder="Search users..."
-                  placeholderTextColor="#807f7fff"
-                  value={searchText}
-                  onChangeText={(text) => {
-                    setSearchText(text);
-                    setDropdownOpen(true);
-                    handleSearchUsers(text);
-                  }}
-                  style={manageFriendsStyles.friendsSearchInput}
-                  autoFocus
-                  caretHidden={false}
-                  selectionColor="#000"
-                />
-              </GlassView>
-
-              <TouchableOpacity>
-                <GlassView style={styles.glassButton}>
-                  <Ionicons name="search" size={26} color="#000" />
-                </GlassView>
-              </TouchableOpacity>
-            </View>
-
-            {dropdownOpen && searchText.length > 0 && (
-              <View style={manageFriendsStyles.searchResultsWrapper}>
-                <ScrollView keyboardShouldPersistTaps="handled">
-                  {searchLoading ? (
-                    <View style={manageFriendsStyles.searchResultItem}>
-                      <Text style={manageFriendsStyles.searchEmptyText}>
-                        Loading...
-                      </Text>
-                    </View>
-                  ) : searchResults.length > 0 ? (
-                    searchResults.map((user, index) => (
-                      <TouchableOpacity
-                        key={user.uid}
-                        style={[
-                          manageFriendsStyles.searchResultItem,
-                          index === searchResults.length - 1 &&
-                            manageFriendsStyles.lastSearchResultItem,
-                        ]}
-                        onPress={() => sendFriendRequest(user.uid)}
-                        disabled={
-                          friendsMap[user.uid] ||
-                          sentMap[user.uid] ||
-                          receivedMap[user.uid]
-                        }
-                      >
-                        <View style={manageFriendsStyles.searchUserRow}>
-                          <View>
-                            <Text style={manageFriendsStyles.friendName}>
-                              {user.name}
-                            </Text>
-                            <Text style={manageFriendsStyles.friendUsername}>
-                              @{user.username}
-                            </Text>
-                          </View>
-
-                          {friendsMap[user.uid] ? (
-                            <Ionicons
-                              name="people-circle"
-                              size={24}
-                              color="#63a4e1"
-                            />
-                          ) : sentMap[user.uid] || receivedMap[user.uid] ? (
-                            <Ionicons
-                              name="time-outline"
-                              size={24}
-                              color="#999"
-                            />
-                          ) : (
-                            <Ionicons
-                              name="person-add-outline"
-                              size={24}
-                              color="#000"
-                            />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    ))
-                  ) : (
-                    <View style={manageFriendsStyles.searchResultItem}>
-                      <Text style={manageFriendsStyles.searchEmptyText}>
-                        No Results
-                      </Text>
-                    </View>
-                  )}
-                </ScrollView>
+                <TouchableOpacity activeOpacity={1}>
+                  <GlassView style={styles.glassButton}>
+                    <Ionicons name="search" size={26} color="#000" />
+                  </GlassView>
+                </TouchableOpacity>
               </View>
-            )}
-          </>
+
+              {dropdownOpen && searchText.length > 0 && (
+                <TouchableWithoutFeedback onPress={() => {}}>
+                  <View style={styles.searchDropdownInline}>
+                    <ScrollView keyboardShouldPersistTaps="handled">
+                      {searchLoading ? (
+                        <View style={styles.searchResultItem}>
+                          <Text style={styles.searchResultNoneText}>
+                            Loading...
+                          </Text>
+                        </View>
+                      ) : searchResults.length > 0 ? (
+                        searchResults.map((user) => (
+                          <TouchableOpacity
+                            key={user.uid}
+                            style={styles.searchResultItem}
+                            onPress={() => sendFriendRequest(user.uid)}
+                            disabled={
+                              friendsMap[user.uid] ||
+                              sentMap[user.uid] ||
+                              receivedMap[user.uid]
+                            }
+                          >
+                            <View style={manageFriendsStyles.friendInfo}>
+                              <Text style={manageFriendsStyles.friendName}>
+                                {user.name}
+                              </Text>
+                              <Text style={manageFriendsStyles.friendUsername}>
+                                @{user.username}
+                              </Text>
+                            </View>
+
+                            {friendsMap[user.uid] ? (
+                              <Ionicons
+                                name="people-circle"
+                                size={24}
+                                color="#63a4e1"
+                              />
+                            ) : sentMap[user.uid] || receivedMap[user.uid] ? (
+                              <Ionicons
+                                name="time-outline"
+                                size={24}
+                                color="#999"
+                              />
+                            ) : (
+                              <Ionicons
+                                name="person-add-outline"
+                                size={24}
+                                color="#000"
+                              />
+                            )}
+                          </TouchableOpacity>
+                        ))
+                      ) : (
+                        <View style={styles.searchResultItem}>
+                          <Text style={styles.searchResultNoneText}>
+                            No Results
+                          </Text>
+                        </View>
+                      )}
+                    </ScrollView>
+                  </View>
+                </TouchableWithoutFeedback>
+              )}
+            </View>
+          </TouchableWithoutFeedback>
         )}
       </SafeAreaView>
     </ImageBackground>

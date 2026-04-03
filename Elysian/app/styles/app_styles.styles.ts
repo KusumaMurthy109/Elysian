@@ -347,6 +347,22 @@ export const styles = StyleSheet.create({
     zIndex: 10,
   },
 
+  searchBarInline: {
+    flex: 1,
+    height: 45,
+    borderRadius: 26,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+
   searchBarExpanded: {
     position: "absolute",
     top: 77,
@@ -383,6 +399,20 @@ export const styles = StyleSheet.create({
   searchDropdown: {
     position: "absolute",
     top: 130,
+    left: 30,
+    right: 30,
+    backgroundColor: "#fff",
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+    maxHeight: 220,
+    zIndex: 9,
+    overflow: "hidden",
+  },
+
+  searchDropdownInline: {
+    position: "absolute",
+    top: 95,
     left: 30,
     right: 30,
     backgroundColor: "#fff",
