@@ -103,28 +103,27 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
         setNewActivity("");
     };
 
-    const toggleLike = async (index: number) => {
+    const toggleLike = async (activityName: string) => {
         if (!currentUser) return;
 
-        const activity = itinerary.activities[index];
-        const alreadyLiked = activity.likes.includes(currentUser.uid);
-
-        const updated = [...itinerary.activities];
-        updated[index] = {
+        const updated = itinerary.activities.map((activity) => {
+            if (activity.name !== activityName) return activity;
+            const alreadyLiked = activity.likes.includes(currentUser.uid);
+            return {
             ...activity,
             likes: alreadyLiked
                 ? activity.likes.filter((id) => id !== currentUser.uid)
                 : [...activity.likes, currentUser.uid],
-        };
-
+            };
+        });
         await updateDoc(doc(FIREBASE_DB, "itineraries", itinerary.id), {
             activities: updated,
         });
     };
 
-    const removeActivity = async (index: number) => {
+    const removeActivity = async (activityName: string) => {
         if (!itinerary) return;
-
+        
         // If last activity → delete itinerary
         if (itinerary.activities.length === 1) {
             await deleteDoc(doc(FIREBASE_DB, "itineraries", itinerary.id));
@@ -132,13 +131,19 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
             return;
         }
 
-        const updated = itinerary.activities.filter((_, i) => i !== index);
+        const updated = itinerary.activities.filter((a) => a.name !== activityName);
 
         await updateDoc(doc(FIREBASE_DB, "itineraries", itinerary.id), {
             activities: updated,
             updatedAt: new Date(),
         });
     };
+
+    const sortActivitiesByLikes = (activities: Activity[]): Activity[] => {
+        return [...activities].sort((a, b) => b.likes.length - a.likes.length);
+    };
+
+    const sortedActivities = sortActivitiesByLikes(itinerary.activities);
 
     return (
         <View style={styles.solidSafeArea}>
@@ -210,43 +215,36 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                 <Text style={itinerarySubTabStyles.activityLabelText}>Activities:</Text>
 
                 <View style={itinerarySubTabStyles.activitiesContainer}>
-                    {itinerary.activities.map((a, i) => (
-                        <View key={i} style={itinerarySubTabStyles.activityRow}>
+                    {sortedActivities.map((a, i) => (
+                        <View key={a.name} style={itinerarySubTabStyles.activityRow}>
                             <Text style={itinerarySubTabStyles.activityBullet}>•</Text>
-
                             <Text style={itinerarySubTabStyles.activityText}>{a.name}</Text>
 
                             <View style={itinerarySubTabStyles.likeContainer}>
-                                <TouchableOpacity onPress={() => toggleLike(i)}>
-                                    <Ionicons
-                                        name={
-                                            a.likes.includes(currentUser?.uid ?? "")
-                                                ? "thumbs-up"
-                                                : "thumbs-up-outline"
-                                        }
-                                        size={20}
-                                        color={
-                                            a.likes.includes(currentUser?.uid ?? "")
-                                                ? "#33375D"
-                                                : "#807f7fff"
-                                        }
-                                    />
-                                </TouchableOpacity>
+                            <TouchableOpacity onPress={() => toggleLike(a.name)}>
+                                <Ionicons
+                                name={
+                                    a.likes.includes(currentUser?.uid ?? "")
+                                    ? "thumbs-up"
+                                    : "thumbs-up-outline"
+                                }
+                                size={20}
+                                color={
+                                    a.likes.includes(currentUser?.uid ?? "")
+                                    ? "#33375D"
+                                    : "#807f7fff"
+                                }
+                                />
+                            </TouchableOpacity>
 
-                                <Text style={itinerarySubTabStyles.likeCount}>
-                                    {a.likes.length}
-                                </Text>
+                            <Text style={itinerarySubTabStyles.likeCount}>{a.likes.length}</Text>
 
-                                <TouchableOpacity
-                                    onPress={() => removeActivity(i)}
-                                    style={{ marginLeft: 10 }}
-                                >
-                                    <Ionicons
-                                        name="trash-outline"
-                                        size={20}
-                                        color="#807f7fff"
-                                    />
-                                </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => removeActivity(a.name)}
+                                style={{ marginLeft: 10 }}
+                            >
+                                <Ionicons name="trash-outline" size={20} color="#807f7fff" />
+                            </TouchableOpacity>
                             </View>
                         </View>
                     ))}

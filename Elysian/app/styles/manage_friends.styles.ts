@@ -34,6 +34,7 @@ export const manageFriendsStyles = StyleSheet.create({
   tabContainer: {
     flex: 1,
     marginTop: 14,
+    paddingHorizontal: 20
   },
 
   tabLabel: {

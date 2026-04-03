@@ -247,6 +247,13 @@ const UserItineraries = () => {
     const itinData = itinSnap.data() as any;
     const { sharedWith = [], ownerId } = itinData;
 
+    // Get the user data so we can find their friends.
+    const userSnap = await getDoc(
+      doc(FIREBASE_DB, "users", ownerId)
+    );
+    if (!userSnap.exists()) return;
+    const { friends = [] } = userSnap.data() as any; // Get the friends of the owner.
+
     const lower = text.toLowerCase();
     const upper = text.charAt(0).toUpperCase() + text.slice(1);
 
@@ -264,7 +271,10 @@ const UserItineraries = () => {
     const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
     const results = [...snap1.docs, ...snap2.docs]
       .map((doc) => ({ uid: doc.id, username: doc.data().username }))
+      // Remove duplicates.
       .filter((v, i, a) => a.findIndex((t) => t.uid === v.uid) === i)
+      // Only include friends.
+      .filter((v) => friends.includes(v.uid))
       // Remove users already shared and the owner
       .filter((v) => !sharedWith.includes(v.uid) && v.uid !== ownerId);
 
@@ -284,81 +294,6 @@ const UserItineraries = () => {
     setSearchQuery("");
     setSearchResults([]);
   };
-
-  const addActivityToItinerary = async () => {
-    if (!openItinerary || !newActivity.trim()) return;
-    const itinRef = doc(FIREBASE_DB, "itineraries", openItinerary.id);
-    const newActivityObj = { name: newActivity.trim(), likes: [] };
-    await updateDoc(itinRef, {
-      activities: [...openItinerary.activities, newActivityObj],
-      updatedAt: new Date(),
-    });
-    setNewActivity("");
-  };
-
-  const handleToggleLike = async (index: number) => {
-    if (!currentUser || !openItinerary) return;
-    const activity = openItinerary.activities[index];
-    const alreadyLiked = activity.likes.includes(currentUser.uid);
-    const updatedActivities = [...openItinerary.activities];
-    updatedActivities[index] = {
-      ...activity,
-      likes: alreadyLiked
-        ? activity.likes.filter((id) => id !== currentUser.uid)
-        : [...activity.likes, currentUser.uid],
-    };
-    await updateDoc(doc(FIREBASE_DB, "itineraries", openItinerary.id), {
-      activities: updatedActivities,
-    });
-    setOpenItinerary((prev) => ({ ...prev!, activities: updatedActivities }));
-  };
-
-  const handleRemoveActivity = async (indexToRemove: number) => {
-    if (!openItinerary) return;
-
-    try {
-      // If this is the last activity, delete the whole itinerary
-      if (openItinerary.activities.length === 1) {
-        await deleteDoc(doc(FIREBASE_DB, "itineraries", openItinerary.id));
-
-        setItineraries((prev) =>
-          prev.filter((itinerary) => itinerary.id !== openItinerary.id)
-        );
-
-        setOpenItinerary(null);
-        return;
-      }
-
-      // Otherwise, just remove the selected activity
-      const updatedActivities = openItinerary.activities.filter(
-        (_, index) => index !== indexToRemove
-      );
-
-      await updateDoc(doc(FIREBASE_DB, "itineraries", openItinerary.id), {
-        activities: updatedActivities,
-        updatedAt: new Date(),
-      });
-
-      setOpenItinerary((prev) =>
-        prev ? { ...prev, activities: updatedActivities } : prev
-      );
-
-      setItineraries((prev) =>
-        prev.map((itinerary) =>
-          itinerary.id === openItinerary.id
-            ? { ...itinerary, activities: updatedActivities }
-            : itinerary
-        )
-      );
-    } catch (error) {
-      console.error("Error removing activity:", error);
-    }
-  };
-
-  const sharedUsernameList =
-    sharedUsernames.length > 0
-      ? sharedUsernames.map((username) => `@${username}`).join(", ")
-      : "None";
 
   if (loading) {
     return (
@@ -529,7 +464,7 @@ const UserItineraries = () => {
               </Text>
               <GlassView style={itinerarySubTabStyles.sharedInputBar}>
                 <TextInput
-                  placeholder="Search username..."
+                  placeholder="Search friends..."
                   value={searchQuery}
                   onChangeText={handleSearchUsers}
                   style={styles.searchInput}
