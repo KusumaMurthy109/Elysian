@@ -1,40 +1,20 @@
 import { StyleSheet } from "react-native";
 
 export const manageFriendsStyles = StyleSheet.create({
-  normalHeader: {
-    marginTop: 18,
-    marginHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  searchHeader: {
-    marginTop: 18,
-    marginHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-
-  headerSide: {
-    width: 48,
-    alignItems: "center",
-  },
-
-  headerTitle: {
-    flex: 1,
+  title: {
     textAlign: "center",
-    fontSize: 28,
-    fontWeight: "700",
+    fontWeight: "800",
+    fontSize: 25,
+    lineHeight: 45,
     color: "#000",
+    marginBottom: 20,
+    marginTop: 25,
+    marginHorizontal: 20,
   },
 
   tabContainer: {
     flex: 1,
-    marginTop: 14,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
 
   tabLabel: {
@@ -70,7 +50,7 @@ export const manageFriendsStyles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     marginHorizontal: 20,
-    marginTop: 12,
+    marginTop: 10,
     borderRadius: 22,
     backgroundColor: "rgba(255,255,255,0.78)",
     borderWidth: 1,
@@ -101,7 +81,7 @@ export const manageFriendsStyles = StyleSheet.create({
 
   friendEmpty: {
     flex: 1,
-    marginTop: 180,
+    minHeight: 420,
     justifyContent: "center",
     alignItems: "center",
   },

@@ -5,12 +5,10 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
-  TextInput,
   ImageBackground,
-  TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
@@ -25,10 +23,11 @@ import {
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 import { styles } from "../styles/app_styles.styles";
 import { manageFriendsStyles } from "../styles/manage_friends.styles";
-import { useNavigation } from "@react-navigation/native";
 
 type Friend = {
   uid: string;
@@ -55,11 +54,10 @@ const FriendsTab = ({
 }) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
+  const navigation = useNavigation();
 
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -67,6 +65,10 @@ const FriendsTab = ({
     });
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    loadFriends();
+  }, []);
 
   const loadFriends = async () => {
     if (!currentUser) {
@@ -105,10 +107,6 @@ const FriendsTab = ({
 
     setLoading(false);
   };
-
-  useEffect(() => {
-    loadFriends();
-  }, []);
 
   const removeFriend = async (friendUid: string) => {
     if (!currentUser) return;
@@ -192,11 +190,10 @@ const RequestsTab = ({
 }) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
+  const navigation = useNavigation();
 
   const [friendRequests, setFriendRequests] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -204,6 +201,10 @@ const RequestsTab = ({
     });
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    loadFriendRequests();
+  }, []);
 
   const loadFriendRequests = async () => {
     if (!currentUser) {
@@ -243,10 +244,6 @@ const RequestsTab = ({
 
     setLoading(false);
   };
-
-  useEffect(() => {
-    loadFriendRequests();
-  }, []);
 
   const approveRequest = async (friendUid: string) => {
     if (!currentUser) return;
@@ -376,11 +373,10 @@ const RequestsSentTab = ({
 }) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
+  const navigation = useNavigation();
 
   const [sentRequests, setSentRequests] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -388,6 +384,10 @@ const RequestsSentTab = ({
     });
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    loadSentRequests();
+  }, []);
 
   const loadSentRequests = async () => {
     if (!currentUser) {
@@ -427,10 +427,6 @@ const RequestsSentTab = ({
 
     setLoading(false);
   };
-
-  useEffect(() => {
-    loadSentRequests();
-  }, []);
 
   const removeRequest = async (friendUid: string) => {
     if (!currentUser) return;
@@ -514,6 +510,7 @@ const ManageFriends = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Friend[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("Friends");
 
   const [friendsMap, setFriendsMap] = useState<{ [uid: string]: boolean }>({});
   const [sentMap, setSentMap] = useState<{ [uid: string]: boolean }>({});
@@ -521,13 +518,23 @@ const ManageFriends = () => {
     {}
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setSearchOpen(false);
+        setSearchText("");
+        setDropdownOpen(false);
+      };
+    }, [])
+  );
+
   const closeSearch = () => {
-    Keyboard.dismiss();
     setSearchOpen(false);
     setSearchText("");
     setSearchResults([]);
     setDropdownOpen(false);
     setSearchLoading(false);
+    Keyboard.dismiss();
   };
 
   const loadRelationshipMaps = async () => {
@@ -666,174 +673,173 @@ const ManageFriends = () => {
       resizeMode="cover"
     >
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        {!searchOpen ? (
-          <>
-            <View style={manageFriendsStyles.normalHeader}>
-              <View style={manageFriendsStyles.headerSide}>
-                <Pressable onPress={() => currentUser && navigation.goBack()}>
-                  <GlassView style={styles.glassButton}>
-                    <Ionicons
-                      name="return-up-back-outline"
-                      size={26}
-                      color="#000"
-                    />
-                  </GlassView>
-                </Pressable>
-              </View>
+        {!searchOpen && (
+          <Pressable
+            style={styles.topLeftIcon}
+            onPress={() => currentUser && navigation.goBack()}
+          >
+            <GlassView style={styles.glassButton}>
+              <Ionicons name="return-up-back-outline" size={26} color="#000" />
+            </GlassView>
+          </Pressable>
+        )}
 
-              <Text style={manageFriendsStyles.headerTitle}>
-                Manage Friends
-              </Text>
+        {!searchOpen && (
+          <Text style={manageFriendsStyles.title}>Manage Friends</Text>
+        )}
 
-              <View style={manageFriendsStyles.headerSide}>
-                <TouchableOpacity onPress={() => setSearchOpen(true)}>
-                  <GlassView style={styles.glassButton}>
-                    <Ionicons name="search" size={26} color="#000" />
-                  </GlassView>
-                </TouchableOpacity>
-              </View>
-            </View>
+        <View style={styles.searchOverlay}>
+          <TouchableOpacity
+            style={styles.topRightIcon}
+            onPress={() => {
+              if (searchOpen) {
+                closeSearch();
+              } else {
+                setSearchOpen(true);
+              }
+            }}
+          >
+            <GlassView style={styles.glassButton}>
+              <Ionicons name="search" size={26} color="#000" />
+            </GlassView>
+          </TouchableOpacity>
 
-            <View style={manageFriendsStyles.tabContainer}>
-              <SubTab.Navigator
-                screenOptions={{
-                  tabBarIndicatorStyle: manageFriendsStyles.tabIndicator,
-                  tabBarLabelStyle: manageFriendsStyles.tabLabel,
-                  tabBarStyle: manageFriendsStyles.tabBar,
-                  sceneStyle: { backgroundColor: "transparent" },
+          {searchOpen && (
+            <GlassView style={styles.searchBarExpanded}>
+              <TextInput
+                placeholder="Search users..."
+                placeholderTextColor="#807f7fff"
+                value={searchText}
+                onChangeText={(text) => {
+                  setSearchText(text);
+                  handleSearchUsers(text);
+                }}
+                style={styles.searchInput}
+                mode="flat"
+                underlineColor="transparent"
+                activeUnderlineColor="transparent"
+                autoFocus
+                caretHidden={false}
+                selectionColor="#000"
+              />
+            </GlassView>
+          )}
+        </View>
+
+        {searchOpen && (
+          <Pressable style={styles.searchBackdrop} onPress={closeSearch} />
+        )}
+
+        {searchOpen && dropdownOpen && searchText.length > 0 && (
+          <GlassView style={styles.searchDropdown}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {searchLoading ? (
+                <View style={styles.searchResultItem}>
+                  <Text style={styles.searchResultNoneText}>Loading...</Text>
+                </View>
+              ) : searchResults.length > 0 ? (
+                searchResults.map((user) => (
+                  <TouchableOpacity
+                    key={user.uid}
+                    style={styles.searchResultItem}
+                    onPress={() => sendFriendRequest(user.uid)}
+                    disabled={
+                      friendsMap[user.uid] ||
+                      sentMap[user.uid] ||
+                      receivedMap[user.uid]
+                    }
+                  >
+                    <View style={manageFriendsStyles.friendInfo}>
+                      <Text style={manageFriendsStyles.friendName}>
+                        {user.name}
+                      </Text>
+                      <Text style={manageFriendsStyles.friendUsername}>
+                        @{user.username}
+                      </Text>
+                    </View>
+
+                    {friendsMap[user.uid] ? (
+                      <Ionicons
+                        name="people-circle"
+                        size={24}
+                        color="#63a4e1"
+                      />
+                    ) : sentMap[user.uid] || receivedMap[user.uid] ? (
+                      <Ionicons name="time-outline" size={24} color="#999" />
+                    ) : (
+                      <Ionicons
+                        name="person-add-outline"
+                        size={24}
+                        color="#000"
+                      />
+                    )}
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.searchResultItem}>
+                  <Text style={styles.searchResultNoneText}>No Results</Text>
+                </View>
+              )}
+            </ScrollView>
+          </GlassView>
+        )}
+
+        {!searchOpen && (
+          <View style={manageFriendsStyles.tabContainer}>
+            <SubTab.Navigator
+              key={activeTab}
+              initialRouteName={activeTab}
+              screenOptions={{
+                tabBarIndicatorStyle: manageFriendsStyles.tabIndicator,
+                tabBarLabelStyle: manageFriendsStyles.tabLabel,
+                tabBarStyle: manageFriendsStyles.tabBar,
+                sceneStyle: { backgroundColor: "transparent" },
+              }}
+            >
+              <SubTab.Screen
+                name="Friends"
+                listeners={{
+                  focus: () => setActiveTab("Friends"),
                 }}
               >
-                <SubTab.Screen
-                  name="Friends"
-                  children={() => (
-                    <View style={manageFriendsStyles.tabContent}>
-                      <FriendsTab
-                        onRelationshipsChanged={loadRelationshipMaps}
-                      />
-                    </View>
-                  )}
-                />
-
-                <SubTab.Screen
-                  name="Received"
-                  children={() => (
-                    <View style={manageFriendsStyles.tabContent}>
-                      <RequestsTab
-                        onRelationshipsChanged={loadRelationshipMaps}
-                      />
-                    </View>
-                  )}
-                />
-
-                <SubTab.Screen
-                  name="Sent"
-                  children={() => (
-                    <View style={manageFriendsStyles.tabContent}>
-                      <RequestsSentTab
-                        onRelationshipsChanged={loadRelationshipMaps}
-                      />
-                    </View>
-                  )}
-                />
-              </SubTab.Navigator>
-            </View>
-          </>
-        ) : (
-          <TouchableWithoutFeedback onPress={closeSearch}>
-            <View style={{ flex: 1 }}>
-              <View style={manageFriendsStyles.searchHeader}>
-                <TouchableWithoutFeedback onPress={() => {}}>
-                  <View style={{ flex: 1 }}>
-                    <GlassView style={styles.searchBarInline}>
-                      <TextInput
-                        placeholder="Search users..."
-                        placeholderTextColor="#807f7fff"
-                        value={searchText}
-                        onChangeText={(text) => {
-                          setSearchText(text);
-                          handleSearchUsers(text);
-                        }}
-                        style={styles.searchInput}
-                        autoFocus
-                        caretHidden={false}
-                        selectionColor="#000"
-                      />
-                    </GlassView>
+                {() => (
+                  <View style={manageFriendsStyles.tabContent}>
+                    <FriendsTab onRelationshipsChanged={loadRelationshipMaps} />
                   </View>
-                </TouchableWithoutFeedback>
+                )}
+              </SubTab.Screen>
 
-                <TouchableOpacity activeOpacity={1}>
-                  <GlassView style={styles.glassButton}>
-                    <Ionicons name="search" size={26} color="#000" />
-                  </GlassView>
-                </TouchableOpacity>
-              </View>
-
-              {dropdownOpen && searchText.length > 0 && (
-                <TouchableWithoutFeedback onPress={() => {}}>
-                  <View style={styles.searchDropdownInline}>
-                    <ScrollView keyboardShouldPersistTaps="handled">
-                      {searchLoading ? (
-                        <View style={styles.searchResultItem}>
-                          <Text style={styles.searchResultNoneText}>
-                            Loading...
-                          </Text>
-                        </View>
-                      ) : searchResults.length > 0 ? (
-                        searchResults.map((user) => (
-                          <TouchableOpacity
-                            key={user.uid}
-                            style={styles.searchResultItem}
-                            onPress={() => sendFriendRequest(user.uid)}
-                            disabled={
-                              friendsMap[user.uid] ||
-                              sentMap[user.uid] ||
-                              receivedMap[user.uid]
-                            }
-                          >
-                            <View style={manageFriendsStyles.friendInfo}>
-                              <Text style={manageFriendsStyles.friendName}>
-                                {user.name}
-                              </Text>
-                              <Text style={manageFriendsStyles.friendUsername}>
-                                @{user.username}
-                              </Text>
-                            </View>
-
-                            {friendsMap[user.uid] ? (
-                              <Ionicons
-                                name="people-circle"
-                                size={24}
-                                color="#63a4e1"
-                              />
-                            ) : sentMap[user.uid] || receivedMap[user.uid] ? (
-                              <Ionicons
-                                name="time-outline"
-                                size={24}
-                                color="#999"
-                              />
-                            ) : (
-                              <Ionicons
-                                name="person-add-outline"
-                                size={24}
-                                color="#000"
-                              />
-                            )}
-                          </TouchableOpacity>
-                        ))
-                      ) : (
-                        <View style={styles.searchResultItem}>
-                          <Text style={styles.searchResultNoneText}>
-                            No Results
-                          </Text>
-                        </View>
-                      )}
-                    </ScrollView>
+              <SubTab.Screen
+                name="Received"
+                listeners={{
+                  focus: () => setActiveTab("Received"),
+                }}
+              >
+                {() => (
+                  <View style={manageFriendsStyles.tabContent}>
+                    <RequestsTab
+                      onRelationshipsChanged={loadRelationshipMaps}
+                    />
                   </View>
-                </TouchableWithoutFeedback>
-              )}
-            </View>
-          </TouchableWithoutFeedback>
+                )}
+              </SubTab.Screen>
+
+              <SubTab.Screen
+                name="Sent"
+                listeners={{
+                  focus: () => setActiveTab("Sent"),
+                }}
+              >
+                {() => (
+                  <View style={manageFriendsStyles.tabContent}>
+                    <RequestsSentTab
+                      onRelationshipsChanged={loadRelationshipMaps}
+                    />
+                  </View>
+                )}
+              </SubTab.Screen>
+            </SubTab.Navigator>
+          </View>
         )}
       </SafeAreaView>
     </ImageBackground>

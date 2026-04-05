@@ -410,20 +410,6 @@ export const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  searchDropdownInline: {
-    position: "absolute",
-    top: 95,
-    left: 30,
-    right: 30,
-    backgroundColor: "#fff",
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: "rgba(174, 170, 170, 0.15)",
-    maxHeight: 220,
-    zIndex: 9,
-    overflow: "hidden",
-  },
-
   searchResultItem: {
     flexDirection: "row",
     justifyContent: "space-between",
