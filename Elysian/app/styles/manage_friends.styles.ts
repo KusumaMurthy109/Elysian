@@ -1,85 +1,20 @@
 import { StyleSheet } from "react-native";
 
 export const manageFriendsStyles = StyleSheet.create({
-  normalHeader: {
-    marginTop: 18,
-    marginHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  searchHeader: {
-    marginTop: 18,
-    marginHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-
-  titleContainer: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
-  },
-
-  titleText: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#000",
-  },
-
-  friendsSearchBar: {
-    flex: 1,
-    borderRadius: 24,
-    overflow: "hidden",
-  },
-
-  friendsSearchInput: {
-    backgroundColor: "transparent",
-    fontSize: 16,
-    height: 48,
-    paddingHorizontal: 12,
-  },
-
-  searchResultsWrapper: {
-    marginTop: 14,
-    marginHorizontal: 20,
-    borderRadius: 24,
-    overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.78)",
-  },
-
-  searchResultItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e7e7e7",
-    backgroundColor: "transparent",
-    borderRadius: 14,
-  },
-
-  searchUserRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  searchEmptyText: {
+  title: {
     textAlign: "center",
-    color: "#666",
-    fontSize: 16,
-  },
-
-  lastSearchResultItem: {
-    borderBottomWidth: 0,
+    fontWeight: "800",
+    fontSize: 25,
+    lineHeight: 45,
+    color: "#000",
+    marginBottom: 20,
+    marginTop: 25,
+    marginHorizontal: 20,
   },
 
   tabContainer: {
     flex: 1,
-    marginTop: 14,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
 
   tabLabel: {
@@ -112,10 +47,19 @@ export const manageFriendsStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.78)",
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+  },
+
+  friendInfo: {
+    flex: 1,
+    marginRight: 12,
   },
 
   friendName: {
@@ -127,6 +71,7 @@ export const manageFriendsStyles = StyleSheet.create({
   friendUsername: {
     fontSize: 14,
     color: "#666",
+    marginTop: 2,
   },
 
   iconContainer: {
@@ -134,16 +79,9 @@ export const manageFriendsStyles = StyleSheet.create({
     gap: 12,
   },
 
-  tabPlaceholder: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-
   friendEmpty: {
     flex: 1,
-    marginTop: 180,
+    minHeight: 420,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -160,5 +98,6 @@ export const manageFriendsStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     color: "#63a4e1",
+    textAlign: "center",
   },
 });
