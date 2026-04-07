@@ -21,6 +21,7 @@ def generate_activities():
         data = request.get_json()
         city = data["city"]
         country = data["country"]
+        trip_length = data["tripLength"]
 
         prompt = f"""
             Return ONLY valid JSON.
@@ -28,20 +29,24 @@ def generate_activities():
             Generate 16 activities for:
             City: {city}
             Country: {country}
+            Trip length: {trip_length} days
 
             Each activity must be assigned EXACTLY one category from this set:
-            ["restaurants", "outdoor", "arts", "entertainment"]
+            ["restaurants", "outdoor", "arts", "entertainment"].
+            Generate activities grouped by geographic proximity, at least 3 distinct ones.
+            Each activity must include a "location" field representing the cluster it belongs to.
 
             Rules:
-            - Activity names must be short (2-6 words)
+            - Activity names must be short (2-4 words)
             - No numbering
             - No emojis
             - No duplicates
+            - Locations must be real
             - Output format EXACTLY:
 
             {{
                 "activities": [
-                    {{ "name": "Activity name", "category": "arts" }}
+                    {{ "name": "Activity name", "category": "arts", "location": "Downtown" }}
                 ]
             }}
         """
@@ -53,7 +58,7 @@ def generate_activities():
             prompt,
             generation_config={
                 "temperature": 0.7,
-                "max_output_tokens": 3000,
+                "max_output_tokens": 3500,
                 "response_mime_type": "application/json"
             }
         )

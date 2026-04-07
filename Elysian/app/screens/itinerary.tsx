@@ -293,6 +293,12 @@ const Itinerary = () => {
   const getActivities = async (city: FavCity) => {
     setActivitiesLoading(true);
     setActivitiesError(null);
+    const tripLength =
+      Math.floor(
+        (new Date(tripEnd).getTime() - new Date(tripStart).getTime()) /
+        (1000 * 60 * 60 * 24)
+      ) + 1;
+
 
     try {
       const res = await fetch(
@@ -303,6 +309,7 @@ const Itinerary = () => {
           body: JSON.stringify({
             city: city.name,
             country: city.country,
+            tripLength,
           }),
         }
       );
