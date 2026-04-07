@@ -296,6 +296,7 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                                     .filter((loc) => loc !== "Custom")
                             )
                         ];
+                        const sortedForDate = sortActivitiesByLikes(activitiesByDate[date]);
 
                         const isLast = index === tripDates.length - 1;
 
@@ -306,34 +307,35 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                     <Text style={itinerarySubTabStyles.activityLabelText}>
                                         {new Date(date).toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
                                         })}
                                     </Text>
 
                                     <TouchableOpacity
                                         onPress={() =>
-                                        setAddingForDate((prev) => (prev === date ? null : date))
+                                            setAddingForDate((prev) => (prev === date ? null : date))
                                         }
                                         style={{ marginLeft: 6 }} // space between date and plus
                                     >
-                                        <Ionicons name={"add"} size={20} color="#000"/>
+                                        <Ionicons name={"add"} size={20} color="#000" />
                                     </TouchableOpacity>
-                                    </View>
+                                </View>
 
                                 {/* LOCATION SUMMARY */}
-                                {activitiesByDate[date].length > 0 && (
+
+                                {uniqueLocations.length > 0 && (
                                     <Text style={itinerarySubTabStyles.locationText}>
                                         Location: {uniqueLocations.join(", ")}
                                     </Text>
                                 )}
 
                                 {/* ACTIVITIES */}
-                                {activitiesByDate[date].length === 0 ? (
+                                {sortedForDate.length === 0 ? (
                                     <Text style={itinerarySubTabStyles.activityText}>No activities planned</Text>
                                 ) : (
-                                    activitiesByDate[date].map((a) => (
+                                    sortedForDate.map((a) => (
                                         <View key={a.name} style={itinerarySubTabStyles.activityRow}>
                                             <Text style={itinerarySubTabStyles.activityBullet}>•</Text>
                                             <Text style={itinerarySubTabStyles.activityText}>{a.name}</Text>
@@ -403,7 +405,7 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
 
                                 {/* DIVIDER */}
                                 {!isLast && (
-                                    <View style={itinerarySubTabStyles.pageContentDivider}/>
+                                    <View style={itinerarySubTabStyles.pageContentDivider} />
                                 )}
                             </View>
                         );
