@@ -1,15 +1,16 @@
 import { StyleSheet } from "react-native";
 
 export const manageFriendsStyles = StyleSheet.create({
-  title: {
-    textAlign: "center",
-    fontWeight: "800",
-    fontSize: 25,
-    lineHeight: 45,
+  titleContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+
+  titleText: {
+    fontSize: 28,
+    fontWeight: "bold",
     color: "#000",
-    marginBottom: 20,
-    marginTop: 25,
-    marginHorizontal: 20,
   },
 
   tabContainer: {
@@ -26,12 +27,13 @@ export const manageFriendsStyles = StyleSheet.create({
     backgroundColor: "#000",
     height: 3,
     borderRadius: 2,
+    alignContent: "center",
   },
 
   tabBar: {
     backgroundColor: "transparent",
-    elevation: 0,
-    shadowOpacity: 0,
+    // elevation: 0,
+    // shadowOpacity: 0,
   },
 
   tabContent: {
@@ -49,12 +51,12 @@ export const manageFriendsStyles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginHorizontal: 20,
-    marginTop: 10,
+    marginHorizontal: 12,
+    marginTop: 8,
     borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.78)",
+    backgroundColor: "#FFFDFC",
     borderWidth: 1,
-    borderColor: "rgba(174, 170, 170, 0.15)",
+    borderColor: "transparent",
   },
 
   friendInfo: {
@@ -81,7 +83,7 @@ export const manageFriendsStyles = StyleSheet.create({
 
   friendEmpty: {
     flex: 1,
-    minHeight: 420,
+    minHeight: 180,
     justifyContent: "center",
     alignItems: "center",
   },

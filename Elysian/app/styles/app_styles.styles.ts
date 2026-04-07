@@ -340,8 +340,6 @@ export const styles = StyleSheet.create({
 
   searchOverlay: {
     position: "absolute",
-    top: -9, // Align with itinerary icon
-    right: 0,
     width: "100%",
     paddingHorizontal: 15,
     zIndex: 10,
@@ -414,7 +412,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 12,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
