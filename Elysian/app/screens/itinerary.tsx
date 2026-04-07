@@ -40,8 +40,13 @@ type ActivityCategory = "restaurants" | "outdoor" | "arts" | "entertainment";
 
 type Activity = {
   name: string;
-  category: ActivityCategory;
+  likes: string[];
+  location: string;
+  category: string;
+  date?: string;
 };
+
+
 
 type CalendarDay = {
   dateString: string;
@@ -85,9 +90,8 @@ const Itinerary = () => {
   const [previousCity, setPreviousCity] = useState<FavCity | null>(null);
 
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
-  const [activityOptions, setActivityOptions] = useState<
-    { name: string; category: string }[]
-  >([]);
+  const [activityOptions, setActivityOptions] = useState<Activity[]>([]);
+
 
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
@@ -290,6 +294,18 @@ const Itinerary = () => {
     );
   }, [activityOptions, selectedFilters]);
 
+  const groupedByLocation = useMemo(() => {
+    const groups: Record<string, Activity[]> = {};
+
+    visibleActivities.forEach((a) => {
+      if (!groups[a.location]) groups[a.location] = [];
+      groups[a.location].push(a);
+    });
+
+    return groups;
+  }, [visibleActivities]);
+
+
   const getActivities = async (city: FavCity) => {
     setActivitiesLoading(true);
     setActivitiesError(null);
@@ -323,6 +339,15 @@ const Itinerary = () => {
       setActivitiesLoading(false);
     }
   };
+  const groupByLocation = (activities: Activity[]) => {
+    const groups: Record<string, Activity[]> = {};
+    activities.forEach((a) => {
+      if (!groups[a.location]) groups[a.location] = [];
+      groups[a.location].push(a);
+    });
+    return groups;
+  };
+
 
   const saveItinerary = async () => {
     try {
@@ -338,14 +363,54 @@ const Itinerary = () => {
         Alert.alert("No city selected", "Pick a city first.");
         return;
       }
+
+      // 1. Build full activity objects
+      const chosenActivities = selectedActivities.map((name) => {
+        const full = activityOptions.find((a) => a.name === name);
+        return {
+          name: full?.name ?? name,
+          likes: [],
+          location: full?.location ?? "Unknown",
+          category: full?.category ?? "unknown",
+        };
+      });
+
+      // 2. Group by location
+      const grouped = groupByLocation(chosenActivities);
+
+      // 3. Build date list
+      const start = new Date(tripStart);
+      const end = new Date(tripEnd);
+      const dates: string[] = [];
+
+      let current = new Date(start);
+
+      while (current <= end) {
+        dates.push(current.toISOString().split("T")[0]);
+        current.setDate(current.getDate() + 1);
+      }
+
+      // 4. Assign activities to dates
+      let dateIndex = 0;
+      const scheduled: Activity[] = [];
+
+      Object.entries(grouped).forEach(([location, acts]) => {
+        acts.forEach((a) => {
+          scheduled.push({
+            ...a,
+            date: dates[dateIndex],
+          });
+        });
+        // Go to the next date.
+        dateIndex = Math.min(dateIndex + 1, dates.length - 1);
+      });
+
+      // 5. Save to Firestore
       const itineraryRef = collection(FIREBASE_DB, "itineraries");
       await addDoc(itineraryRef, {
         city: selectedCity.name,
         country: selectedCity.country,
-        activities: selectedActivities.map((a) => ({
-          name: a,
-          likes: [],
-        })),
+        activities: scheduled,
         tripStart,
         tripEnd,
         updatedAt: new Date(),
@@ -353,12 +418,12 @@ const Itinerary = () => {
         sharedWith: [],
       });
 
-      // console.log("Itinerary saved successfully!");
       navigation.goBack();
     } catch (err) {
       console.error("Error saving itinerary:", err);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.solidSafeArea} edges={["top"]}>
@@ -549,31 +614,46 @@ const Itinerary = () => {
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={{ paddingBottom: 200 }}
                   >
-                    {visibleActivities.map((a) => {
-                      const checked = selectedActivities.includes(a.name);
-                      return (
-                        <TouchableOpacity
-                          key={a.name}
-                          onPress={() =>
-                            setSelectedActivities((prev) =>
-                              toggleInArray(prev, a.name)
-                            )
-                          }
-                          style={itineraryStyles.itineraryActivityRow}
+                    {Object.entries(groupedByLocation).map(([location, activities]) => (
+                      <View key={location} style={{ marginBottom: 25 }}>
+                        <Text
+                          style={{
+                            fontSize: 20,
+                            fontWeight: "700",
+                            marginBottom: 10,
+                            color: "#333",
+                          }}
                         >
-                          <View
-                            style={[
-                              itineraryStyles.itineraryCheckbox,
-                              checked &&
-                              itineraryStyles.itineraryCheckboxChecked,
-                            ]}
-                          />
-                          <Text style={itineraryStyles.itineraryActivityText}>
-                            {a.name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
+                          {location}
+                        </Text>
+
+                        {activities.map((a) => {
+                          const checked = selectedActivities.includes(a.name);
+                          return (
+                            <TouchableOpacity
+                              key={a.name}
+                              onPress={() =>
+                                setSelectedActivities((prev) =>
+                                  toggleInArray(prev, a.name)
+                                )
+                              }
+                              style={itineraryStyles.itineraryActivityRow}
+                            >
+                              <View
+                                style={[
+                                  itineraryStyles.itineraryCheckbox,
+                                  checked && itineraryStyles.itineraryCheckboxChecked,
+                                ]}
+                              />
+                              <Text style={itineraryStyles.itineraryActivityText}>
+                                {a.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    ))}
+
 
                     {selectedCity && selectedActivities.length > 0 && (
                       <Button

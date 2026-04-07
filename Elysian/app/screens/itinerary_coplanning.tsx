@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     View,
     ScrollView,
@@ -18,7 +18,7 @@ import { FIREBASE_DB } from "../../FirebaseConfig";
 import { styles } from "../styles/app_styles.styles";
 import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
 import { Ionicons } from "@expo/vector-icons";
-import { TextInput } from "react-native-paper";
+import { Button, TextInput } from "react-native-paper";
 import { GlassView } from "expo-glass-effect";
 import { itineraryStyles } from "../styles/itinerary.styles";
 import { getAuth } from "firebase/auth";
@@ -29,6 +29,8 @@ import { getAuth } from "firebase/auth";
 type Activity = {
     name: string;
     likes: string[];
+    location: string;
+    date: string;
 };
 
 type Itinerary = {
@@ -39,6 +41,8 @@ type Itinerary = {
     imageUrl?: string | null;
     ownerId: string;
     sharedWith: string[];
+    tripStart?: string;
+    tripEnd?: string;
 };
 
 
@@ -49,6 +53,8 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
     const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
     const [sharedUsernames, setSharedUsernames] = useState<string[]>([]);
     const [newActivity, setNewActivity] = useState("");
+    const [addingForDate, setAddingForDate] = useState<string | null>(null);
+
 
     const auth = getAuth();
     const currentUser = auth.currentUser;
@@ -80,6 +86,66 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
 
         return unsub;
     }, []);
+    // Gets every trip date from the start and end date given.
+    const tripDates = useMemo(() => {
+        if (!itinerary?.tripStart || !itinerary?.tripEnd) return [];
+
+        const start = new Date(itinerary.tripStart);
+        const end = new Date(itinerary.tripEnd);
+
+        const dates: string[] = [];
+        let current = new Date(start);
+
+        while (current <= end) {
+            dates.push(current.toISOString().split("T")[0]);
+            current.setDate(current.getDate() + 1);
+        }
+
+        return dates;
+    }, [itinerary]);
+
+
+    const activitiesByDate = useMemo(() => {
+        const groups: Record<string, Activity[]> = {};
+
+        // initialize all dates
+        tripDates.forEach((d) => (groups[d] = []));
+
+        // if itinerary not loaded yet → return empty groups
+        if (!itinerary?.activities) return groups;
+
+        itinerary.activities.forEach((a) => {
+            const date = a.date ?? "unscheduled";
+            if (!groups[date]) groups[date] = [];
+            groups[date].push(a);
+        });
+
+        return groups;
+    }, [itinerary, tripDates]);
+
+
+    const addActivityToDate = async (date: string) => {
+        if (!itinerary) return;
+        if (!newActivity.trim()) return;
+
+        const ref = doc(FIREBASE_DB, "itineraries", itinerary.id);
+
+        const newObj: Activity = {
+            name: newActivity.trim(),
+            likes: [],
+            date,
+            location: "Custom",
+        };
+
+        await updateDoc(ref, {
+            activities: [...itinerary.activities, newObj],
+            updatedAt: new Date(),
+        });
+
+        setNewActivity("");
+        setAddingForDate(null);
+    };
+
 
     if (!itinerary) return null;
 
@@ -93,7 +159,12 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
         if (!newActivity.trim()) return;
 
         const ref = doc(FIREBASE_DB, "itineraries", itinerary.id);
-        const newObj = { name: newActivity.trim(), likes: [] };
+        const newObj = {
+            name: newActivity.trim(),
+            likes: [],
+            location: "Custom" // When the user adds their own activity, the location isn't specified so we are putting a placeholder.
+        };
+
 
         await updateDoc(ref, {
             activities: [...itinerary.activities, newObj],
@@ -110,10 +181,10 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
             if (activity.name !== activityName) return activity;
             const alreadyLiked = activity.likes.includes(currentUser.uid);
             return {
-            ...activity,
-            likes: alreadyLiked
-                ? activity.likes.filter((id) => id !== currentUser.uid)
-                : [...activity.likes, currentUser.uid],
+                ...activity,
+                likes: alreadyLiked
+                    ? activity.likes.filter((id) => id !== currentUser.uid)
+                    : [...activity.likes, currentUser.uid],
             };
         });
         await updateDoc(doc(FIREBASE_DB, "itineraries", itinerary.id), {
@@ -123,7 +194,7 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
 
     const removeActivity = async (activityName: string) => {
         if (!itinerary) return;
-        
+
         // If last activity → delete itinerary
         if (itinerary.activities.length === 1) {
             await deleteDoc(doc(FIREBASE_DB, "itineraries", itinerary.id));
@@ -145,6 +216,12 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
 
     const sortedActivities = sortActivitiesByLikes(itinerary.activities);
 
+
+
+
+
+
+
     return (
         <View style={styles.solidSafeArea}>
             {/* BACK BUTTON */}
@@ -162,11 +239,13 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                     paddingBottom: 40,
                 }}
             >
-                <View 
-                    style={{alignItems: "center",
-                            paddingHorizontal: 18,
-                            paddingTop: 80,
-                            paddingBottom: 30}}
+                <View
+                    style={{
+                        alignItems: "center",
+                        paddingHorizontal: 18,
+                        paddingTop: 80,
+                        paddingBottom: 30
+                    }}
                 >
                     <Text style={itineraryStyles.itineraryCityName}>
                         Co-Plan Trip
@@ -212,71 +291,135 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                 </Text>
 
                 {/* ACTIVITIES */}
-                <Text style={itinerarySubTabStyles.activityLabelText}>Activities:</Text>
+                {/* ACTIVITIES BY DATE */}
 
                 <View style={itinerarySubTabStyles.activitiesContainer}>
-                    {sortedActivities.map((a, i) => (
-                        <View key={a.name} style={itinerarySubTabStyles.activityRow}>
-                            <Text style={itinerarySubTabStyles.activityBullet}>•</Text>
-                            <Text style={itinerarySubTabStyles.activityText}>{a.name}</Text>
+                    {tripDates.map((date) => {
+                        const uniqueLocations = [
+                            ...new Set(
+                                activitiesByDate[date]
+                                    .map((a) => a.location)
+                                    .filter((loc) => loc !== "Custom")
+                            )
+                        ];
 
-                            <View style={itinerarySubTabStyles.likeContainer}>
-                            <TouchableOpacity onPress={() => toggleLike(a.name)}>
-                                <Ionicons
-                                name={
-                                    a.likes.includes(currentUser?.uid ?? "")
-                                    ? "thumbs-up"
-                                    : "thumbs-up-outline"
-                                }
-                                size={20}
-                                color={
-                                    a.likes.includes(currentUser?.uid ?? "")
-                                    ? "#33375D"
-                                    : "#807f7fff"
-                                }
+
+                        return (
+                            <View key={date}>
+
+                                {/* DATE HEADER + ADD BUTTON */}
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Text style={itinerarySubTabStyles.activityLabelText}>{date}</Text>
+
+                                    <TouchableOpacity onPress={() => setAddingForDate(date)}>
+                                        <Ionicons name="add" size={26} color="#000" />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* LOCATION SUMMARY */}
+                                {activitiesByDate[date].length > 0 && (
+                                    <Text
+                                        style={{
+                                            fontSize: 14,
+                                            color: "#666",
+                                            marginBottom: 10,
+                                        }}
+                                    >
+                                        Location: {uniqueLocations.join(", ")}
+                                    </Text>
+                                )}
+
+                                {/* ACTIVITIES */}
+                                {activitiesByDate[date].length === 0 ? (
+                                    <Text style={itinerarySubTabStyles.activityText}>No activities planned</Text>
+                                ) : (
+                                    activitiesByDate[date].map((a) => (
+                                        <View key={a.name} style={itinerarySubTabStyles.activityRow}>
+                                            <Text style={itinerarySubTabStyles.activityBullet}>•</Text>
+                                            <Text style={itinerarySubTabStyles.activityText}>{a.name}</Text>
+
+                                            <View style={itinerarySubTabStyles.likeContainer}>
+                                                <TouchableOpacity onPress={() => toggleLike(a.name)}>
+                                                    <Ionicons
+                                                        name={
+                                                            a.likes.includes(currentUser?.uid ?? "")
+                                                                ? "thumbs-up"
+                                                                : "thumbs-up-outline"
+                                                        }
+                                                        size={20}
+                                                        color={
+                                                            a.likes.includes(currentUser?.uid ?? "")
+                                                                ? "#33375D"
+                                                                : "#807f7fff"
+                                                        }
+                                                    />
+                                                </TouchableOpacity>
+
+                                                <Text style={itinerarySubTabStyles.likeCount}>
+                                                    {a.likes.length}
+                                                </Text>
+
+                                                <TouchableOpacity
+                                                    onPress={() => removeActivity(a.name)}
+                                                    style={{ marginLeft: 10 }}
+                                                >
+                                                    <Ionicons name="trash-outline" size={20} color="#807f7fff" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    ))
+                                )}
+
+                                {/* ADD ACTIVITY INPUT */}
+                                {addingForDate === date && (
+                                    <View style={{ overflow: "hidden", marginTop: 10 }}>
+                                        <View style={itinerarySubTabStyles.addActivityContainer}>
+                                            <GlassView style={itinerarySubTabStyles.activityInputBar}>
+                                                <TextInput
+                                                    placeholder="Add an activity..."
+                                                    placeholderTextColor="#666"
+                                                    value={newActivity}
+                                                    onChangeText={setNewActivity}
+                                                    style={styles.searchInput}
+                                                    mode="flat"
+                                                    underlineColor="transparent"
+                                                    activeUnderlineColor="transparent"
+                                                    selectionColor="#000"
+                                                />
+                                            </GlassView>
+
+                                            <TouchableOpacity
+                                                onPress={() => addActivityToDate(date)}
+                                                activeOpacity={0.8}
+                                                style={{ marginLeft: 10 }}
+                                            >
+                                                <GlassView style={styles.glassButton}>
+                                                    <Ionicons name="add" size={24} color="#000" />
+                                                </GlassView>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+
+                                {/* DIVIDER */}
+                                <View
+                                    style={{
+                                        height: 1,
+                                        backgroundColor: "#e0e0e0",
+                                        marginVertical: 20,
+                                    }}
                                 />
-                            </TouchableOpacity>
-
-                            <Text style={itinerarySubTabStyles.likeCount}>{a.likes.length}</Text>
-
-                            <TouchableOpacity
-                                onPress={() => removeActivity(a.name)}
-                                style={{ marginLeft: 10 }}
-                            >
-                                <Ionicons name="trash-outline" size={20} color="#807f7fff" />
-                            </TouchableOpacity>
                             </View>
-                        </View>
-                    ))}
-                </View>
+                        );
+                    })}
 
-                {/* ADD ACTIVITY */}
-                <View style={{ overflow: "hidden" }}>
-                    <View style={itinerarySubTabStyles.addActivityContainer}>
-                        <GlassView style={itinerarySubTabStyles.activityInputBar}>
-                            <TextInput
-                                placeholder="Add an activity..."
-                                placeholderTextColor="#666"
-                                value={newActivity}
-                                onChangeText={setNewActivity}
-                                style={styles.searchInput}
-                                mode="flat"
-                                underlineColor="transparent"
-                                activeUnderlineColor="transparent"
-                                selectionColor="#000"
-                            />
-                        </GlassView>
 
-                        <TouchableOpacity
-                            onPress={addActivity}
-                            activeOpacity={0.8}
-                            style={{ marginLeft: 10 }}
-                        >
-                            <GlassView style={styles.glassButton}>
-                                <Ionicons name="add" size={24} color="#000" />
-                            </GlassView>
-                        </TouchableOpacity>
-                    </View>
                 </View>
             </ScrollView>
         </View>
