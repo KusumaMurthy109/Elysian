@@ -216,12 +216,6 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
 
     const sortedActivities = sortActivitiesByLikes(itinerary.activities);
 
-
-
-
-
-
-
     return (
         <View style={styles.solidSafeArea}>
             {/* BACK BUTTON */}
@@ -294,7 +288,7 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                 {/* ACTIVITIES BY DATE */}
 
                 <View style={itinerarySubTabStyles.activitiesContainer}>
-                    {tripDates.map((date) => {
+                    {tripDates.map((date, index) => {
                         const uniqueLocations = [
                             ...new Set(
                                 activitiesByDate[date]
@@ -303,34 +297,34 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                             )
                         ];
 
+                        const isLast = index === tripDates.length - 1;
 
                         return (
                             <View key={date}>
 
                                 {/* DATE HEADER + ADD BUTTON */}
-                                <View
-                                    style={{
-                                        flexDirection: "row",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <Text style={itinerarySubTabStyles.activityLabelText}>{date}</Text>
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <Text style={itinerarySubTabStyles.activityLabelText}>
+                                        {new Date(date).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                        })}
+                                    </Text>
 
-                                    <TouchableOpacity onPress={() => setAddingForDate(date)}>
-                                        <Ionicons name="add" size={26} color="#000" />
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                        setAddingForDate((prev) => (prev === date ? null : date))
+                                        }
+                                        style={{ marginLeft: 6 }} // space between date and plus
+                                    >
+                                        <Ionicons name={"add"} size={20} color="#000"/>
                                     </TouchableOpacity>
-                                </View>
+                                    </View>
 
                                 {/* LOCATION SUMMARY */}
                                 {activitiesByDate[date].length > 0 && (
-                                    <Text
-                                        style={{
-                                            fontSize: 14,
-                                            color: "#666",
-                                            marginBottom: 10,
-                                        }}
-                                    >
+                                    <Text style={itinerarySubTabStyles.locationText}>
                                         Location: {uniqueLocations.join(", ")}
                                     </Text>
                                 )}
@@ -408,13 +402,9 @@ const ItineraryCoPlanning = ({ route, navigation }: any) => {
                                 )}
 
                                 {/* DIVIDER */}
-                                <View
-                                    style={{
-                                        height: 1,
-                                        backgroundColor: "#e0e0e0",
-                                        marginVertical: 20,
-                                    }}
-                                />
+                                {!isLast && (
+                                    <View style={itinerarySubTabStyles.pageContentDivider}/>
+                                )}
                             </View>
                         );
                     })}

@@ -181,7 +181,7 @@ export const itinerarySubTabStyles = StyleSheet.create({
 
   activityLabelText: {
     marginVertical: 10,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
     color: "#000",
   },
@@ -200,6 +200,13 @@ export const itinerarySubTabStyles = StyleSheet.create({
     color: "#000",
   },
 
+  locationText: {
+    fontSize: 14,
+    fontWeight: 500,
+    color: "#666",
+    marginBottom: 10,
+  },
+
   likeContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -213,4 +220,11 @@ export const itinerarySubTabStyles = StyleSheet.create({
     minWidth: 20,
     textAlign: "center",
   },
+  
+  pageContentDivider: {
+    height: 1,
+    backgroundColor: "#e0e0e0",
+    marginVertical: 15,
+  }
+
 });

@@ -7,8 +7,6 @@
 import { StyleSheet } from "react-native";
 
 export const itineraryStyles = StyleSheet.create({
-  // Add these inside your StyleSheet.create({...})
-
   pageContainer: {
     flex: 1,
   },
@@ -132,13 +130,15 @@ export const itineraryStyles = StyleSheet.create({
     color: "#888",
     padding: 12,
   },
+
   dateModalContainer: {
     position: "absolute",
-    top: "15%",
-    bottom: "15%",
+    top: "17%",
+    bottom: "17%",
     left: "5%",
     right: "5%",
     backgroundColor: "#FFFDFC",
+    paddingTop: 25,
     padding: 20,
     borderRadius: 40,
     zIndex: 1001, // above overlay
@@ -151,6 +151,7 @@ export const itineraryStyles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between",
   },
+
   calendarContainer: {
     padding: 10,
     borderRadius: 30,
