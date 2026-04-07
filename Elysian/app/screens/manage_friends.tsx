@@ -685,7 +685,9 @@ const ManageFriends = () => {
         )}
 
         {!searchOpen && (
-          <Text style={manageFriendsStyles.title}>Manage Friends</Text>
+           <View style={manageFriendsStyles.titleContainer}>
+            <Text style={manageFriendsStyles.titleText}>Manage Friends</Text>
+          </View>
         )}
 
         <View style={styles.searchOverlay}>

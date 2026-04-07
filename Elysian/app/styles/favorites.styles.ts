@@ -20,13 +20,13 @@ export const favoritesStyles = StyleSheet.create({
 
   itineraryIcon: {
     position: "absolute",
-    top: 65,
+    top: 75,
     right: 90,
     zIndex: 10,
   },
 
   resultsContainer: {
-    marginTop: 8,
+    marginTop: 25,
   },
 
   cityCard: {
@@ -90,8 +90,8 @@ export const favoritesStyles = StyleSheet.create({
 
   sortRow: {
     position: "absolute",
-    right: 35,
-    top: 80,
+    right: 38,
+    top: 90,
     zIndex: 5,
     marginTop: -20,
   },
@@ -115,7 +115,7 @@ export const favoritesStyles = StyleSheet.create({
 
   sortMenu: {
     position: "absolute",
-    top: 100,
+    top: 110,
     right: 20,
     backgroundColor: "#fff",
     borderRadius: 14,
