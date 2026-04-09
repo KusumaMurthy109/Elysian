@@ -15,12 +15,12 @@ export const homeStyles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 45,
     color: "#000",
-    marginBottom: 20,
-    marginTop: -30,
+    marginBottom: -10,
+    marginTop: -10,
   },
 
   homeContainer: {
-    paddingTop: 40,
+    paddingTop: 10,
     paddingHorizontal: 20,
     justifyContent: "flex-start",
   },
@@ -179,5 +179,74 @@ export const homeStyles = StyleSheet.create({
   tagFriendsDivider: {
     fontSize: 20,
     color: '#333'
-  }
+  },
+
+  headerContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+
+  tabContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+    marginBottom: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    //backgroundColor: 'rgba(99, 164, 225, 0.2)',
+    //backgroundColor: 'rgba(51, 55, 93, 0.2)',
+    //backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 30,
+    padding: 4,
+  },
+
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 25,
+  },
+
+  activeTab: {
+    //backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    //backgroundColor: "#63a4e1",
+    //backgroundColor: "#33375D",
+    backgroundColor: "#000",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+
+  activeTabText: {
+    //color: '#000',
+    color: '#FFF',
+  },
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+  },
+
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 8,
+    paddingHorizontal: 40,
+  },
 });

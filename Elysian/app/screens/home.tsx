@@ -6,11 +6,10 @@
  *
  */
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Image,
   ImageBackground,
   FlatList,
   TouchableOpacity,
@@ -31,8 +30,7 @@ import {
   updateDoc,
   deleteDoc,
   deleteField,
-  arrayUnion, 
-  arrayRemove,
+  arrayUnion,
   getDoc,
 } from "firebase/firestore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -41,33 +39,13 @@ import { GlassView } from "expo-glass-effect";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "./navigation_bar";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
-import MaskedView from "@react-native-masked-view/masked-view";
 import { getAuth } from "firebase/auth";
-
-// This defines what the post object should look like
-type Post = {
-  id: string;
-  urls: string[]; // Allow users to upload multiple pictures.
-  uploader: string;
-  uid: string;
-  city: {
-    id: string;
-    name: string;
-    country: string;
-  };
-  review: string;
-  tagFriends: string[],
-  ratingValue: number;
-  timestamp: number;
-  likeCount?: number;
-};
+import PostItem, { Post } from "./post_component";
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
 const Home = () => {
-  const [posts, setPosts] = useState<Post[]>([]); // Initializes post as an empty array which is then updated by setPosts
+  const [posts, setPosts] = useState<Post[]>([]);
   const [expandedReview, setExpandedReview] = useState<{
     [key: string]: boolean;
   }>({});
@@ -78,20 +56,30 @@ const Home = () => {
   const [postImageIndices, setPostImageIndices] = useState<{
     [postId: string]: number;
   }>({});
-  const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
-  const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>({});
+  const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>(
+    {}
+  );
+  const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>(
+    {}
+  );
   const currentUser = getAuth().currentUser;
-  const [friendRequestsSent, setFreindRequestsSent] = useState<{[uid:string]:boolean}>({});
-  const [friendRequestsReceieved, setFriendRequestsReceieved] = useState <{[uid:string]: boolean}>({});
+  const [friendRequestsSent, setFriendRequestsSent] = useState<{
+    [uid: string]: boolean;
+  }>({});
+  const [friendRequestsReceieved, setFriendRequestsReceieved] = useState<{
+    [uid: string]: boolean;
+  }>({});
+  const [activeTab, setActiveTab] = useState<"community" | "friends">(
+    "community"
+  );
 
   // Sync posts from Firestore
   useEffect(() => {
     const q = query(
       collection(FIREBASE_DB, "posts"),
-      orderBy("timestamp", "desc"),
+      orderBy("timestamp", "desc")
     );
 
-    // Store the function that stops listening into the variable unsubscribe
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data: Post[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -137,15 +125,15 @@ const Home = () => {
       const unsubscribe = onSnapshot(likeRef, (snapshot) => {
         setUserLikes((prev) => ({
           ...prev,
-          [post.id]: snapshot.exists(), // If document exist, the user liked the post, otherwise does not exist
+          [post.id]: snapshot.exists(),
         }));
       });
 
       unsubscribeFunctions.push(unsubscribe);
     });
 
-    return () => unsubscribeFunctions.forEach((unsub) => unsub()); // Stops listening to Firestore
-  }, [posts]); // Runs when posts update
+    return () => unsubscribeFunctions.forEach((unsub) => unsub());
+  }, [posts]);
 
   // Updates likeCount on posts database
   const likesOnPost = async (postId: string) => {
@@ -158,14 +146,12 @@ const Home = () => {
       const likeRef = doc(FIREBASE_DB, "posts", postId, "likes", user.uid);
 
       if (userLikes[postId]) {
-        // Check if user already liked, then unlike
         await deleteDoc(likeRef);
         await updateDoc(postRef, {
           likeCount: increment(-1),
         });
       } else {
-        // Otherwise post is liked
-        await setDoc(likeRef, { liked: true }); // Create like document
+        await setDoc(likeRef, { liked: true });
         await updateDoc(postRef, {
           likeCount: increment(1),
         });
@@ -183,20 +169,18 @@ const Home = () => {
     ]);
   };
 
-  // Request for access to the camera.
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission denied", "Camera access is required.");
       return;
     }
-    // If granted permission, then wait for the camera picture and get result.
     const selectedImage = await ImagePicker.launchCameraAsync({
       quality: 0.8,
     });
 
     if (!selectedImage.canceled) {
-      createPost([selectedImage.assets[0].uri]); // Upload the picture taken.
+      createPost([selectedImage.assets[0].uri]);
     }
   };
 
@@ -205,11 +189,10 @@ const Home = () => {
     if (status !== "granted") {
       Alert.alert(
         "Permission denied",
-        "Need access to photos in order to upload images",
+        "Need access to photos in order to upload images"
       );
       return;
     }
-    // Open phone gallery and compress images for faster upload
     const selectedImage = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
@@ -234,7 +217,6 @@ const Home = () => {
     }));
   };
 
-  // Add city to userFavorites
   const addCity = async (city: {
     id: string;
     name: string;
@@ -257,14 +239,13 @@ const Home = () => {
             country_name: city.country,
           },
         },
-        { merge: true },
+        { merge: true }
       );
     } catch (err) {
       console.error("Error adding to favorites:", err);
     }
   };
 
-  // Remove city from userFavorites
   const removeCity = async (city: {
     id: string;
     name: string;
@@ -282,7 +263,7 @@ const Home = () => {
         {
           [city.id]: deleteField(),
         },
-        { merge: true },
+        { merge: true }
       );
     } catch (err) {
       console.error("Error removing from favorites:", err);
@@ -292,7 +273,7 @@ const Home = () => {
   const onScrollImage = (
     postId: string,
     offsetX: number,
-    imageWidth: number,
+    imageWidth: number
   ) => {
     const index = Math.round(offsetX / imageWidth);
     setPostImageIndices((prev) => ({
@@ -313,17 +294,18 @@ const Home = () => {
       const friendsArray: string[] = data?.friends || [];
 
       const friendMap: { [uid: string]: boolean } = {};
-      friendsArray.forEach(uid => friendMap[uid] = true);
+      friendsArray.forEach((uid) => (friendMap[uid] = true));
       setUserFriends(friendMap);
 
-      const sentRequests: {to: string} [] = data?.friendRequestsSent || [];
-      const sentMap: {[uid: string]: boolean} = {};
-      sentRequests.forEach(req => sentMap[req.to] = true);
-      setFreindRequestsSent(sentMap);
+      const sentRequests: { to: string }[] = data?.friendRequestsSent || [];
+      const sentMap: { [uid: string]: boolean } = {};
+      sentRequests.forEach((req) => (sentMap[req.to] = true));
+      setFriendRequestsSent(sentMap);
 
-      const incomingReqs: {from: string, timestamp: number} [] = data?.friendRequests || [];
-      const receieved: {[uid:string]: boolean} = {};
-      incomingReqs.forEach(req => receieved[req.from] = true);
+      const incomingReqs: { from: string; timestamp: number }[] =
+        data?.friendRequests || [];
+      const receieved: { [uid: string]: boolean } = {};
+      incomingReqs.forEach((req) => (receieved[req.from] = true));
       setFriendRequestsReceieved(receieved);
     });
 
@@ -333,8 +315,12 @@ const Home = () => {
   const addFriend = async (friendUid: string) => {
     const auth = getAuth();
     const user = auth.currentUser;
-    if(!user) return;
-    if (friendUid === user.uid || userFriends[friendUid] || friendRequestsSent[friendUid]) {
+    if (!user) return;
+    if (
+      friendUid === user.uid ||
+      userFriends[friendUid] ||
+      friendRequestsSent[friendUid]
+    ) {
       return;
     }
 
@@ -343,7 +329,9 @@ const Home = () => {
       const recRef = doc(FIREBASE_DB, "users", friendUid);
       const rec = await getDoc(recRef);
       const recData = rec.data();
-      const pendingStatus = (recData?.friendRequests || []).some((req: any) => req.from === user.uid);
+      const pendingStatus = (recData?.friendRequests || []).some(
+        (req: any) => req.from === user.uid
+      );
       const timestamp = Date.now();
 
       if (pendingStatus) {
@@ -351,16 +339,73 @@ const Home = () => {
         return;
       }
 
-      await updateDoc(recRef, {friendRequests: arrayUnion({from: user.uid, timestamp}),});
-      await updateDoc(senderRef, {friendRequestsSent: arrayUnion({to: friendUid, timestamp}),})
+      await updateDoc(recRef, {
+        friendRequests: arrayUnion({ from: user.uid, timestamp }),
+      });
+      await updateDoc(senderRef, {
+        friendRequestsSent: arrayUnion({ to: friendUid, timestamp }),
+      });
 
-      Alert.alert("Friend request sent!")
-    } 
-    catch (error) {
+      Alert.alert("Friend request sent!");
+    } catch (error) {
       console.error("Error sending friend request:", error);
     }
   };
 
+  // Props to pass to PostItem
+  const postItemProps = {
+    postImageIndices,
+    onScrollImage,
+    onHandleReview: handleReview,
+    expandedReview,
+    currentUser,
+    userFriends,
+    friendRequestsSent,
+    friendRequestsReceieved,
+    onAddFriend: addFriend,
+    onLikePost: likesOnPost,
+    userLikes,
+    userFavorites,
+    onRemoveCity: removeCity,
+    onAddCity: addCity,
+  };
+
+  // Filter posts for friends tab
+  const friendsPosts = posts.filter((post) => userFriends[post.uid]);
+
+  // Render community tab content
+  const renderCommunityTab = () => (
+    <FlatList
+      data={posts}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={homeStyles.homeContainer}
+      renderItem={({ item }) => <PostItem item={item} {...postItemProps} />}
+    />
+  );
+
+  // Render friends tab content
+  const renderFriendsTab = () => {
+    if (friendsPosts.length === 0) {
+      return (
+        <View style={homeStyles.emptyContainer}>
+          <MaterialCommunityIcons name="account-group" size={64} color="#ccc" />
+          <Text style={homeStyles.emptyText}>No friends' posts yet</Text>
+          <Text style={homeStyles.emptySubtext}>
+            Add friends to see their travel photos here
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={friendsPosts}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={homeStyles.homeContainer}
+        renderItem={({ item }) => <PostItem item={item} {...postItemProps} />}
+      />
+    );
+  };
 
   return (
     <ImageBackground
@@ -368,207 +413,48 @@ const Home = () => {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <SafeAreaView edges={["top"]}>
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={homeStyles.homeContainer}
-          ListHeaderComponent={
-            <Text style={homeStyles.title}>Explore{"\n"}Together</Text>
-          }
-          renderItem={({ item }) => {
-            // Get current image index from parent state
-            const currentIndex = postImageIndices[item.id] || 0;
+      <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
+        <View style={homeStyles.headerContainer}>
+          <Text style={homeStyles.title}>Explore</Text>
 
-            return (
-              <View style={homeStyles.postContainer}>
-                {/* Image */}
-                <View style={homeStyles.imageContainer}>
-                  <FlatList
-                    data={item.urls}
-                    horizontal={item.urls.length > 1}
-                    pagingEnabled={item.urls.length > 1}
-                    showsHorizontalScrollIndicator={false}
-                    bounces={false}
-                    keyExtractor={(uri, index) => uri + index}
-                    onScroll={
-                      item.urls.length > 1
-                        ? (event) =>
-                            onScrollImage(
-                              item.id,
-                              event.nativeEvent.contentOffset.x,
-                              homeStyles.cityImage.width,
-                            )
-                        : undefined
-                    }
-                    scrollEventThrottle={16}
-                    renderItem={({ item: uri }) => (
-                      <Image
-                        source={{ uri }}
-                        style={homeStyles.cityImage}
-                        resizeMode="cover"
-                      />
-                    )}
-                  />
+          {/* Tab Switcher */}
+          <View style={homeStyles.tabContainer}>
+            <TouchableOpacity
+              style={[
+                homeStyles.tab,
+                activeTab === "community" && homeStyles.activeTab,
+              ]}
+              onPress={() => setActiveTab("community")}
+            >
+              <Text
+                style={[
+                  homeStyles.tabText,
+                  activeTab === "community" && homeStyles.activeTabText,
+                ]}
+              >
+                Community
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                homeStyles.tab,
+                activeTab === "friends" && homeStyles.activeTab,
+              ]}
+              onPress={() => setActiveTab("friends")}
+            >
+              <Text
+                style={[
+                  homeStyles.tabText,
+                  activeTab === "friends" && homeStyles.activeTabText,
+                ]}
+              >
+                Friends
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-                  {/* Progressive Blur on bottom - only on first image */}
-                  {currentIndex === 0 && (
-                    <View style={homeStyles.postBlurContainer}>
-                      <MaskedView
-                        maskElement={
-                          <LinearGradient
-                            colors={["transparent", "rgba(255,255,255,0.9)"]}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 0, y: 1 }}
-                            style={{ flex: 1 }}
-                          />
-                        }
-                        style={{ flex: 1 }}
-                      >
-                        <BlurView
-                          intensity={100}
-                          tint="dark"
-                          style={{ flex: 1 }}
-                        />
-                      </MaskedView>
-                    </View>
-                  )}
-
-                  {/* Scroll indicators (only if multiple images) */}
-                  {item.urls.length > 1 && (
-                    <View style={homeStyles.scrollIndicatorContainer}>
-                      {item.urls.map((_, i) => (
-                        <View
-                          key={i}
-                          style={[
-                            homeStyles.scrollDot,
-                            i === currentIndex && homeStyles.activeScrollDot,
-                          ]}
-                        />
-                      ))}
-                    </View>
-                  )}
-
-                  {/* City, Country overlay - hide if not first image */}
-                  {currentIndex === 0 && item.city && (
-                    <View style={homeStyles.cityOverlay}>
-                      <Text style={homeStyles.cityFont}>{item.city.name}</Text>
-                      <View style={homeStyles.pinIcon}>
-                        <MaterialCommunityIcons
-                          name="map-marker-outline"
-                          size={22}
-                          color="#fff"
-                        />
-                        <Text style={homeStyles.countryFont}>
-                          {item.city.country}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Rating */}
-                  {item.ratingValue !== undefined && (
-                    <View style={homeStyles.ratingOverlay}>
-                      <View style={homeStyles.ratingTag}>
-                        <Text style={homeStyles.ratingFont}>
-                          {item.ratingValue.toFixed(1)}
-                        </Text>
-                        <MaterialCommunityIcons
-                          name="star-face"
-                          size={20}
-                          color="#000"
-                        />
-                      </View>
-                    </View>
-                  )}
-                </View>
-
-                {/* Uploader, review, date */}
-                <View style={homeStyles.contentContainer}>
-                  <View>
-                    <Text style={homeStyles.uploader}>@{item.uploader}</Text>
-
-                    {item.tagFriends && item.tagFriends.length > 0 && (
-                      <Text style={homeStyles.tagFriends}>
-                        {item.tagFriends.map((friend, index) => (
-                          <Text key={friend}>
-                            @{friend}
-                            {index < item.tagFriends.length - 1 && (
-                              <Text style={homeStyles.tagFriendsDivider}> | </Text>
-                            )}
-                          </Text>
-                        ))}
-                      </Text>
-                    )}
-
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => handleReview(item.id)}
-                    >
-                      <Text
-                        style={homeStyles.reviewFont}
-                        numberOfLines={expandedReview[item.id] ? undefined : 2}
-                        ellipsizeMode="tail"
-                      >
-                        {item.review}
-                      </Text>
-                    </TouchableOpacity>
-                    
-                    <Text style={homeStyles.date}>
-                      {new Date(item.timestamp).toLocaleDateString()}
-                    </Text>
-                  </View>
-
-                  <View style={homeStyles.postIcons}>
-                    {item.uid !== currentUser?.uid && (
-                          <TouchableOpacity onPress={() => addFriend(item.uid)} disabled={userFriends[item.uid] || friendRequestsSent[item.uid] || friendRequestsReceieved[item.uid]}>
-                            <Ionicons
-                              name= {userFriends[item.uid] ? "people-circle" : friendRequestsSent[item.uid]  || friendRequestsReceieved[item.uid] ? "time-outline" : "people-circle-outline" }
-                              size={29}
-                              color={userFriends[item.uid] ? "#63a4e1" : friendRequestsSent[item.uid] || friendRequestsReceieved[item.uid] ? "#ccc" : "#000"}
-                            />
-                          </TouchableOpacity>
-                        )}
-                    <TouchableOpacity onPress={() => likesOnPost(item.id)}>
-                      <Ionicons
-                        name={userLikes[item.id] ? "heart" : "heart-outline"}
-                        size={28}
-                        color={userLikes[item.id] ? "#EB7D87" : "#000"}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (!item.city) return;
-
-                        const postCity = {
-                          id: item.city.id,
-                          name: item.city.name,
-                          country: item.city.country,
-                        };
-
-                        if (userFavorites[item.city.id]) {
-                          removeCity(postCity);
-                        } else {
-                          addCity(postCity);
-                        }
-                      }}
-                    >
-                      <Ionicons
-                        name={
-                          item.city && userFavorites[item.city.id]
-                            ? "bookmark"
-                            : "bookmark-outline"
-                        }
-                        size={28}
-                        color={"#000"}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            );
-          }}
-        />
+        {activeTab === "community" ? renderCommunityTab() : renderFriendsTab()}
 
         {/* Upload button */}
         <TouchableOpacity style={styles.topRightIcon} onPress={uploadMethod}>
