@@ -78,10 +78,9 @@ const Favorites = () => {
   const [cities, setCities] = useState<City[]>([]);
 
   const doubleTap = useRef<number | null>(null);
-  const [sortOption, setSortOption] = useState<"oldest" | "alphabetical">(
-    "oldest"
+  const [sortOption, setSortOption] = useState<"newest" | "alphabetical">(
+    "newest"
   );
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
 
   const handlePress = (city: Recommendation) => {
     const now = Date.now();
@@ -293,8 +292,8 @@ const Favorites = () => {
     }
 
     return (
-      (a.addedAt ?? Number.MAX_SAFE_INTEGER) -
-      (b.addedAt ?? Number.MAX_SAFE_INTEGER)
+      (b.addedAt ?? Number.MAX_SAFE_INTEGER) -
+      (a.addedAt ?? Number.MAX_SAFE_INTEGER)
     );
   });
   return (
@@ -303,7 +302,7 @@ const Favorites = () => {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
         {/* Itinerary Icon (hidden when search is open) */}
         {!searchOpen && (
           <TouchableOpacity
@@ -409,21 +408,48 @@ const Favorites = () => {
           <>
             {loading && <PenguinLoader text="Loading your favorite cities!" />}
             {error && !loading && <PenguinLoader text={error} />}
+              <View style={styles.headerContainer}>
+                <Text style={favoritesStyles.title}>Favorites</Text>
 
-            <ScrollView contentContainerStyle={styles.homeContainer}>
-              <Text variant="headlineLarge" style={favoritesStyles.title}>
-                Favorites
-              </Text>
+                <View style={styles.tabContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      sortOption === "newest" && styles.activeTab,
+                    ]}
+                    onPress={() => setSortOption("newest")}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        sortOption === "newest" && styles.activeTabText,
+                      ]}
+                    >
+                      Newest to Oldest
+                    </Text>
+                  </TouchableOpacity>
 
-              <View style={favoritesStyles.sortRow}>
-                <TouchableOpacity
-                  onPress={() => setSortMenuOpen(true)}
-                  style={favoritesStyles.sortIconWrapper}
-                >
-                  <MaterialCommunityIcons name="sort" size={20} color="#000" />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      sortOption === "alphabetical" && styles.activeTab,
+                    ]}
+                    onPress={() => setSortOption("alphabetical")}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        sortOption === "alphabetical" &&
+                          styles.activeTabText,
+                      ]}
+                    >
+                      Alphabetical
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
+            <ScrollView contentContainerStyle={styles.homeContainer}>
               {!loading && sortedFavorites.length > 0 && (
                 <View style={favoritesStyles.resultsContainer}>
                   {sortedFavorites.map((city) => (
@@ -489,59 +515,7 @@ const Favorites = () => {
             </ScrollView>
           </>
         )}
-
-        <Modal
-          visible={sortMenuOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setSortMenuOpen(false)}
-        >
-          <Pressable
-            style={favoritesStyles.sortMenuOverlay}
-            onPress={() => setSortMenuOpen(false)}
-          >
-            <View style={favoritesStyles.sortMenu}>
-              <TouchableOpacity
-                onPress={() => {
-                  setSortOption("oldest");
-                  setSortMenuOpen(false);
-                }}
-                style={favoritesStyles.sortMenuItem}
-              >
-                <Text
-                  style={[
-                    favoritesStyles.sortMenuText,
-                    sortOption === "oldest" &&
-                      favoritesStyles.sortMenuTextActive,
-                  ]}
-                >
-                  Oldest to Newest
-                </Text>
-              </TouchableOpacity>
-
-              <View style={favoritesStyles.divider} />
-
-              <TouchableOpacity
-                onPress={() => {
-                  setSortOption("alphabetical");
-                  setSortMenuOpen(false);
-                }}
-                style={favoritesStyles.sortMenuItem}
-              >
-                <Text
-                  style={[
-                    favoritesStyles.sortMenuText,
-                    sortOption === "alphabetical" &&
-                      favoritesStyles.sortMenuTextActive,
-                  ]}
-                >
-                  Alphabetical
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Pressable>
-        </Modal>
-
+        
         {/* Full-screen dim overlay */}
         <Modal
           visible={cityModalOpen}

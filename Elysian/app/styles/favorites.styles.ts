@@ -12,10 +12,13 @@ export const favoritesStyles = StyleSheet.create({
     textAlign: "left",
     fontWeight: "800",
     fontSize: 45,
-    lineHeight: 45,
     color: "#000",
-    marginBottom: 20,
-    marginTop: -20,
+    marginBottom: -10,
+    marginTop: -10,
+  },
+
+  scrollContent: {
+    paddingBottom: 100,
   },
 
   itineraryIcon: {

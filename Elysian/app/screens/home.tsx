@@ -10,6 +10,7 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
+  Image,
   ImageBackground,
   FlatList,
   TouchableOpacity,
@@ -374,25 +375,45 @@ const Home = () => {
   const friendsPosts = posts.filter((post) => userFriends[post.uid]);
 
   // Render community tab content
-  const renderCommunityTab = () => (
-    <FlatList
-      data={posts}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={homeStyles.homeContainer}
-      renderItem={({ item }) => <PostItem item={item} {...postItemProps} />}
-    />
-  );
+  const renderCommunityTab = () => {
+    if (posts.length === 0) {
+      return (
+        <View style={homeStyles.emptyContainer}>
+          <Image
+            source={require("../../assets/penguin.png")}
+            style={homeStyles.emptyPageImage}
+            resizeMode="contain"
+          />
+          <Text style={homeStyles.emptyText}>
+            No Community Posts Yet
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={homeStyles.homeContainer}
+        renderItem={({ item }) => (
+          <PostItem item={item} {...postItemProps} />
+        )}
+      />
+    );
+  };
 
   // Render friends tab content
   const renderFriendsTab = () => {
     if (friendsPosts.length === 0) {
       return (
         <View style={homeStyles.emptyContainer}>
-          <MaterialCommunityIcons name="account-group" size={64} color="#ccc" />
-          <Text style={homeStyles.emptyText}>No friends' posts yet</Text>
-          <Text style={homeStyles.emptySubtext}>
-            Add friends to see their travel photos here
-          </Text>
+          <Image
+            source={require("../../assets/penguin.png")}
+            style={homeStyles.emptyPageImage}
+            resizeMode="contain"
+          />
+          <Text style={homeStyles.emptyText}>No Friends' Posts Yet</Text>
         </View>
       );
     }
@@ -414,22 +435,22 @@ const Home = () => {
       resizeMode="cover"
     >
       <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
-        <View style={homeStyles.headerContainer}>
+        <View style={styles.headerContainer}>
           <Text style={homeStyles.title}>Explore</Text>
 
           {/* Tab Switcher */}
-          <View style={homeStyles.tabContainer}>
+          <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[
-                homeStyles.tab,
-                activeTab === "community" && homeStyles.activeTab,
+                styles.tab,
+                activeTab === "community" && styles.activeTab,
               ]}
               onPress={() => setActiveTab("community")}
             >
               <Text
                 style={[
-                  homeStyles.tabText,
-                  activeTab === "community" && homeStyles.activeTabText,
+                  styles.tabText,
+                  activeTab === "community" && styles.activeTabText,
                 ]}
               >
                 Community
@@ -437,15 +458,15 @@ const Home = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[
-                homeStyles.tab,
-                activeTab === "friends" && homeStyles.activeTab,
+                styles.tab,
+                activeTab === "friends" && styles.activeTab,
               ]}
               onPress={() => setActiveTab("friends")}
             >
               <Text
                 style={[
-                  homeStyles.tabText,
-                  activeTab === "friends" && homeStyles.activeTabText,
+                  styles.tabText,
+                  activeTab === "friends" && styles.activeTabText,
                 ]}
               >
                 Friends

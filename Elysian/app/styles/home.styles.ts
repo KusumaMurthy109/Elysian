@@ -181,65 +181,26 @@ export const homeStyles = StyleSheet.create({
     color: '#333'
   },
 
-  headerContainer: {
-    paddingTop: 20,
-    paddingHorizontal: 20,
+  emptyPageImage: {
+    width: 150,
+    height: 150,
+    marginTop: 30,
+    alignSelf: "center",
   },
 
-  tabContainer: {
-    flexDirection: 'row',
-    marginTop: 20,
-    marginBottom: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    //backgroundColor: 'rgba(99, 164, 225, 0.2)',
-    //backgroundColor: 'rgba(51, 55, 93, 0.2)',
-    //backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 30,
-    padding: 4,
-  },
-
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 25,
-  },
-
-  activeTab: {
-    //backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    //backgroundColor: "#63a4e1",
-    //backgroundColor: "#33375D",
-    backgroundColor: "#000",
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-
-  activeTabText: {
-    //color: '#000',
-    color: '#FFF',
-  },
 
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 100,
+    marginTop: -160,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 16,
+    paddingTop: 10,
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#63a4e1",
   },
 
   emptySubtext: {

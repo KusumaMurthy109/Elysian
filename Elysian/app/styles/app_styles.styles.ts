@@ -461,6 +461,55 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden",
   },
+   
+  // Tabs used on Home and Favorites pages
+
+  headerContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+
+  tabContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+    marginBottom: 10,
+    //backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    //backgroundColor: 'rgba(99, 164, 225, 0.2)',
+    //backgroundColor: 'rgba(51, 55, 93, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 30,
+    padding: 4,
+  },
+
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 25,
+  },
+
+  activeTab: {
+    //backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    //backgroundColor: "#63a4e1",
+    //backgroundColor: "#33375D",
+    backgroundColor: "#000",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+
+  activeTabText: {
+    //color: '#000',
+    color: '#FFF',
+  },
 });
 
 export const inputTheme = {
