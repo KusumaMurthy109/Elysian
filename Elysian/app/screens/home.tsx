@@ -6,7 +6,7 @@
  *
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,10 +15,15 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  Pressable,
+  Keyboard,
+  ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { styles } from "../styles/app_styles.styles";
 import { homeStyles } from "../styles/home.styles";
+import { favoritesStyles } from "../styles/favorites.styles";
+
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import {
   collection,
@@ -37,13 +42,20 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "./navigation_bar";
 import { getAuth } from "firebase/auth";
 import PostItem, { Post } from "./post_component";
+import { TextInput } from "react-native-paper";
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
+
+interface City {
+  id: string;
+  name: string;
+  country: string;
+}
 
 const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -73,6 +85,45 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState<"community" | "friends">(
     "community"
   );
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [searchingCity, setSearchingCity] = useState<City | null>(null);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      // Screen focused → do nothing
+
+      return () => {
+        // Screen blurred → reset UI state
+        setSearchOpen(false);
+        setSearchQuery("");
+        setDropdownOpen(false);
+      };
+    }, [])
+  );
+  useEffect(() => {
+    const uniqueCities: City[] = [];
+
+    posts.forEach((post) => {
+      if (post.city && post.city.id) {
+        const exists = uniqueCities.some((c) => c.id === post.city.id);
+        if (!exists) {
+          uniqueCities.push({
+            id: post.city.id,
+            name: post.city.name,
+            country: post.city.country,
+          });
+        }
+      }
+    });
+
+    setCities(uniqueCities);
+  }, [posts]);
+
 
   // Sync posts from Firestore
   useEffect(() => {
@@ -435,54 +486,188 @@ const Home = () => {
       resizeMode="cover"
     >
       <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
-        <View style={styles.headerContainer}>
-          <Text style={homeStyles.title}>Explore</Text>
+        {!searchOpen && (
+          <View style={styles.headerContainer}>
+            <Text style={homeStyles.title}>Explore</Text>
 
-          {/* Tab Switcher */}
-          <View style={styles.tabContainer}>
-            <TouchableOpacity
-              style={[
-                styles.tab,
-                activeTab === "community" && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab("community")}
-            >
-              <Text
+            {/* Tab Switcher */}
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
                 style={[
-                  styles.tabText,
-                  activeTab === "community" && styles.activeTabText,
+                  styles.tab,
+                  activeTab === "community" && styles.activeTab,
                 ]}
+                onPress={() => setActiveTab("community")}
               >
-                Community
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tab,
-                activeTab === "friends" && styles.activeTab,
-              ]}
-              onPress={() => setActiveTab("friends")}
-            >
-              <Text
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "community" && styles.activeTabText,
+                  ]}
+                >
+                  Community
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 style={[
-                  styles.tabText,
-                  activeTab === "friends" && styles.activeTabText,
+                  styles.tab,
+                  activeTab === "friends" && styles.activeTab,
                 ]}
+                onPress={() => setActiveTab("friends")}
               >
-                Friends
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "friends" && styles.activeTabText,
+                  ]}
+                >
+                  Friends
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
+        )}
+
+        {!searchOpen &&
+          (activeTab === "community"
+            ? renderCommunityTab()
+            : renderFriendsTab())
+        }
+
+
+        {!searchOpen && (
+          <TouchableOpacity style={favoritesStyles.itineraryIcon} onPress={uploadMethod}>
+            <GlassView style={styles.glassButton}>
+              <Ionicons name="add" size={26} color="#000" />
+            </GlassView>
+          </TouchableOpacity>
+        )}
+
+        {/* Search button */}
+        <View style={styles.searchOverlay}>
+          {/* Absolute search icon */}
+          <TouchableOpacity
+            style={styles.topRightIcon}
+            onPress={() => {
+              if (searchOpen) {
+                // closing search
+                setSearchOpen(false);
+                setSearchQuery("");
+                setDropdownOpen(false);
+                setSearchingCity(null);
+                setFilteredPosts([]);
+              } else {
+                // opening search
+                setSearchOpen(true);
+              }
+            }}
+
+          >
+            <GlassView style={styles.glassButton}>
+              <Ionicons name="search" size={26} color="#000" />
+            </GlassView>
+          </TouchableOpacity>
+
+          {/* Expanded search bar behind the icon */}
+          {searchOpen && (
+            <GlassView style={styles.searchBarExpanded}>
+              <TextInput
+                placeholder="Search cities..."
+                placeholderTextColor="#807f7fff"
+                value={searchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  setDropdownOpen(true);
+
+                  setSearchingCity(null);
+                  setFilteredPosts([]);
+                }}
+
+                style={styles.searchInput}
+                mode="flat"
+                underlineColor="transparent"
+                activeUnderlineColor="transparent"
+                autoFocus
+                caretHidden={false}
+                selectionColor="#000"
+              />
+            </GlassView>
+          )}
         </View>
+        {searchOpen && searchingCity && (
+          <View style={styles.filteredPostsContainer}>
+            <FlatList
+              data={filteredPosts}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <PostItem item={item} {...postItemProps} />
+              )}
+              contentContainerStyle={homeStyles.homeContainer}
+            />
+          </View>
+        )}
 
-        {activeTab === "community" ? renderCommunityTab() : renderFriendsTab()}
 
-        {/* Upload button */}
-        <TouchableOpacity style={styles.topRightIcon} onPress={uploadMethod}>
-          <GlassView style={styles.glassButton}>
-            <Ionicons name="add" size={26} color="#000" />
+
+
+
+        {/* Dropdown Results */}
+        {searchOpen && dropdownOpen && searchQuery.length > 0 && (
+          <GlassView style={styles.searchDropdown}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {cities.filter((city) =>
+                `${city.name}, ${city.country}`
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase())
+              ).length > 0 ? (
+                cities
+                  .filter((city) =>
+                    `${city.name}, ${city.country}`
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase())
+                  )
+                  .map((city) => (
+                    <TouchableOpacity
+                      key={city.id}
+                      style={styles.searchResultItem}
+                      onPress={() => {
+                        // 1. Set selected city
+                        setSearchingCity(city);
+
+                        // 2. Update search bar text
+                        setSearchQuery(`${city.name}, ${city.country}`);
+
+                        // 3. Filter posts
+                        const matches = posts.filter(
+                          (p) => p.city?.id === city.id
+                        );
+                        setFilteredPosts(matches);
+
+                        // 4. Close dropdown
+                        setDropdownOpen(false);
+
+                        // 5. Dismiss keyboard
+                        Keyboard.dismiss();
+                      }}
+                    >
+
+
+                      <Text style={styles.searchResultItemText}>
+                        {city.name}, {city.country}
+                      </Text>
+                    </TouchableOpacity>
+                  ))
+              ) : (
+                <View style={styles.searchResultItem}>
+                  <Text style={styles.searchResultNoneText}>No Results</Text>
+                </View>
+              )}
+            </ScrollView>
           </GlassView>
-        </TouchableOpacity>
+        )}
+
+
+
       </SafeAreaView>
     </ImageBackground>
   );

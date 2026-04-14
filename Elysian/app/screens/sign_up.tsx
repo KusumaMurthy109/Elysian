@@ -69,15 +69,13 @@ const SignUp = () => {
       const usersRef = collection(FIREBASE_DB, "users");
       const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
-      console.log("Here");
 
-      if (!querySnapshot.empty){
+      if (!querySnapshot.empty) {
         Alert.alert("Email Already Registerd", "An account already exists with this email.");
         setLoading(false);
         return;
       }
-      console.log("Here Now in setup");
-      
+
       navigation.navigate("ProfileLanding", {
         name,
         email,

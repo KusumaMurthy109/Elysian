@@ -461,7 +461,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden",
   },
-   
+
   // Tabs used on Home and Favorites pages
 
   headerContainer: {
@@ -509,6 +509,10 @@ export const styles = StyleSheet.create({
   activeTabText: {
     //color: '#000',
     color: '#FFF',
+  },
+  filteredPostsContainer: {
+    marginTop: 90,
+    flex: 1,
   },
 });
 
