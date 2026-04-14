@@ -29,7 +29,7 @@ export const favoritesStyles = StyleSheet.create({
   },
 
   resultsContainer: {
-    marginTop: 25,
+    marginTop: 10,
   },
 
   cityCard: {

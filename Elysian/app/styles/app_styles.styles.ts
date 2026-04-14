@@ -169,7 +169,7 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "flex-start",
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 0,
     paddingBottom: 0, // Remove extra bottom space
   },
 
