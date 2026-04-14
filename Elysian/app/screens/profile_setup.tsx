@@ -260,19 +260,9 @@ const ProfileSetup = () => {
         name: user.displayName,
       });
 
-      await updateProfile(user, {displayName: name });
-
-      await setDoc(doc(FIREBASE_DB, "users", user.uid), {
-        username,
-        name,
-        email,
-        createdAt: new Date(),
-        accountCreationComplete: true,
-      });
       await setDoc(doc(FIREBASE_DB, "userProfiles", user.uid), {
         responses: finalResponses,
       });
-      navigation.navigate("Tutorial");
     }
     catch (error: any) {
       Alert.alert("Sign Up Failed", error.message);
