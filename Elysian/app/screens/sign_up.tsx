@@ -24,7 +24,7 @@ import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase
 // Define the navigation parameter list
 export type RootParamList = {
   Login: undefined;
-  ProfileSetup: {
+  ProfileLanding: {
     name: string;
     email: string;
     password: string;
@@ -33,7 +33,7 @@ export type RootParamList = {
 };
 
 // Define the type for Home screen navigation prop
-type SignUpScreenProp = NativeStackNavigationProp<RootParamList, "ProfileSetup">;
+type SignUpScreenProp = NativeStackNavigationProp<RootParamList, "ProfileLanding">;
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -76,10 +76,9 @@ const SignUp = () => {
         setLoading(false);
         return;
       }
-      console.log("Here Now");
+      console.log("Here Now in setup");
       
-      
-      navigation.navigate("ProfileSetup", {
+      navigation.navigate("ProfileLanding", {
         name,
         email,
         password,

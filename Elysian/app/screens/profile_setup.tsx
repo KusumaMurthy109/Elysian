@@ -30,11 +30,17 @@ export type RootParamList = {
     password: string;
     username: string;
   };
+  ProfileLanding: {
+    name: string;
+    email: string;
+    password: string;
+    username: string;
+  };
   Tutorial: undefined;
 };
 
 // Define the type for Home screen navigation prop
-type ProfileSetupRouteProp = RouteProp<RootParamList, "ProfileSetup">;
+type ProfileSetupRouteProp = RouteProp<RootParamList, "ProfileLanding">;
 type ProfileSetUpScreenProp = NativeStackNavigationProp<
   RootParamList,
   "ProfileSetup"

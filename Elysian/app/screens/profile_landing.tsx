@@ -9,21 +9,40 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Text } from "react-native-paper";
 import { styles } from "../styles/app_styles.styles";
+import {useRoute, RouteProp} from "@react-navigation/native";
 
 // Define the navigation parameter list
 export type RootParamList = {
-  ProfileSetup: undefined;
-  ProfileLanding: undefined;
+  ProfileSetup: {
+    name: string;
+    email: string;
+    password: string;
+    username: string;
+  };
+  ProfileLanding: {
+    name: string;
+    email: string;
+    password: string;
+    username: string;
+  };
 };
 
 // Define the type for Home screen navigation prop
-type ProfileLandingScreenProp = NativeStackNavigationProp<
+type ProfileLandingRouteProp = RouteProp<
   RootParamList,
   "ProfileLanding"
+>;
+type ProfileLandingScreenProp = NativeStackNavigationProp<
+  RootParamList,
+  "ProfileSetup"
 >;
 
 // Profile Landing component
 const ProfileLanding = () => {
+  const route = useRoute<ProfileLandingRouteProp>();
+  const {name, email, password, username} = route.params;
+  
+  console.log("Here Now in profile landing");
   // Initialize navigation with type safety
   const navigation = useNavigation<ProfileLandingScreenProp>();
 
@@ -38,7 +57,12 @@ const ProfileLanding = () => {
         useNativeDriver: true,
       }).start(() => {
         // Navigate to Login screen after fading out
-        navigation.push("ProfileSetup");
+        navigation.navigate("ProfileSetup", {
+        name,
+        email,
+        password,
+        username
+      });
       });
     }, 500); // Delay duration before starting fade out animation
 
