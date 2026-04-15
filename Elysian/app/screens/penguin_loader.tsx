@@ -6,20 +6,23 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { View, Animated, Dimensions } from "react-native";
+import { View, Animated, Dimensions, TextStyle } from "react-native";
 import { Text } from "react-native-paper";
 import { penguinLoaderStyles } from "../styles/penguin_loader.styles";
 
 interface Props {
   size?: number;
   text?: string;
-  textColor?: string;
+  textSize?: number;
+  textWeight?: TextStyle["fontWeight"];
 }
 
 const PenguinLoader: React.FC<Props> = ({
   size = 150,
   text = "Loading...",
-  textColor = "black",
+  textSize = 30,
+  textWeight = 700
+
 }) => {
   const stepDuration = 250;
   const speed = 80;
@@ -78,8 +81,7 @@ const PenguinLoader: React.FC<Props> = ({
         resizeMode="contain"
       />
       <Text
-        variant="headlineMedium"
-        style={[penguinLoaderStyles.text, { color: textColor }]}
+        style={[penguinLoaderStyles.text, {fontSize: textSize}, {fontWeight: textWeight}]}
       >
         {text}
       </Text>

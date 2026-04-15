@@ -28,6 +28,7 @@ import { useCallback } from "react";
 
 import { styles } from "../styles/app_styles.styles";
 import { manageFriendsStyles } from "../styles/manage_friends.styles";
+import PenguinLoader from "./penguin_loader";
 
 type Friend = {
   uid: string;
@@ -148,12 +149,7 @@ const FriendsTab = ({
     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
       {loading ? (
         <View style={manageFriendsStyles.friendEmpty}>
-          <Image
-            source={require("../../assets/penguin.png")}
-            style={manageFriendsStyles.emptyPageImage}
-            resizeMode="contain"
-          />
-          <Text style={manageFriendsStyles.emptyText}>Loading...</Text>
+          <PenguinLoader textSize={20} textWeight={600}></PenguinLoader>
         </View>
       ) : friends.length === 0 ? (
         <View style={manageFriendsStyles.friendEmpty}>
@@ -326,12 +322,7 @@ const RequestsTab = ({
     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
       {loading ? (
         <View style={manageFriendsStyles.friendEmpty}>
-          <Image
-            source={require("../../assets/penguin.png")}
-            style={manageFriendsStyles.emptyPageImage}
-            resizeMode="contain"
-          />
-          <Text style={manageFriendsStyles.emptyText}>Loading...</Text>
+          <PenguinLoader textSize={20} textWeight={600}></PenguinLoader>
         </View>
       ) : friendRequests.length === 0 ? (
         <View style={manageFriendsStyles.friendEmpty}>
@@ -463,12 +454,7 @@ const RequestsSentTab = ({
     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
       {loading ? (
         <View style={manageFriendsStyles.friendEmpty}>
-          <Image
-            source={require("../../assets/penguin.png")}
-            style={manageFriendsStyles.emptyPageImage}
-            resizeMode="contain"
-          />
-          <Text style={manageFriendsStyles.emptyText}>Loading...</Text>
+          <PenguinLoader textSize={20} textWeight={600}></PenguinLoader>
         </View>
       ) : sentRequests.length === 0 ? (
         <View style={manageFriendsStyles.friendEmpty}>

@@ -46,6 +46,7 @@ import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import PenguinLoader from "./penguin_loader";
+import { homeStyles } from "../styles/home.styles";
 
 interface Recommendation {
   city_id: string;
@@ -243,7 +244,7 @@ const Favorites = () => {
         try {
           if (!snapshot.exists()) {
             setFavorites([]);
-            setError("No favorites found.");
+            setError(null);
             setLoading(false);
             return;
           }
@@ -513,6 +514,16 @@ const Favorites = () => {
                 </View>
               )}
             </ScrollView>
+            {!loading && !error && sortedFavorites.length === 0 && (
+              <View style={[homeStyles.emptyContainer ,{marginTop: -1000}]}>
+                <Image
+                  source={require("../../assets/penguin.png")}
+                  style={homeStyles.emptyPageImage}
+                  resizeMode="contain"
+                />
+                <Text style={homeStyles.emptyText}>No Favorite Cities Yet</Text>
+              </View>
+            )}
           </>
         )}
         

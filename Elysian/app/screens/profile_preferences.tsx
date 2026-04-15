@@ -5,7 +5,7 @@ Function: Profile preferences page, displays questionnaire responses and logout.
 
 import React, { useState, useEffect } from "react";
 import { View, Pressable, Image, ImageBackground } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -114,16 +114,6 @@ const ProfilePreferences = () => {
               </View>
             );
           })}
-
-          {/* Logout button */}
-          <Button
-            mode="contained"
-            onPress={() => signOut(FIREBASE_AUTH)}
-            style={styles.button}
-            labelStyle={styles.buttonLabel}
-          >
-            Logout
-          </Button>
         </View>
       </SafeAreaView>
     </ImageBackground>

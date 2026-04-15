@@ -17,19 +17,19 @@ export default function Tutorial() {
     const pages = [
         {
             image: require("../../assets/tutorial1.jpg"),
-            title: "Life is short and the world is wide",
+            title: "Life is Short and the World is Wide",
             description:
                 "At Elysian, we customize your preferences to generate potential travel destinations all over the world.",
         },
         {
             image: require("../../assets/tutorial2.jpg"),
-            title: "It's a big world out there, go explore",
+            title: "It's a Big World Out There, Go Explore",
             description:
                 "Share your adventures and learn about places others have been through their posts.",
         },
         {
             image: require("../../assets/tutorial3.jpg"),
-            title: "People don't take trips, trips take people",
+            title: "People Don't Take Trips, Trips Take People",
             description:
                 "Co-plan easily with friends by creating shared itineraries with a list of recommended activities.",
         },
@@ -73,7 +73,7 @@ export default function Tutorial() {
                 style={styles.button}
                 labelStyle={styles.buttonLabel}
             >
-                {page < pages.length - 1 ? "Next" : "Home"}
+                {page < pages.length - 1 ? "Next" : "Begin"}
             </Button>
         </View>
     );

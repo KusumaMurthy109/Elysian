@@ -83,6 +83,7 @@ export const manageFriendsStyles = StyleSheet.create({
 
   friendEmpty: {
     flex: 1,
+    marginTop: 150,
     minHeight: 180,
     justifyContent: "center",
     alignItems: "center",

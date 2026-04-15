@@ -947,7 +947,7 @@ const CreatePost = () => {
 
       {uploading && (
         <View style={createPostStyles.uploadOverlay}>
-          <PenguinLoader textColor="white" text="Uploading your post..." />
+          <PenguinLoader text="Uploading your post..." />
         </View>
       )}
     </SafeAreaView>

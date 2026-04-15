@@ -16,9 +16,8 @@ export const penguinLoaderStyles = StyleSheet.create({
   text: {
     paddingHorizontal: 50,
     marginTop: 20,
-    fontSize: 30,
-    fontWeight: 700,
     alignSelf: "center",
     textAlign: "center",
+    color: "#63a4e1"
   },
 });

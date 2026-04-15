@@ -28,6 +28,7 @@ export const tutorialStyles = StyleSheet.create({
     image: {
         width: "100%",
         height: "100%",
+        borderRadius: 40,
         resizeMode: "cover",
         paddingBottom: 40,
     },

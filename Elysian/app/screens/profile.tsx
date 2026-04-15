@@ -265,18 +265,6 @@ const Profile = () => {
             onPress={() => setMenuVisible(false)}
           >
             <GlassView style={profileStyles.sortMenu}>
-              
-              {/* Preferences */}
-              <TouchableOpacity
-                onPress={handleViewPreferences}
-                style={profileStyles.sortMenuItem}
-              >
-                <Text style={profileStyles.sortMenuText}>
-                  Preferences
-                </Text>
-              </TouchableOpacity>
-
-              <View style={profileStyles.divider} />
 
               {/* Friends */}
               <TouchableOpacity
@@ -285,6 +273,18 @@ const Profile = () => {
               >
                 <Text style={profileStyles.sortMenuText}>
                   Friends
+                </Text>
+              </TouchableOpacity>
+
+              <View style={profileStyles.divider} />
+              
+              {/* Preferences */}
+              <TouchableOpacity
+                onPress={handleViewPreferences}
+                style={profileStyles.sortMenuItem}
+              >
+                <Text style={profileStyles.sortMenuText}>
+                  Preferences
                 </Text>
               </TouchableOpacity>
 

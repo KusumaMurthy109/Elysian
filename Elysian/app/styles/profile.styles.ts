@@ -373,8 +373,8 @@ export const profileStyles = StyleSheet.create({
     right: 20,
     borderRadius: 14,
     backgroundColor: "rgba(255,255,255,0.15)",
-    paddingVertical: 8,
-    minWidth: 170,
+    paddingVertical: 5,
+    minWidth: 140,
     shadowColor: "#000",
     shadowOpacity: 0.12,
     shadowOffset: { width: 0, height: 4 },
@@ -392,7 +392,8 @@ export const profileStyles = StyleSheet.create({
   },
 
   sortMenuText: {
-    fontSize: 15,
+    fontSize: 16,
+    fontWeight: "500",
     color: "#000",
   },
 
