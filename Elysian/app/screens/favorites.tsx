@@ -39,7 +39,7 @@ import {
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
 import { Ionicons } from "@expo/vector-icons";
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 import { BlurView } from "expo-blur";
@@ -47,12 +47,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import PenguinLoader from "./penguin_loader";
 import { homeStyles } from "../styles/home.styles";
+import { triggerLightHaptic, triggerSuccessHaptic } from "../utils/effects";
 
 interface Recommendation {
   city_id: string;
   city_name: string;
   country: string;
-  score?: number; // Score is optional here
+  score?: number;
   description?: string;
   image?: string;
   addedAt?: number;
@@ -64,7 +65,6 @@ interface City {
   country: string;
 }
 
-// Favorites component
 const Favorites = () => {
   const [favorites, setFavorites] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -83,17 +83,16 @@ const Favorites = () => {
     "newest"
   );
 
-  const handlePress = (city: Recommendation) => {
+  const handlePress = async (city: Recommendation) => {
     const now = Date.now();
     if (doubleTap.current && now - doubleTap.current < 300) {
+      await triggerLightHaptic();
       setSelectedCity(city);
       setCityModalOpen(true);
     }
     doubleTap.current = now;
   };
 
-  // Fetches all cities in the training set from Firebase.
-  // This sets the list of all cities users can search for to favorite.
   const fetchAllCities = async () => {
     try {
       const citiesCol = collection(FIREBASE_DB, "allCities");
@@ -140,10 +139,7 @@ const Favorites = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Screen focused → do nothing
-
       return () => {
-        // Screen blurred → reset UI state
         setSearchOpen(false);
         setSearchQuery("");
         setDropdownOpen(false);
@@ -151,18 +147,17 @@ const Favorites = () => {
     }, [])
   );
 
-  // Calls fetchAllCities on page init
   useEffect(() => {
     fetchAllCities();
   }, []);
 
-  // Adds a city to userFavorites.
-  // This is for when users select a city in the search bar.
   const addToFavorites = async (city: City) => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) return;
+
+      await triggerSuccessHaptic();
 
       const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
       const cityData = await getCityData(city.id);
@@ -185,22 +180,21 @@ const Favorites = () => {
     }
   };
 
-  // Removes city from Favorites.
   const removeFavorite = async (city: Recommendation) => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) return;
 
+      await triggerLightHaptic();
+
       const favoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
       const dislikesRef = doc(FIREBASE_DB, "userDislikes", user.uid);
 
-      // 1) Remove from favorites
       await updateDoc(favoritesRef, {
         [city.city_id]: deleteField(),
       });
 
-      // 2) Add to dislikes (merge so we don't overwrite existing dislikes)
       await setDoc(
         dislikesRef,
         {
@@ -216,15 +210,13 @@ const Favorites = () => {
     }
   };
 
-  // Use navigation system for search bar icon
   const navigation = useNavigation();
 
-  // When handleSeachbar is called (search bar icon pressed) it goes to itinerary.tsx page
-  const handleItinerary = () => {
+  const handleItinerary = async () => {
+    await triggerLightHaptic();
     navigation.navigate("Itinerary" as never);
   };
 
-  // Load liked locations from Firestore.
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -297,6 +289,7 @@ const Favorites = () => {
       (a.addedAt ?? Number.MAX_SAFE_INTEGER)
     );
   });
+
   return (
     <ImageBackground
       source={require("../../assets/favorites_page_background.png")}
@@ -304,11 +297,10 @@ const Favorites = () => {
       resizeMode="cover"
     >
       <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
-        {/* Itinerary Icon (hidden when search is open) */}
         {!searchOpen && (
           <TouchableOpacity
             style={favoritesStyles.itineraryIcon}
-            onPress={() => handleItinerary()}
+            onPress={handleItinerary}
           >
             <GlassView style={styles.glassButton}>
               <Ionicons name="list" size={26} color="#000" />
@@ -316,19 +308,19 @@ const Favorites = () => {
           </TouchableOpacity>
         )}
 
-        {/* Search Icon and Bar */}
         <View style={styles.searchOverlay}>
-          {/* Absolute search icon */}
           <TouchableOpacity
             style={styles.topRightIcon}
-            onPress={() => setSearchOpen((prev) => !prev)}
+            onPress={async () => {
+              await triggerLightHaptic();
+              setSearchOpen((prev) => !prev);
+            }}
           >
             <GlassView style={styles.glassButton}>
               <Ionicons name="search" size={26} color="#000" />
             </GlassView>
           </TouchableOpacity>
 
-          {/* Expanded search bar behind the icon */}
           {searchOpen && (
             <GlassView style={styles.searchBarExpanded}>
               <TextInput
@@ -351,11 +343,11 @@ const Favorites = () => {
           )}
         </View>
 
-        {/* Tap outside to close search */}
         {searchOpen && (
           <Pressable
             style={styles.searchBackdrop}
-            onPress={() => {
+            onPress={async () => {
+              await triggerLightHaptic();
               setSearchOpen(false);
               setSearchQuery("");
               setDropdownOpen(false);
@@ -364,7 +356,6 @@ const Favorites = () => {
           />
         )}
 
-        {/* Dropdown Results */}
         {searchOpen && dropdownOpen && searchQuery.length > 0 && (
           <GlassView style={styles.searchDropdown}>
             <ScrollView keyboardShouldPersistTaps="handled">
@@ -383,11 +374,11 @@ const Favorites = () => {
                     <TouchableOpacity
                       key={city.id}
                       style={styles.searchResultItem}
-                      onPress={() => {
-                        addToFavorites(city); // Add to userFavorites
-                        setSearchOpen(false); // Close search bar
-                        setSearchQuery(""); // Clear text
-                        setDropdownOpen(false); // Close dropdown
+                      onPress={async () => {
+                        await addToFavorites(city);
+                        setSearchOpen(false);
+                        setSearchQuery("");
+                        setDropdownOpen(false);
                       }}
                     >
                       <Text style={styles.searchResultItemText}>
@@ -404,51 +395,56 @@ const Favorites = () => {
           </GlassView>
         )}
 
-        {/* Favorites list */}
         {!searchOpen && (
           <>
             {loading && <PenguinLoader text="Loading your favorite cities!" />}
             {error && !loading && <PenguinLoader text={error} />}
-              <View style={styles.headerContainer}>
-                <Text style={favoritesStyles.title}>Favorites</Text>
 
-                <View style={styles.tabContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.tab,
-                      sortOption === "newest" && styles.activeTab,
-                    ]}
-                    onPress={() => setSortOption("newest")}
-                  >
-                    <Text
-                      style={[
-                        styles.tabText,
-                        sortOption === "newest" && styles.activeTabText,
-                      ]}
-                    >
-                      Newest to Oldest
-                    </Text>
-                  </TouchableOpacity>
+            <View style={styles.headerContainer}>
+              <Text style={favoritesStyles.title}>Favorites</Text>
 
-                  <TouchableOpacity
+              <View style={styles.tabContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.tab,
+                    sortOption === "newest" && styles.activeTab,
+                  ]}
+                  onPress={async () => {
+                    await triggerLightHaptic();
+                    setSortOption("newest");
+                  }}
+                >
+                  <Text
                     style={[
-                      styles.tab,
-                      sortOption === "alphabetical" && styles.activeTab,
+                      styles.tabText,
+                      sortOption === "newest" && styles.activeTabText,
                     ]}
-                    onPress={() => setSortOption("alphabetical")}
                   >
-                    <Text
-                      style={[
-                        styles.tabText,
-                        sortOption === "alphabetical" &&
-                          styles.activeTabText,
-                      ]}
-                    >
-                      Alphabetical
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                    Newest to Oldest
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.tab,
+                    sortOption === "alphabetical" && styles.activeTab,
+                  ]}
+                  onPress={async () => {
+                    await triggerLightHaptic();
+                    setSortOption("alphabetical");
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      sortOption === "alphabetical" && styles.activeTabText,
+                    ]}
+                  >
+                    Alphabetical
+                  </Text>
+                </TouchableOpacity>
               </View>
+            </View>
 
             <ScrollView contentContainerStyle={styles.homeContainer}>
               {!loading && sortedFavorites.length > 0 && (
@@ -514,8 +510,9 @@ const Favorites = () => {
                 </View>
               )}
             </ScrollView>
+
             {!loading && !error && sortedFavorites.length === 0 && (
-              <View style={[homeStyles.emptyContainer ,{marginTop: -1000}]}>
+              <View style={[homeStyles.emptyContainer, { marginTop: -1000 }]}>
                 <Image
                   source={require("../../assets/penguin.png")}
                   style={homeStyles.emptyPageImage}
@@ -526,8 +523,7 @@ const Favorites = () => {
             )}
           </>
         )}
-        
-        {/* Full-screen dim overlay */}
+
         <Modal
           visible={cityModalOpen}
           transparent
@@ -535,13 +531,14 @@ const Favorites = () => {
           onRequestClose={() => setCityModalOpen(false)}
         >
           <View style={styles.modalDimOverlay}>
-            {/* Tap outside to close */}
             <Pressable
               style={{ position: "absolute", width: "100%", height: "100%" }}
-              onPress={() => setCityModalOpen(false)}
+              onPress={async () => {
+                await triggerLightHaptic();
+                setCityModalOpen(false);
+              }}
             />
 
-            {/* Modal content */}
             {selectedCity && (
               <View style={styles.cityModalContainer}>
                 <ScrollView contentContainerStyle={styles.cityModalContent}>

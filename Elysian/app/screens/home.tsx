@@ -48,6 +48,7 @@ import type { HomeStackParamList } from "./navigation_bar";
 import { getAuth } from "firebase/auth";
 import PostItem, { Post } from "./post_component";
 import { TextInput } from "react-native-paper";
+import { triggerSuccessHaptic, triggerLightHaptic } from "../utils/effects";
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -69,9 +70,7 @@ const Home = () => {
   const [postImageIndices, setPostImageIndices] = useState<{
     [postId: string]: number;
   }>({});
-  const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>(
-    {}
-  );
+  const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
   const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>(
     {}
   );
@@ -91,7 +90,6 @@ const Home = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [searchingCity, setSearchingCity] = useState<City | null>(null);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -123,7 +121,6 @@ const Home = () => {
 
     setCities(uniqueCities);
   }, [posts]);
-
 
   // Sync posts from Firestore
   useEffect(() => {
@@ -198,11 +195,15 @@ const Home = () => {
       const likeRef = doc(FIREBASE_DB, "posts", postId, "likes", user.uid);
 
       if (userLikes[postId]) {
+        await triggerLightHaptic();
+
         await deleteDoc(likeRef);
         await updateDoc(postRef, {
           likeCount: increment(-1),
         });
       } else {
+        await triggerSuccessHaptic();
+
         await setDoc(likeRef, { liked: true });
         await updateDoc(postRef, {
           likeCount: increment(1),
@@ -435,9 +436,7 @@ const Home = () => {
             style={homeStyles.emptyPageImage}
             resizeMode="contain"
           />
-          <Text style={homeStyles.emptyText}>
-            No Community Posts Yet
-          </Text>
+          <Text style={homeStyles.emptyText}>No Community Posts Yet</Text>
         </View>
       );
     }
@@ -447,9 +446,7 @@ const Home = () => {
         data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={homeStyles.homeContainer}
-        renderItem={({ item }) => (
-          <PostItem item={item} {...postItemProps} />
-        )}
+        renderItem={({ item }) => <PostItem item={item} {...postItemProps} />}
       />
     );
   };
@@ -497,7 +494,10 @@ const Home = () => {
                   styles.tab,
                   activeTab === "community" && styles.activeTab,
                 ]}
-                onPress={() => setActiveTab("community")}
+                onPress={async () => {
+                  await triggerLightHaptic();
+                  setActiveTab("community");
+                }}
               >
                 <Text
                   style={[
@@ -513,7 +513,10 @@ const Home = () => {
                   styles.tab,
                   activeTab === "friends" && styles.activeTab,
                 ]}
-                onPress={() => setActiveTab("friends")}
+                onPress={async () => {
+                  await triggerLightHaptic();
+                  setActiveTab("friends");
+                }}
               >
                 <Text
                   style={[
@@ -531,12 +534,16 @@ const Home = () => {
         {!searchOpen &&
           (activeTab === "community"
             ? renderCommunityTab()
-            : renderFriendsTab())
-        }
-
+            : renderFriendsTab())}
 
         {!searchOpen && (
-          <TouchableOpacity style={favoritesStyles.itineraryIcon} onPress={uploadMethod}>
+          <TouchableOpacity
+            style={favoritesStyles.itineraryIcon}
+            onPress={async () => {
+              await triggerLightHaptic();
+              uploadMethod();
+            }}
+          >
             <GlassView style={styles.glassButton}>
               <Ionicons name="add" size={26} color="#000" />
             </GlassView>
@@ -548,20 +555,19 @@ const Home = () => {
           {/* Absolute search icon */}
           <TouchableOpacity
             style={styles.topRightIcon}
-            onPress={() => {
+            onPress={async () => {
+              await triggerLightHaptic();
+
               if (searchOpen) {
-                // closing search
                 setSearchOpen(false);
                 setSearchQuery("");
                 setDropdownOpen(false);
                 setSearchingCity(null);
                 setFilteredPosts([]);
               } else {
-                // opening search
                 setSearchOpen(true);
               }
             }}
-
           >
             <GlassView style={styles.glassButton}>
               <Ionicons name="search" size={26} color="#000" />
@@ -582,7 +588,6 @@ const Home = () => {
                   setSearchingCity(null);
                   setFilteredPosts([]);
                 }}
-
                 style={styles.searchInput}
                 mode="flat"
                 underlineColor="transparent"
@@ -606,10 +611,6 @@ const Home = () => {
             />
           </View>
         )}
-
-
-
-
 
         {/* Dropdown Results */}
         {searchOpen && dropdownOpen && searchQuery.length > 0 && (
@@ -650,8 +651,6 @@ const Home = () => {
                         Keyboard.dismiss();
                       }}
                     >
-
-
                       <Text style={styles.searchResultItemText}>
                         {city.name}, {city.country}
                       </Text>
@@ -665,9 +664,6 @@ const Home = () => {
             </ScrollView>
           </GlassView>
         )}
-
-
-
       </SafeAreaView>
     </ImageBackground>
   );

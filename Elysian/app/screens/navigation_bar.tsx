@@ -19,6 +19,7 @@ import ProfilePreferences from "./profile_preferences";
 import ManageFriends from "./manage_friends";
 import CreatePost from "./create_post";
 import ItineraryCoPlanning from "./itinerary_coplanning";
+import { triggerLightHaptic } from "../utils/effects";
 
 export type FavoritesStackParamList = {
   FavoritesMain: undefined;
@@ -90,7 +91,7 @@ function ProfileStackScreen() {
       <ProfilesStack.Screen
         name="ManageFriends"
         component={ManageFriends}
-        options={{ headerShown: false}}
+        options={{ headerShown: false }}
       />
     </ProfilesStack.Navigator>
   );
@@ -137,7 +138,8 @@ export default function NavigationBar() {
           Recommendations: [], // single screen tab
         };
 
-        const isMainScreen = mainScreens[route.name]?.includes(routeName) || routeName === "";
+        const isMainScreen =
+          mainScreens[route.name]?.includes(routeName) || routeName === "";
 
         return {
           tabBarIcon: ({ focused }) => {
@@ -179,14 +181,14 @@ export default function NavigationBar() {
         };
       }}
     >
-
       {/* Define individual tab pages */}
       <Tab.Screen
         name="Home"
         component={HomeStackScreen}
         listeners={({ navigation }) => ({
-          tabPress: (e) => {
+          tabPress: async (e) => {
             e.preventDefault();
+            await triggerLightHaptic();
 
             navigation.navigate("Home", {
               screen: "HomeMain",
@@ -195,14 +197,23 @@ export default function NavigationBar() {
         })}
       />
 
-      <Tab.Screen name="Recommendations" component={Recommendations} />
+      <Tab.Screen
+        name="Recommendations"
+        component={Recommendations}
+        listeners={() => ({
+          tabPress: async () => {
+            await triggerLightHaptic();
+          },
+        })}
+      />
 
       <Tab.Screen
         name="Favorites"
         component={FavoritesStackScreen}
         listeners={({ navigation }) => ({
-          tabPress: (e) => {
+          tabPress: async (e) => {
             e.preventDefault();
+            await triggerLightHaptic();
 
             navigation.navigate("Favorites", {
               screen: "FavoritesMain",
@@ -215,8 +226,9 @@ export default function NavigationBar() {
         name="Profile"
         component={ProfileStackScreen}
         listeners={({ navigation }) => ({
-          tabPress: (e) => {
+          tabPress: async (e) => {
             e.preventDefault();
+            await triggerLightHaptic();
 
             navigation.navigate("Profile", {
               screen: "ProfileMain",

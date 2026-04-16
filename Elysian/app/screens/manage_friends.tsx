@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -24,11 +24,15 @@ import {
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
 
 import { styles } from "../styles/app_styles.styles";
 import { manageFriendsStyles } from "../styles/manage_friends.styles";
 import PenguinLoader from "./penguin_loader";
+import {
+  triggerLightHaptic,
+  triggerSuccessHaptic,
+  triggerErrorHaptic,
+} from "../utils/effects";
 
 type Friend = {
   uid: string;
@@ -113,6 +117,8 @@ const FriendsTab = ({
     if (!currentUser) return;
 
     try {
+      await triggerLightHaptic();
+
       const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
       const friendRef = doc(FIREBASE_DB, "users", friendUid);
 
@@ -245,6 +251,8 @@ const RequestsTab = ({
     if (!currentUser) return;
 
     try {
+      await triggerSuccessHaptic();
+
       const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
       const senderRef = doc(FIREBASE_DB, "users", friendUid);
 
@@ -291,6 +299,8 @@ const RequestsTab = ({
     if (!currentUser) return;
 
     try {
+      await triggerErrorHaptic();
+
       const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
       const senderRef = doc(FIREBASE_DB, "users", friendUid);
 
@@ -423,6 +433,8 @@ const RequestsSentTab = ({
     if (!currentUser) return;
 
     try {
+      await triggerLightHaptic();
+
       const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
       const recRef = doc(FIREBASE_DB, "users", friendUid);
 
@@ -514,7 +526,8 @@ const ManageFriends = () => {
     }, [])
   );
 
-  const closeSearch = () => {
+  const closeSearch = async () => {
+    await triggerLightHaptic();
     setSearchOpen(false);
     setSearchText("");
     setSearchResults([]);
@@ -623,6 +636,8 @@ const ManageFriends = () => {
     }
 
     try {
+      await triggerSuccessHaptic();
+
       const senderRef = doc(FIREBASE_DB, "users", currentUser.uid);
       const receiverRef = doc(FIREBASE_DB, "users", friendUid);
 
@@ -662,7 +677,11 @@ const ManageFriends = () => {
         {!searchOpen && (
           <Pressable
             style={styles.topLeftIcon}
-            onPress={() => currentUser && navigation.goBack()}
+            onPress={async () => {
+              if (!currentUser) return;
+              await triggerLightHaptic();
+              navigation.goBack();
+            }}
           >
             <GlassView style={styles.glassButton}>
               <Ionicons name="return-up-back-outline" size={26} color="#000" />
@@ -671,7 +690,7 @@ const ManageFriends = () => {
         )}
 
         {!searchOpen && (
-           <View style={manageFriendsStyles.titleContainer}>
+          <View style={manageFriendsStyles.titleContainer}>
             <Text style={manageFriendsStyles.titleText}>Manage Friends</Text>
           </View>
         )}
@@ -679,9 +698,16 @@ const ManageFriends = () => {
         <View style={styles.searchOverlay}>
           <TouchableOpacity
             style={styles.topRightIcon}
-            onPress={() => {
+            onPress={async () => {
+              await triggerLightHaptic();
+
               if (searchOpen) {
-                closeSearch();
+                setSearchOpen(false);
+                setSearchText("");
+                setSearchResults([]);
+                setDropdownOpen(false);
+                setSearchLoading(false);
+                Keyboard.dismiss();
               } else {
                 setSearchOpen(true);
               }
@@ -715,7 +741,12 @@ const ManageFriends = () => {
         </View>
 
         {searchOpen && (
-          <Pressable style={styles.searchBackdrop} onPress={closeSearch} />
+          <Pressable
+            style={styles.searchBackdrop}
+            onPress={() => {
+              closeSearch();
+            }}
+          />
         )}
 
         {searchOpen && dropdownOpen && searchText.length > 0 && (
@@ -787,7 +818,10 @@ const ManageFriends = () => {
               <SubTab.Screen
                 name="Friends"
                 listeners={{
-                  focus: () => setActiveTab("Friends"),
+                  focus: () => {
+                    triggerLightHaptic();
+                    setActiveTab("Friends");
+                  },
                 }}
               >
                 {() => (
@@ -800,7 +834,10 @@ const ManageFriends = () => {
               <SubTab.Screen
                 name="Received"
                 listeners={{
-                  focus: () => setActiveTab("Received"),
+                  focus: () => {
+                    triggerLightHaptic();
+                    setActiveTab("Received");
+                  },
                 }}
               >
                 {() => (
@@ -815,7 +852,10 @@ const ManageFriends = () => {
               <SubTab.Screen
                 name="Sent"
                 listeners={{
-                  focus: () => setActiveTab("Sent"),
+                  focus: () => {
+                    triggerLightHaptic();
+                    setActiveTab("Sent");
+                  },
                 }}
               >
                 {() => (

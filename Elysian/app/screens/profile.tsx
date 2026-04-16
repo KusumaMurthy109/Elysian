@@ -35,6 +35,8 @@ import { setDoc, onSnapshot } from "firebase/firestore";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import UserItineraries from "./user_itineraries";
 import UserPosts from "./user_posts";
+import { triggerSelectionHaptic, triggerSuccessHaptic } from "../utils/effects";
+
 // this defines what the post object should look like
 type Post = {
   id: string;
@@ -87,7 +89,7 @@ const Profile = () => {
     const q = query(
       // Queries users database and checks if username is equal usernameCheck
       collection(FIREBASE_DB, "users"),
-      where("username", "==", usernameCheck),
+      where("username", "==", usernameCheck)
     );
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty; // Returns true if username exists
@@ -155,7 +157,7 @@ const Profile = () => {
           setLoadingUser(false);
         });
         return unsubscribeSnapshot;
-      },
+      }
     );
 
     return unsubscribe;
@@ -193,7 +195,7 @@ const Profile = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ uid: user.uid }),
-        },
+        }
       );
 
       const { uploadUrl, fileUrl } = await response.json();
@@ -208,7 +210,7 @@ const Profile = () => {
       await setDoc(
         doc(FIREBASE_DB, "users", user.uid),
         { profileImage: fileUrl },
-        { merge: true },
+        { merge: true }
       );
 
       setProfileImage(`${fileUrl}?t=${Date.now()}`);
@@ -224,7 +226,7 @@ const Profile = () => {
 
   // When handleViewPrefernces is called (menu icon pressed) it goes to profile_preferences.tsx page
   const handleViewPreferences = () => {
-    setMenuVisible(false)
+    setMenuVisible(false);
     navigation.navigate("ProfilePreferences" as never);
   };
 
@@ -236,10 +238,13 @@ const Profile = () => {
   const handleLogout = async () => {
     setMenuVisible(false);
     await FIREBASE_AUTH.signOut();
-};
+  };
 
   return (
-    <Pressable onPress={Keyboard.dismiss} style={profileStyles.dismissKeyboardConstainer}>
+    <Pressable
+      onPress={Keyboard.dismiss}
+      style={profileStyles.dismissKeyboardConstainer}
+    >
       <View style={styles.solidBackgroundContainer}>
         {/* Background image */}
         <View style={profileStyles.topImageContainer}>
@@ -251,7 +256,12 @@ const Profile = () => {
           <View style={profileStyles.halfCircleCutout} />
         </View>
         <View style={styles.topRightIcon}>
-          <TouchableOpacity onPress={() => setMenuVisible(prev => !prev)}>
+          <TouchableOpacity
+            onPress={() => {
+              triggerSelectionHaptic();
+              setMenuVisible((prev) => !prev);
+            }}
+          >
             {/* Menu button */}
             <GlassView style={styles.glassButton}>
               <Ionicons name="ellipsis-vertical" size={26} color="#000" />
@@ -265,41 +275,44 @@ const Profile = () => {
             onPress={() => setMenuVisible(false)}
           >
             <GlassView style={profileStyles.sortMenu}>
-
               {/* Friends */}
               <TouchableOpacity
-                onPress={handleManageFriends}
+                onPress={() => {
+                  triggerSelectionHaptic();
+                  handleManageFriends();
+                }}
                 style={profileStyles.sortMenuItem}
               >
-                <Text style={profileStyles.sortMenuText}>
-                  Friends
-                </Text>
+                <Text style={profileStyles.sortMenuText}>Friends</Text>
               </TouchableOpacity>
 
               <View style={profileStyles.divider} />
-              
+
               {/* Preferences */}
               <TouchableOpacity
-                onPress={handleViewPreferences}
+                onPress={() => {
+                  triggerSelectionHaptic();
+                  handleViewPreferences();
+                }}
                 style={profileStyles.sortMenuItem}
               >
-                <Text style={profileStyles.sortMenuText}>
-                  Preferences
-                </Text>
+                <Text style={profileStyles.sortMenuText}>Preferences</Text>
               </TouchableOpacity>
 
               <View style={profileStyles.divider} />
 
               {/* Logout */}
               <TouchableOpacity
-                onPress={handleLogout}
+                onPress={() => {
+                  triggerSelectionHaptic();
+                  handleLogout();
+                }}
                 style={profileStyles.sortMenuItem}
               >
                 <Text style={[profileStyles.sortMenuText, { color: "red" }]}>
                   Log Out
                 </Text>
               </TouchableOpacity>
-
             </GlassView>
           </Pressable>
         </Modal>
@@ -317,7 +330,10 @@ const Profile = () => {
             />
             <TouchableOpacity
               style={profileStyles.editIconContainer}
-              onPress={handleEditProfile}
+              onPress={() => {
+                triggerSelectionHaptic();
+                handleEditProfile();
+              }}
             >
               <MaterialCommunityIcons name="pencil" size={18} color="#fff" />
             </TouchableOpacity>
@@ -340,13 +356,19 @@ const Profile = () => {
                 {/* Full-screen Pressable overlay that closes modal */}
                 <Pressable
                   style={profileStyles.modalOverlayPressable}
-                  onPress={() => setIsEditing(false)}
+                  onPress={() => {
+                    triggerSelectionHaptic();
+                    setIsEditing(false);
+                  }}
                 />
                 <View style={profileStyles.editModalContainer}>
                   <View style={profileStyles.editModalInnerContainer}>
                     <TouchableOpacity
                       style={profileStyles.editProfileCloseButtonShared}
-                      onPress={() => setIsEditing(false)}
+                      onPress={() => {
+                        triggerSelectionHaptic();
+                        setIsEditing(false);
+                      }}
                     >
                       <GlassView style={styles.glassButton}>
                         <Ionicons name="close" size={26} color="#000" />
@@ -382,7 +404,10 @@ const Profile = () => {
 
                     <Button
                       mode="outlined"
-                      onPress={handleUploadProfileImage}
+                      onPress={() => {
+                        triggerSelectionHaptic();
+                        handleUploadProfileImage();
+                      }}
                       style={profileStyles.changePhotoButton}
                       labelStyle={profileStyles.photoButtonLabel}
                       icon={({ size, color }) => (
@@ -398,7 +423,10 @@ const Profile = () => {
 
                     <Button
                       mode="contained"
-                      onPress={handleSaveProfile}
+                      onPress={() => {
+                        triggerSuccessHaptic();
+                        handleSaveProfile();
+                      }}
                       style={styles.button}
                       labelStyle={styles.buttonLabel}
                     >
@@ -443,4 +471,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

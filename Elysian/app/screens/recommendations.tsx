@@ -28,6 +28,11 @@ import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
 import PenguinLoader from "./penguin_loader";
+import {
+  triggerLightHaptic,
+  triggerSuccessHaptic,
+  triggerErrorHaptic,
+} from "../utils/effects";
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -110,6 +115,8 @@ const Recommendations = () => {
     }
 
     try {
+      await triggerSuccessHaptic();
+
       const userDocRef = doc(FIREBASE_DB, "userFavorites", user.uid);
       await setDoc(
         userDocRef,
@@ -134,10 +141,12 @@ const Recommendations = () => {
         city_attrs: cityData.city_attrs,
       });
     } catch (error) {
+      await triggerErrorHaptic();
       console.error("Encountered an error while saving your favorites:", error);
       alert("Error, There was an error while saving your favorites.");
     }
   };
+
   const leftSwipe = async (cityId: string, city: City) => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -148,6 +157,8 @@ const Recommendations = () => {
     }
 
     try {
+      await triggerLightHaptic();
+
       const userDocRef = doc(FIREBASE_DB, "userDislikes", user.uid);
       await setDoc(userDocRef, { [`${cityId}`]: city }, { merge: true });
 
@@ -161,6 +172,7 @@ const Recommendations = () => {
         city_attrs: cityData.city_attrs,
       });
     } catch (error) {
+      await triggerErrorHaptic();
       console.error("Encountered an error while saving your dislikes:", error);
       alert("Error, There was an error while saving your dislikes.");
     }
@@ -323,9 +335,10 @@ const Recommendations = () => {
           {...swipeAction.panHandlers}
         >
           <Pressable
-            onPress={() => {
+            onPress={async () => {
               const now = Date.now();
               if (doubleTap.current && now - doubleTap.current < 300) {
+                await triggerLightHaptic();
                 setSelectedCity(currentCity);
                 setCityModalOpen(true);
               }
@@ -374,7 +387,7 @@ const Recommendations = () => {
                     .map((tag) => tag.trim())
                     .filter(Boolean)
                     .map((tag, index) =>
-                      glassAvailable ? ( // Check if glass UI is available.
+                      glassAvailable ? (
                         <GlassView
                           key={index}
                           style={recommendationStyles.glassTag}
@@ -384,7 +397,6 @@ const Recommendations = () => {
                           </Text>
                         </GlassView>
                       ) : (
-                        // If there is no Glass UI available on the phone, do regular UI.
                         <View key={index} style={recommendationStyles.tag}>
                           <Text style={recommendationStyles.tagText}>
                             {tag}
@@ -409,7 +421,10 @@ const Recommendations = () => {
         {/* Full-screen dim overlay */}
         <Pressable
           style={styles.modalDimOverlay}
-          onPress={() => setCityModalOpen(false)}
+          onPress={async () => {
+            await triggerLightHaptic();
+            setCityModalOpen(false);
+          }}
         >
           {/* Stop propagation so modal content doesn't close when tapped */}
           <Pressable
@@ -419,7 +434,7 @@ const Recommendations = () => {
               backgroundColor: "#FFFDFC",
               padding: 20,
               borderRadius: 40,
-              zIndex: 1001, // above overlay
+              zIndex: 1001,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.25,
@@ -462,4 +477,5 @@ const Recommendations = () => {
     </SafeAreaView>
   );
 };
+
 export default Recommendations;

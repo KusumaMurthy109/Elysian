@@ -4,11 +4,19 @@ Function: Allow users to add the location, a review, and generate a rating.
 */
 
 import React, { useEffect, useState, useRef } from "react";
-import { View, Image, Pressable, ScrollView, Keyboard, Alert } from "react-native";
+import {
+  View,
+  Image,
+  Pressable,
+  ScrollView,
+  Keyboard,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
 import { styles, inputTheme } from "../styles/app_styles.styles";
 import { createPostStyles } from "../styles/create_post.styles";
+import { triggerSelectionHaptic, triggerSuccessHaptic } from "../utils/effects";
 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -46,18 +54,19 @@ const CreatePost = () => {
 
   const [postImages, setPostImages] = useState<string[]>(imageURIs || []);
 
-
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
 
   const [review, setReview] = useState("");
-  
+
   const [tagQuery, setTagQuery] = useState("");
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
   const [tagInput, setTagInput] = useState("");
-  const [friends, setFriends] = useState<{ id: string; username: string }[]>([]);
+  const [friends, setFriends] = useState<{ id: string; username: string }[]>(
+    []
+  );
   const [tagFriends, setTagFriends] = useState<string[]>([]);
 
   const [feedBack, setFeedback] = useState<
@@ -80,19 +89,19 @@ const CreatePost = () => {
 
   const [ratingValue, setRatingValue] = useState<number | null>(null);
 
-  const [uploading, setUploading] = useState(false); // Tracks whether an image is currently uploading
+  const [uploading, setUploading] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Go back to home if there are no images
   useEffect(() => {
     if (postImages.length === 0) {
       navigation.goBack();
     }
   }, [postImages]);
 
-  // Function to remove an image
   const removeImage = (index: number) => {
+    triggerSelectionHaptic();
+
     const newImages = [...postImages];
     newImages.splice(index, 1);
     setPostImages(newImages);
@@ -110,6 +119,7 @@ const CreatePost = () => {
     });
 
     if (!selectedImage.canceled) {
+      triggerSuccessHaptic();
       setPostImages([...postImages, selectedImage.assets[0].uri]);
     }
   };
@@ -119,7 +129,7 @@ const CreatePost = () => {
     if (status !== "granted") {
       Alert.alert(
         "Permission denied",
-        "Need access to photos in order to upload images",
+        "Need access to photos in order to upload images"
       );
       return;
     }
@@ -135,6 +145,7 @@ const CreatePost = () => {
 
     if (!selectedImage.canceled) {
       const uris = selectedImage.assets.map((a: { uri: string }) => a.uri);
+      triggerSuccessHaptic();
       setPostImages([...postImages, ...uris]);
     }
   };
@@ -150,7 +161,6 @@ const CreatePost = () => {
       if (!userSnap.exists()) return;
 
       const userData = userSnap.data();
-
       const friends = userData.friends || [];
 
       const friendPromises = friends.map(async (friendId: string) => {
@@ -167,7 +177,7 @@ const CreatePost = () => {
 
       const friendList = (await Promise.all(friendPromises)).filter(Boolean);
 
-      setFriends(friendList);
+      setFriends(friendList as { id: string; username: string }[]);
     } catch (err) {
       console.error("Error fetching friends:", err);
     }
@@ -178,7 +188,6 @@ const CreatePost = () => {
       const uid = getAuth().currentUser?.uid;
       if (!uid) return;
 
-      // Fetch user's personalElos
       const userRef = doc(FIREBASE_DB, "userPosts", uid);
       const userSnap = await getDoc(userRef);
 
@@ -188,11 +197,9 @@ const CreatePost = () => {
 
       const ratedCityIds = new Set(Object.keys(personalElos));
 
-      // Fetch all cities
       const citiesCol = collection(FIREBASE_DB, "allCities");
       const snapshot = await getDocs(citiesCol);
 
-      // Filter out already rated cities
       const citiesList: City[] = snapshot.docs
         .filter((doc) => !ratedCityIds.has(doc.id))
         .map((doc) => ({
@@ -251,7 +258,6 @@ const CreatePost = () => {
       }
 
       const cityData = cityResp.data();
-
       return cityData.url || null;
     } catch (error) {
       return null;
@@ -264,14 +270,11 @@ const CreatePost = () => {
     const loadImages = async () => {
       let newImg = newCityImageRef.current;
 
-      // Fetch new city image ONLY if not cached
       if (!newImg) {
         newImg = await getCityImage(comparison.new_city.id);
-
         newCityImageRef.current = newImg;
       }
 
-      // Always fetch existing city image (it changes)
       const existingImg = await getCityImage(comparison.existing_city.id);
 
       setComparisonImages({
@@ -304,12 +307,11 @@ const CreatePost = () => {
     try {
       setUploading(true);
 
-      // Upload images to S3
       const allUploadUrls: string[] = [];
       for (const uri of imageURIs) {
         const filename = uri.split("/").pop();
         const response = await fetch(
-          `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`,
+          `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
         );
         const data = await response.json();
         const { uploadUrl, fileUrl } = data;
@@ -321,7 +323,6 @@ const CreatePost = () => {
         allUploadUrls.push(fileUrl);
       }
 
-      // Create a new post in the `posts` collection
       const postRef = await addDoc(collection(FIREBASE_DB, "posts"), {
         urls: allUploadUrls,
         uploader: userName,
@@ -339,14 +340,12 @@ const CreatePost = () => {
 
       const postId = postRef.id;
 
-      // Update userPosts: add postId to posts array & apply rating changes
       const uid = getAuth().currentUser?.uid;
       if (!uid) throw new Error("User not authenticated");
 
       const userRef = doc(FIREBASE_DB, "userPosts", uid);
       const userSnap = await getDoc(userRef);
 
-      // Initialize if document doesn't exist
       if (!userSnap.exists()) {
         await setDoc(userRef, {
           personalElos: {},
@@ -355,13 +354,11 @@ const CreatePost = () => {
         });
       }
 
-      // Prepare updates
-      const updates: any = { posts: arrayUnion(postId) }; // Helper for appending to array
+      const updates: any = { posts: arrayUnion(postId) };
 
-      // Apply personalElos and comparisonCount updates from rating
       if (pendingRatingUpdates.personalElos) {
         for (const [cityId, elo] of Object.entries(
-          pendingRatingUpdates.personalElos,
+          pendingRatingUpdates.personalElos
         )) {
           updates[`personalElos.${cityId}`] = elo;
         }
@@ -369,28 +366,26 @@ const CreatePost = () => {
 
       if (pendingRatingUpdates.comparisonIncrement) {
         updates.comparisonCount = increment(
-          pendingRatingUpdates.comparisonIncrement,
+          pendingRatingUpdates.comparisonIncrement
         );
       }
 
       await updateDoc(userRef, updates);
 
-      // Update global Elos
       if (pendingRatingUpdates.globalElos) {
         for (const [cityId, elo] of Object.entries(
-          pendingRatingUpdates.globalElos,
+          pendingRatingUpdates.globalElos
         )) {
           const cityRef = doc(FIREBASE_DB, "allCities", cityId);
           await updateDoc(cityRef, {
             global_Elo: elo,
             comparison_count: increment(
-              pendingRatingUpdates.comparisonIncrement,
+              pendingRatingUpdates.comparisonIncrement
             ),
           });
         }
       }
 
-      // Cleanup local state
       setUploading(false);
       resetRatingState();
       setFeedback(null);
@@ -423,20 +418,20 @@ const CreatePost = () => {
               city_id: selectedCity.id,
               feedback: feedBack,
             }),
-          },
+          }
         );
 
         const data = await res.json();
-        
+
         if (data.status === "compare") {
           setComparison({
             new_city: data.new_city,
             existing_city: data.existing_city,
           });
         } else if (data.status === "done") {
-          setPendingRatingUpdates(data); // Locally stores updates
+          setPendingRatingUpdates(data);
           setRatingValue(data.ratingValue);
-          setRatingCompleted(true); // DO NOT reset
+          setRatingCompleted(true);
         }
       };
 
@@ -461,7 +456,7 @@ const CreatePost = () => {
             user_id: uid,
             preferred,
           }),
-        },
+        }
       );
 
       const data = await res.json();
@@ -472,10 +467,10 @@ const CreatePost = () => {
           existing_city: data.existing_city,
         });
       } else {
-        setPendingRatingUpdates(data); // Locally store updates
+        setPendingRatingUpdates(data);
         setRatingValue(data.ratingValue);
         setComparison(null);
-        setRatingCompleted(true); // Mark finished but DO NOT reset
+        setRatingCompleted(true);
       }
     } catch (err) {
       console.error("Comparison failed", err);
@@ -500,22 +495,18 @@ const CreatePost = () => {
     if (ratingValue === null) return null;
 
     const stars = [];
-
-    // Convert 0–10 rating → 0–5 stars
     const starValue = ratingValue / 2;
-
-    // Round to nearest 0.5
     const rounded = Math.round(starValue * 2) / 2;
 
     for (let i = 1; i <= 5; i++) {
       let iconName: "star" | "star-half-outline" | "star-outline";
 
       if (i <= Math.floor(rounded)) {
-        iconName = "star"; // Full
+        iconName = "star";
       } else if (i === Math.floor(rounded) + 1 && rounded % 1 === 0.5) {
-        iconName = "star-half-outline"; // Half
+        iconName = "star-half-outline";
       } else {
-        iconName = "star-outline"; // Empty
+        iconName = "star-outline";
       }
 
       stars.push(
@@ -525,7 +516,7 @@ const CreatePost = () => {
           size={36}
           color="#ffd700"
           style={{ marginHorizontal: 2 }}
-        />,
+        />
       );
     }
 
@@ -537,7 +528,7 @@ const CreatePost = () => {
 
     return (
       cities.find(
-        (city) => `${city.name}, ${city.country}`.toLowerCase() === normalized,
+        (city) => `${city.name}, ${city.country}`.toLowerCase() === normalized
       ) || null
     );
   };
@@ -551,18 +542,28 @@ const CreatePost = () => {
         }
       }}
     >
-      {/* Top-left back icon*/}
       <View style={styles.topLeftIcon}>
-        <Pressable onPress={() => navigation.goBack()}>
+        <Pressable
+          onPress={() => {
+            triggerSelectionHaptic();
+            navigation.goBack();
+          }}
+        >
           <GlassView style={styles.glassButton}>
             <Ionicons name="return-up-back-outline" size={26} color="#000" />
           </GlassView>
         </Pressable>
       </View>
-      {/* Top-right save icon*/}
+
       {ratingCompleted && (
         <View style={styles.topRightIcon}>
-          <Pressable disabled={uploading} onPress={() => submitPost()}>
+          <Pressable
+            disabled={uploading}
+            onPress={() => {
+              triggerSuccessHaptic();
+              submitPost();
+            }}
+          >
             <GlassView style={styles.glassButton}>
               <Ionicons name="checkmark-outline" size={26} color="#000" />
             </GlassView>
@@ -576,7 +577,6 @@ const CreatePost = () => {
         </Text>
 
         {imageURIs && imageURIs.length > 0 && (
-          // Image row with cancel buttons + add card
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -586,7 +586,6 @@ const CreatePost = () => {
               <View key={uri} style={createPostStyles.imageWrapper}>
                 <Image source={{ uri }} style={createPostStyles.imagePreview} />
 
-                {/* Cancel button */}
                 <Pressable
                   style={createPostStyles.removeButton}
                   onPress={() => removeImage(index)}
@@ -596,17 +595,17 @@ const CreatePost = () => {
               </View>
             ))}
 
-            {/* Add new image card */}
             {postImages.length < 10 && (
               <Pressable
                 style={createPostStyles.addImageCard}
-                onPress={() =>
+                onPress={() => {
+                  triggerSelectionHaptic();
                   Alert.alert("Create a Post", "Choose Upload Options:", [
-                        { text: "Take Photo", onPress: takePhoto },
-                        { text: "Choose from Album", onPress: fromAlbum },
-                        { text: "Cancel", style: "cancel" },
-                  ])
-                }
+                    { text: "Take Photo", onPress: takePhoto },
+                    { text: "Choose from Album", onPress: fromAlbum },
+                    { text: "Cancel", style: "cancel" },
+                  ]);
+                }}
               >
                 <Ionicons name="add" size={40} color="#fff" />
               </Pressable>
@@ -615,7 +614,6 @@ const CreatePost = () => {
         )}
 
         <View style={createPostStyles.bodyContainer}>
-          {/* City search */}
           <TextInput
             placeholder="Location"
             value={searchQuery}
@@ -623,12 +621,10 @@ const CreatePost = () => {
               setSearchQuery(text);
               setDropdownOpen(true);
 
-              // Check if typed text matches a real city
               const match = findMatchingCity(text);
               setSelectedCity(match);
             }}
             onBlur={() => {
-              // Final validation when user leaves the field
               const match = findMatchingCity(searchQuery);
               setSelectedCity(match);
             }}
@@ -649,7 +645,7 @@ const CreatePost = () => {
                   const filtered = cities.filter((city) =>
                     `${city.name}, ${city.country}`
                       .toLowerCase()
-                      .includes(searchQuery.toLowerCase()),
+                      .includes(searchQuery.toLowerCase())
                   );
 
                   if (filtered.length === 0) {
@@ -667,6 +663,7 @@ const CreatePost = () => {
                       key={city.id}
                       style={createPostStyles.dropdownItem}
                       onPress={() => {
+                        triggerSelectionHaptic();
                         setSelectedCity(city);
                         setSearchQuery(`${city.name}, ${city.country}`);
                         setDropdownOpen(false);
@@ -684,130 +681,127 @@ const CreatePost = () => {
         </View>
 
         {friends.length > 0 && (
-          <>
-            <View style={createPostStyles.bodyContainer}>
-              <TextInput
-                placeholder="Tag Friends"
-                value={tagInput}
-                onChangeText={(text) => {
-                  const previousText = tagInput;
-                  setTagInput(text);
+          <View style={createPostStyles.bodyContainer}>
+            <TextInput
+              placeholder="Tag Friends"
+              value={tagInput}
+              onChangeText={(text) => {
+                const previousText = tagInput;
+                setTagInput(text);
 
-                  const words = text.split(" ");
-                  const lastWord = words[words.length - 1];
+                const words = text.split(" ");
+                const lastWord = words[words.length - 1];
 
-                  const isTypingNewWord =
-                    !text.endsWith(" ") && lastWord !== undefined;
+                const isTypingNewWord =
+                  !text.endsWith(" ") && lastWord !== undefined;
 
-                  const isDeleting = text.length < previousText.length;
-                  const previousWords = previousText.split(" ");
-                  const previousLastWord =
-                    previousWords[previousWords.length - 1];
+                const isDeleting = text.length < previousText.length;
+                const previousWords = previousText.split(" ");
+                const previousLastWord =
+                  previousWords[previousWords.length - 1];
 
-                  const isDeletingTag =
-                    isDeleting &&
-                    previousLastWord &&
-                    previousLastWord.startsWith("@") &&
-                    lastWord &&
-                    lastWord.startsWith("@");
+                const isDeletingTag =
+                  isDeleting &&
+                  previousLastWord &&
+                  previousLastWord.startsWith("@") &&
+                  lastWord &&
+                  lastWord.startsWith("@");
 
-                  let query = "";
-                  let shouldShowDropdown = false;
+                let query = "";
+                let shouldShowDropdown = false;
 
-                  if (isTypingNewWord && !isDeleting) {
-                    const lastWordIndex = text.lastIndexOf(lastWord);
-                    const charBeforeLastWord =
-                      lastWordIndex > 0 ? text[lastWordIndex - 1] : null;
+                if (isTypingNewWord && !isDeleting) {
+                  const lastWordIndex = text.lastIndexOf(lastWord);
+                  const charBeforeLastWord =
+                    lastWordIndex > 0 ? text[lastWordIndex - 1] : null;
 
-                    const isValidContext =
-                      lastWordIndex === 0 || charBeforeLastWord === " ";
+                  const isValidContext =
+                    lastWordIndex === 0 || charBeforeLastWord === " ";
 
-                    if (isValidContext && lastWord) {
-                      query = lastWord.startsWith("@")
-                        ? lastWord.slice(1)
-                        : lastWord;
-                      shouldShowDropdown = lastWord.startsWith("@");
-                    }
-                  } else if (isDeletingTag && lastWord) {
+                  if (isValidContext && lastWord) {
                     query = lastWord.startsWith("@")
                       ? lastWord.slice(1)
                       : lastWord;
-                    shouldShowDropdown = true;
+                    shouldShowDropdown = lastWord.startsWith("@");
                   }
+                } else if (isDeletingTag && lastWord) {
+                  query = lastWord.startsWith("@")
+                    ? lastWord.slice(1)
+                    : lastWord;
+                  shouldShowDropdown = true;
+                }
 
-                  setTagQuery(query);
-                  setTagDropdownOpen(shouldShowDropdown);
-                }}
-                onKeyPress={({ nativeEvent }) => {
-                  if (nativeEvent.key === "Backspace" && tagQuery === "") {
-                    if (tagFriends.length > 0) {
-                      const removed = tagFriends[tagFriends.length - 1];
-                      setTagFriends(tagFriends.slice(0, -1));
+                setTagQuery(query);
+                setTagDropdownOpen(shouldShowDropdown);
+              }}
+              onKeyPress={({ nativeEvent }) => {
+                if (nativeEvent.key === "Backspace" && tagQuery === "") {
+                  if (tagFriends.length > 0) {
+                    const removed = tagFriends[tagFriends.length - 1];
+                    setTagFriends(tagFriends.slice(0, -1));
 
-                      const words = tagInput.trim().split(" ");
-                      const newWords = words.filter(
-                        (w) => w.replace("@", "") !== removed
-                      );
-                      setTagInput(
-                        newWords.join(" ") + (newWords.length ? " " : "")
+                    const words = tagInput.trim().split(" ");
+                    const newWords = words.filter(
+                      (w) => w.replace("@", "") !== removed
+                    );
+                    setTagInput(
+                      newWords.join(" ") + (newWords.length ? " " : "")
+                    );
+                  }
+                }
+              }}
+              style={createPostStyles.tagFriendsInput}
+              mode="outlined"
+              theme={inputTheme}
+              left={<TextInput.Icon icon="account-plus-outline" color="#000" />}
+            />
+
+            {tagDropdownOpen && (
+              <View style={createPostStyles.dropdown}>
+                <ScrollView keyboardShouldPersistTaps="handled">
+                  {(() => {
+                    const filtered = friends.filter(
+                      (friend) =>
+                        friend.username
+                          .toLowerCase()
+                          .includes(tagQuery.toLowerCase()) &&
+                        !tagFriends.includes(friend.username)
+                    );
+
+                    if (filtered.length === 0) {
+                      return (
+                        <View style={createPostStyles.dropdownItem}>
+                          <Text style={styles.searchResultNoneText}>
+                            No Results
+                          </Text>
+                        </View>
                       );
                     }
-                  }
-                }}
-                style={createPostStyles.tagFriendsInput}
-                mode="outlined"
-                theme={inputTheme}
-                left={
-                  <TextInput.Icon icon="account-plus-outline" color="#000" />
-                }
-        />
 
-              {tagDropdownOpen && (
-                <View style={createPostStyles.dropdown}>
-                  <ScrollView keyboardShouldPersistTaps="handled">
-                    {(() => {
-                      const filtered = friends.filter(
-                        (friend) =>
-                          friend.username
-                            .toLowerCase()
-                            .includes(tagQuery.toLowerCase()) &&
-                          !tagFriends.includes(friend.username)
-                      );
+                    return filtered.map((user) => (
+                      <Pressable
+                        key={user.id}
+                        style={createPostStyles.dropdownItem}
+                        onPress={() => {
+                          triggerSelectionHaptic();
+                          setTagFriends((prev) => [...prev, user.username]);
 
-                      if (filtered.length === 0) {
-                        return (
-                          <View style={createPostStyles.dropdownItem}>
-                            <Text style={styles.searchResultNoneText}>
-                              No Results
-                            </Text>
-                          </View>
-                        );
-                      }
+                          const words = tagInput.split(" ");
+                          words[words.length - 1] = `@${user.username}`;
+                          setTagInput(words.join(" ") + " ");
 
-                      return filtered.map((user) => (
-                        <Pressable
-                          key={user.id}
-                          style={createPostStyles.dropdownItem}
-                          onPress={() => {
-                            setTagFriends((prev) => [...prev, user.username]);
-
-                            const words = tagInput.split(" ");
-                            words[words.length - 1] = `@${user.username}`;
-                            setTagInput(words.join(" ") + " ");
-
-                            setTagQuery("");
-                            setTagDropdownOpen(false);
-                          }}
-                        >
-                          <Text variant="bodyLarge">@{user.username}</Text>
-                        </Pressable>
-                      ));
-                    })()}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          </>
+                          setTagQuery("");
+                          setTagDropdownOpen(false);
+                        }}
+                      >
+                        <Text variant="bodyLarge">@{user.username}</Text>
+                      </Pressable>
+                    ));
+                  })()}
+                </ScrollView>
+              </View>
+            )}
+          </View>
         )}
 
         <TextInput
@@ -837,7 +831,10 @@ const CreatePost = () => {
             <View style={createPostStyles.iconsLayout}>
               <Pressable
                 disabled={ratingStarted}
-                onPress={() => setFeedback("LIKE")}
+                onPress={() => {
+                  triggerSelectionHaptic();
+                  setFeedback("LIKE");
+                }}
               >
                 <Entypo
                   name="emoji-happy"
@@ -845,9 +842,13 @@ const CreatePost = () => {
                   color={feedBack === "LIKE" ? "rgb(69, 217, 69)" : "#000"}
                 />
               </Pressable>
+
               <Pressable
                 disabled={ratingStarted}
-                onPress={() => setFeedback("NEUTRAL")}
+                onPress={() => {
+                  triggerSelectionHaptic();
+                  setFeedback("NEUTRAL");
+                }}
               >
                 <Entypo
                   name="emoji-neutral"
@@ -855,9 +856,13 @@ const CreatePost = () => {
                   color={feedBack === "NEUTRAL" ? "#ffd700" : "#000"}
                 />
               </Pressable>
+
               <Pressable
                 disabled={ratingStarted}
-                onPress={() => setFeedback("DISLIKE")}
+                onPress={() => {
+                  triggerSelectionHaptic();
+                  setFeedback("DISLIKE");
+                }}
               >
                 <Entypo
                   name="emoji-sad"
@@ -880,12 +885,13 @@ const CreatePost = () => {
                 Which city do you prefer?
               </Text>
 
-              {/* Display once images are fetched from API */}
               <View style={createPostStyles.imageComparisonContainer}>
-                {/* New City */}
                 <Pressable
                   style={createPostStyles.imageCard}
-                  onPress={() => submitComparison("new")}
+                  onPress={() => {
+                    triggerSelectionHaptic();
+                    submitComparison("new");
+                  }}
                 >
                   {comparisonImages.new && (
                     <Image
@@ -902,17 +908,18 @@ const CreatePost = () => {
                   </View>
                 </Pressable>
 
-                {/* VS Text in between */}
                 <View style={createPostStyles.vsContainer}>
                   <Text variant="headlineSmall" style={createPostStyles.vsText}>
                     VS
                   </Text>
                 </View>
 
-                {/* Existing City */}
                 <Pressable
                   style={createPostStyles.imageCard}
-                  onPress={() => submitComparison("existing")}
+                  onPress={() => {
+                    triggerSelectionHaptic();
+                    submitComparison("existing");
+                  }}
                 >
                   {comparisonImages.existing && (
                     <Image
