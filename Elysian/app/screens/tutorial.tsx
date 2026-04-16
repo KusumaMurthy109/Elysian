@@ -16,19 +16,19 @@ export default function Tutorial() {
     // All tutorial content lives here
     const pages = [
         {
-            image: require("../../assets/tutorial1.jpg"),
+            image: require("../../assets/image1.png"),
             title: "Life is Short and the World is Wide",
             description:
                 "At Elysian, we customize your preferences to generate potential travel destinations all over the world.",
         },
         {
-            image: require("../../assets/tutorial2.jpg"),
+            image: require("../../assets/image2.png"),
             title: "It's a Big World Out There, Go Explore",
             description:
                 "Share your adventures and learn about places others have been through their posts.",
         },
         {
-            image: require("../../assets/tutorial3.jpg"),
+            image: require("../../assets/image3.png"),
             title: "People Don't Take Trips, Trips Take People",
             description:
                 "Co-plan easily with friends by creating shared itineraries with a list of recommended activities.",
