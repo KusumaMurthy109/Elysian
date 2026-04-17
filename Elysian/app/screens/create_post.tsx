@@ -293,35 +293,31 @@ const CreatePost = () => {
   const submitPost = async () => {
     if (uploading) return;
 
-    if (
-      !ratingCompleted ||
-      !pendingRatingUpdates ||
-      !selectedCity ||
-      !imageURIs ||
-      imageURIs.length === 0
-    ) {
+    // Change this condition to check postImages instead
+    if (!ratingCompleted || !pendingRatingUpdates || !selectedCity || !postImages || postImages.length === 0) {
       console.log("Submit blocked: rating not completed or missing info");
       return;
     }
 
-    try {
-      setUploading(true);
+  try {
+    setUploading(true);
 
-      const allUploadUrls: string[] = [];
-      for (const uri of imageURIs) {
-        const filename = uri.split("/").pop();
-        const response = await fetch(
-          `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
-        );
-        const data = await response.json();
-        const { uploadUrl, fileUrl } = data;
+    const allUploadUrls: string[] = [];
+    // Change this to use postImages instead of imageURIs
+    for (const uri of postImages) {  // ← Changed from imageURIs to postImages
+      const filename = uri.split("/").pop();
+      const response = await fetch(
+        `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
+      );
+      const data = await response.json();
+      const { uploadUrl, fileUrl } = data;
 
-        const image = await fetch(uri);
-        const blob = await image.blob();
-        await fetch(uploadUrl, { method: "PUT", body: blob });
+      const image = await fetch(uri);
+      const blob = await image.blob();
+      await fetch(uploadUrl, { method: "PUT", body: blob });
 
-        allUploadUrls.push(fileUrl);
-      }
+      allUploadUrls.push(fileUrl);
+    }
 
       const postRef = await addDoc(collection(FIREBASE_DB, "posts"), {
         urls: allUploadUrls,
