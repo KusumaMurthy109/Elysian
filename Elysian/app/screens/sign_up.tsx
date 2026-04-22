@@ -3,6 +3,8 @@ File: sign_up.tsx
 Function: This is the Sign Up screen component for the app that allows users to create an account. Firebase is used to store new user credentials.
 */
 
+// React Imports
+import React, { useState } from "react";
 import {
   View,
   Alert,
@@ -10,16 +12,18 @@ import {
   Pressable,
   ImageBackground,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
-import React, { useState, useEffect } from "react";
-import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
-import { styles, inputTheme } from "../styles/app_styles.styles";
-import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from "firebase/auth";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { updateProfile } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
+
+// Firebase Imports
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { FIREBASE_DB } from "../../FirebaseConfig";
+
+// File Imports
+import { styles, inputTheme } from "../styles/app_styles.styles";
+
 
 // Define the navigation parameter list
 export type RootParamList = {

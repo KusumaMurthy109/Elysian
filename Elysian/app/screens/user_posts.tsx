@@ -2,11 +2,12 @@
 File: user_posts.tsx
 Function: This is the user's posts subtab screen component for the Profile page. 
 */
+
+// React Imports
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   ScrollView,
-  ActivityIndicator,
   Pressable,
   ImageBackground,
   Modal,
@@ -14,24 +15,33 @@ import {
   Image,
   Dimensions,
 } from "react-native";
+import MaskedView from "@react-native-masked-view/masked-view";
 import { Text } from "react-native-paper";
-import { FIREBASE_DB } from "../../FirebaseConfig";
+
+
+// Firebase Imports
 import {
   collection,
   onSnapshot,
   query,
   where,
   orderBy,
+  doc,
+  deleteDoc
 } from "firebase/firestore";
-import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
-import MaskedView from "@react-native-masked-view/masked-view";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
+import { FIREBASE_DB } from "../../FirebaseConfig";
+
+// File Imports
 import { styles } from "../styles/app_styles.styles";
 import { homeStyles } from "../styles/home.styles";
 import { profileStyles } from "../styles/profile.styles";
+import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
+
+// Other Imports
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient"
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { doc, deleteDoc } from "firebase/firestore";
+
 
 export type Post = {
   id: string;

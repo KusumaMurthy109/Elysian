@@ -9,6 +9,7 @@
  * more details and manage their saved places.
  */
 
+// React Imports
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
@@ -16,15 +17,14 @@ import {
   Image,
   Pressable,
   TouchableOpacity,
-  Keyboard,
   ImageBackground,
-  Modal,
 } from "react-native";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, TextInput } from "react-native-paper";
-import { styles } from "../styles/app_styles.styles";
-import { favoritesStyles } from "../styles/favorites.styles";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
+// Firebase Imports
 import { getAuth } from "firebase/auth";
 import {
   doc,
@@ -38,16 +38,20 @@ import {
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
-import { Ionicons } from "@expo/vector-icons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { GlassView } from "expo-glass-effect";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
-import MaskedView from "@react-native-masked-view/masked-view";
+// File Imports
+import SearchOverlay from "../components/search_overlay_component";
 import PenguinLoader from "./penguin_loader";
+import { styles } from "../styles/app_styles.styles";
+import { favoritesStyles } from "../styles/favorites.styles";
 import { homeStyles } from "../styles/home.styles";
 import { triggerLightHaptic, triggerSuccessHaptic } from "../utils/effects";
+
+// Other Imports
+import { BlurView } from "expo-blur";
+import { GlassView } from "expo-glass-effect";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+
 
 interface Recommendation {
   city_id: string;
@@ -308,65 +312,26 @@ const Favorites = () => {
           </TouchableOpacity>
         )}
 
-        <View style={styles.searchOverlay}>
-          <TouchableOpacity
-            style={styles.topRightIcon}
-            onPress={async () => {
-              await triggerLightHaptic();
-              setSearchOpen((prev) => !prev);
-            }}
-          >
-            <GlassView style={styles.glassButton}>
-              <Ionicons name="search" size={26} color="#000" />
-            </GlassView>
-          </TouchableOpacity>
-
-          {searchOpen && (
-            <GlassView style={styles.searchBarExpanded}>
-              <TextInput
-                placeholder="Search cities..."
-                placeholderTextColor="#807f7fff"
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  setDropdownOpen(true);
-                }}
-                style={styles.searchInput}
-                mode="flat"
-                underlineColor="transparent"
-                activeUnderlineColor="transparent"
-                autoFocus
-                caretHidden={false}
-                selectionColor="#000"
-              />
-            </GlassView>
-          )}
-        </View>
-
-        {searchOpen && (
-          <Pressable
-            style={styles.searchBackdrop}
-            onPress={async () => {
-              await triggerLightHaptic();
-              setSearchOpen(false);
-              setSearchQuery("");
-              setDropdownOpen(false);
-              Keyboard.dismiss();
-            }}
-          />
-        )}
-
-        {searchOpen && dropdownOpen && searchQuery.length > 0 && (
-          <GlassView style={styles.searchDropdown}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {cities.filter((city) =>
-                `${city.name}, ${city.country}`
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase())
-              ).length > 0 ? (
-                cities
-                  .filter((city) =>
-                    `${city.name}, ${city.country}`
+        <SearchOverlay
+          searchOpen={searchOpen}
+          setSearchOpen={setSearchOpen}
+          value={searchQuery}
+          onChange={(text) => {
+            setSearchQuery(text);
+            setDropdownOpen(true);
+          }}
+          placeholder="Search cities to favorite..."
+          onClose={() => {
+            setSearchQuery("");
+            setDropdownOpen(false);
+          }}
+        >
+          {dropdownOpen && searchQuery.length > 0 && (
+            <GlassView style={styles.searchDropdown}>
+              <ScrollView keyboardShouldPersistTaps="handled">
+                {cities
+                  .filter((c) =>
+                    `${c.name}, ${c.country}`
                       .toLowerCase()
                       .includes(searchQuery.toLowerCase())
                   )
@@ -385,16 +350,25 @@ const Favorites = () => {
                         {city.name}, {city.country}
                       </Text>
                     </TouchableOpacity>
-                  ))
-              ) : (
-                <View style={styles.searchResultItem}>
-                  <Text style={styles.searchResultNoneText}>No Results</Text>
-                </View>
-              )}
-            </ScrollView>
-          </GlassView>
-        )}
+                  ))}
 
+                {cities.filter((c) =>
+                  `${c.name}, ${c.country}`
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+                ).length === 0 && (
+                  <View style={styles.searchResultItem}>
+                    <Text style={styles.searchResultNoneText}>
+                      No Results
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            </GlassView>
+          )}
+        </SearchOverlay>
+
+        {/* MAIN CONTENT */}
         {!searchOpen && (
           <>
             {loading && <PenguinLoader text="Loading your favorite cities!" />}
@@ -523,50 +497,6 @@ const Favorites = () => {
             )}
           </>
         )}
-
-        <Modal
-          visible={cityModalOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setCityModalOpen(false)}
-        >
-          <View style={styles.modalDimOverlay}>
-            <Pressable
-              style={{ position: "absolute", width: "100%", height: "100%" }}
-              onPress={async () => {
-                await triggerLightHaptic();
-                setCityModalOpen(false);
-              }}
-            />
-
-            {selectedCity && (
-              <View style={styles.cityModalContainer}>
-                <ScrollView contentContainerStyle={styles.cityModalContent}>
-                  {selectedCity.image && (
-                    <Image
-                      source={{ uri: selectedCity.image }}
-                      style={styles.cityModalImage}
-                      resizeMode="cover"
-                    />
-                  )}
-
-                  <Text style={styles.cityModalTitle}>
-                    {selectedCity.city_name}, {selectedCity.country}
-                  </Text>
-
-                  <Text style={styles.cityModalDescriptionLabel}>
-                    Description:
-                  </Text>
-
-                  <Text style={styles.cityModalDescription}>
-                    {selectedCity.description ||
-                      `${selectedCity.city_name} is a destination known for its culture, atmosphere, and local attractions.`}
-                  </Text>
-                </ScrollView>
-              </View>
-            )}
-          </View>
-        </Modal>
       </SafeAreaView>
     </ImageBackground>
   );

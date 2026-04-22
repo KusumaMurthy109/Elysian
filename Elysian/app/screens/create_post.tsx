@@ -3,6 +3,7 @@ File: create_post.tsx
 Function: Allow users to add the location, a review, and generate a rating.
 */
 
+// React Imports
 import React, { useEffect, useState, useRef } from "react";
 import {
   View,
@@ -12,12 +13,11 @@ import {
   Keyboard,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
-import { styles, inputTheme } from "../styles/app_styles.styles";
-import { createPostStyles } from "../styles/create_post.styles";
-import { triggerSelectionHaptic, triggerSuccessHaptic } from "../utils/effects";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 
+// Firebase Imports
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   doc,
@@ -32,12 +32,18 @@ import {
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
-import { Ionicons, Entypo } from "@expo/vector-icons";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { GlassView } from "expo-glass-effect";
+// File Imports
 import type { HomeStackParamList } from "./navigation_bar";
 import PenguinLoader from "./penguin_loader";
+import { styles, inputTheme } from "../styles/app_styles.styles";
+import { createPostStyles } from "../styles/create_post.styles";
+import { triggerSelectionHaptic, triggerSuccessHaptic } from "../utils/effects";
+
+// Other Imports
 import * as ImagePicker from "expo-image-picker";
+import { GlassView } from "expo-glass-effect";
+import { Ionicons, Entypo } from "@expo/vector-icons";
+
 
 type CreatePostRouteProp = RouteProp<HomeStackParamList, "CreatePost">;
 

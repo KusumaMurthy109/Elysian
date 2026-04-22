@@ -15,7 +15,6 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  Pressable,
   Keyboard,
   ScrollView,
 } from "react-native";
@@ -39,16 +38,18 @@ import {
   arrayUnion,
   getDoc,
 } from "firebase/firestore";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "./navigation_bar";
 import { getAuth } from "firebase/auth";
-import PostItem, { Post } from "./post_component";
-import { TextInput } from "react-native-paper";
+import PostItem, { Post } from "../components/post_component";
 import { triggerSuccessHaptic, triggerLightHaptic } from "../utils/effects";
+
+import SearchOverlay from "../components/search_overlay_component";
+
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -483,6 +484,8 @@ const Home = () => {
       resizeMode="cover"
     >
       <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
+
+        {/* ===== HEADER ===== */}
         {!searchOpen && (
           <View style={styles.headerContainer}>
             <Text style={homeStyles.title}>Explore</Text>
@@ -508,6 +511,7 @@ const Home = () => {
                   Community
                 </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.tab,
@@ -531,11 +535,13 @@ const Home = () => {
           </View>
         )}
 
+        {/* ===== MAIN CONTENT ===== */}
         {!searchOpen &&
           (activeTab === "community"
             ? renderCommunityTab()
             : renderFriendsTab())}
 
+        {/* ===== CREATE POST BUTTON ===== */}
         {!searchOpen && (
           <TouchableOpacity
             style={favoritesStyles.itineraryIcon}
@@ -550,120 +556,88 @@ const Home = () => {
           </TouchableOpacity>
         )}
 
-        {/* Search button */}
-        <View style={styles.searchOverlay}>
-          {/* Absolute search icon */}
-          <TouchableOpacity
-            style={styles.topRightIcon}
-            onPress={async () => {
-              await triggerLightHaptic();
-
-              if (searchOpen) {
-                setSearchOpen(false);
-                setSearchQuery("");
-                setDropdownOpen(false);
-                setSearchingCity(null);
-                setFilteredPosts([]);
-              } else {
-                setSearchOpen(true);
-              }
-            }}
-          >
-            <GlassView style={styles.glassButton}>
-              <Ionicons name="search" size={26} color="#000" />
-            </GlassView>
-          </TouchableOpacity>
-
-          {/* Expanded search bar behind the icon */}
-          {searchOpen && (
-            <GlassView style={styles.searchBarExpanded}>
-              <TextInput
-                placeholder="Search cities..."
-                placeholderTextColor="#807f7fff"
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  setDropdownOpen(true);
-
-                  setSearchingCity(null);
-                  setFilteredPosts([]);
-                }}
-                style={styles.searchInput}
-                mode="flat"
-                underlineColor="transparent"
-                activeUnderlineColor="transparent"
-                autoFocus
-                caretHidden={false}
-                selectionColor="#000"
+        {/* ===== SEARCH OVERLAY ===== */}
+        <SearchOverlay
+          searchOpen={searchOpen}
+          setSearchOpen={setSearchOpen}
+          value={searchQuery}
+          placeholder="Search cities..."
+          dismissOnBackdropPress={false}
+          onChange={(text) => {
+            setSearchQuery(text);
+            setDropdownOpen(true);
+            setSearchingCity(null);
+            setFilteredPosts([]);
+          }}
+          onClose={() => {
+            setSearchQuery("");
+            setDropdownOpen(false);
+            setSearchingCity(null);
+            setFilteredPosts([]);
+          }}
+        >
+          {/* ===== FILTERED POSTS VIEW ===== */}
+          {searchingCity && (
+            <View style={styles.filteredPostsContainer}>
+              <FlatList
+                data={filteredPosts}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <PostItem item={item} {...postItemProps} />
+                )}
+                contentContainerStyle={homeStyles.homeContainer}
               />
+            </View>
+          )}
+
+          {/* ===== DROPDOWN RESULTS ===== */}
+          {dropdownOpen && searchQuery.length > 0 && (
+            <GlassView style={styles.searchDropdown}>
+              <ScrollView keyboardShouldPersistTaps="handled">
+                {cities.filter((city) =>
+                  `${city.name}, ${city.country}`
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+                ).length > 0 ? (
+                  cities
+                    .filter((city) =>
+                      `${city.name}, ${city.country}`
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                    )
+                    .map((city) => (
+                      <TouchableOpacity
+                        key={city.id}
+                        style={styles.searchResultItem}
+                        onPress={() => {
+                          setSearchingCity(city);
+                          setSearchQuery(`${city.name}, ${city.country}`);
+
+                          const matches = posts.filter(
+                            (p) => p.city?.id === city.id
+                          );
+
+                          setFilteredPosts(matches);
+                          setDropdownOpen(false);
+                          Keyboard.dismiss();
+                        }}
+                      >
+                        <Text style={styles.searchResultItemText}>
+                          {city.name}, {city.country}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                ) : (
+                  <View style={styles.searchResultItem}>
+                    <Text style={styles.searchResultNoneText}>
+                      No Results
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
             </GlassView>
           )}
-        </View>
-        {searchOpen && searchingCity && (
-          <View style={styles.filteredPostsContainer}>
-            <FlatList
-              data={filteredPosts}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <PostItem item={item} {...postItemProps} />
-              )}
-              contentContainerStyle={homeStyles.homeContainer}
-            />
-          </View>
-        )}
-
-        {/* Dropdown Results */}
-        {searchOpen && dropdownOpen && searchQuery.length > 0 && (
-          <GlassView style={styles.searchDropdown}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {cities.filter((city) =>
-                `${city.name}, ${city.country}`
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase())
-              ).length > 0 ? (
-                cities
-                  .filter((city) =>
-                    `${city.name}, ${city.country}`
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase())
-                  )
-                  .map((city) => (
-                    <TouchableOpacity
-                      key={city.id}
-                      style={styles.searchResultItem}
-                      onPress={() => {
-                        // 1. Set selected city
-                        setSearchingCity(city);
-
-                        // 2. Update search bar text
-                        setSearchQuery(`${city.name}, ${city.country}`);
-
-                        // 3. Filter posts
-                        const matches = posts.filter(
-                          (p) => p.city?.id === city.id
-                        );
-                        setFilteredPosts(matches);
-
-                        // 4. Close dropdown
-                        setDropdownOpen(false);
-
-                        // 5. Dismiss keyboard
-                        Keyboard.dismiss();
-                      }}
-                    >
-                      <Text style={styles.searchResultItemText}>
-                        {city.name}, {city.country}
-                      </Text>
-                    </TouchableOpacity>
-                  ))
-              ) : (
-                <View style={styles.searchResultItem}>
-                  <Text style={styles.searchResultNoneText}>No Results</Text>
-                </View>
-              )}
-            </ScrollView>
-          </GlassView>
-        )}
+        </SearchOverlay>
       </SafeAreaView>
     </ImageBackground>
   );

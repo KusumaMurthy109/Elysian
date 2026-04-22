@@ -3,13 +3,17 @@ File: profile_landing.tsx
 Function: This is the Profile Landing screen component for the app before displaying the Profile Setup screen component.
 */
 
+// React Imports
 import { useEffect, useRef } from "react";
-import { Animated, Image, SafeAreaView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Animated, Image } from "react-native";
 import { Text } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+// File Imports
 import { styles } from "../styles/app_styles.styles";
-import {useRoute, RouteProp} from "@react-navigation/native";
+
 
 // Define the navigation parameter list
 export type RootParamList = {

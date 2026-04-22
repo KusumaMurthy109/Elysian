@@ -3,6 +3,8 @@ File: login.tsx
 Function: This is the Login screen component for the app that displays the app logo.
 */
 
+// React Imports
+import React, { useState } from "react";
 import {
   View,
   Alert,
@@ -10,15 +12,19 @@ import {
   Pressable,
   ImageBackground,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Button, Text } from "react-native-paper";
-import React, { useState } from "react";
-import { doc, updateDoc } from "firebase/firestore";
-import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
-import { styles, inputTheme } from "../styles/app_styles.styles";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+// Firebase Imports
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
+
+// File Imports
+import { styles, inputTheme } from "../styles/app_styles.styles";
+
 
 // Define the navigation parameter list
 export type RootParamList = {

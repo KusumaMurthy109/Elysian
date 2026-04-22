@@ -5,9 +5,12 @@
  * This can be exported and used by other pages.
  */
 
+// React Imports
 import React, { useEffect, useRef, useState } from "react";
 import { View, Animated, Dimensions, TextStyle } from "react-native";
 import { Text } from "react-native-paper";
+
+// File Imports
 import { penguinLoaderStyles } from "../styles/penguin_loader.styles";
 
 interface Props {

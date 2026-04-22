@@ -6,6 +6,7 @@ and dislikes to Firebase, loads the next city from the backend, and lets
 users double tap a city to open more details in a modal.
 */
 
+// React Imports
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -14,25 +15,31 @@ import {
   Modal,
   Dimensions,
   PanResponder,
+  Animated
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "react-native-paper";
-import { styles } from "../styles/app_styles.styles";
-import { recommendationStyles } from "../styles/recommendations.styles";
-import { Animated } from "react-native";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// Firebase Imports
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
-import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
-import MaskedView from "@react-native-masked-view/masked-view";
+
+// File Imports
 import PenguinLoader from "./penguin_loader";
+import { styles } from "../styles/app_styles.styles";
+import { recommendationStyles } from "../styles/recommendations.styles";
 import {
   triggerLightHaptic,
   triggerSuccessHaptic,
   triggerErrorHaptic,
 } from "../utils/effects";
+
+// Other Imports
+import { BlurView } from "expo-blur";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
+import { LinearGradient } from "expo-linear-gradient";
 
 // Define the navigation parameter list
 export type RootParamList = {

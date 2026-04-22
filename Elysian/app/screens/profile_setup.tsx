@@ -3,6 +3,7 @@ File: profile_setup.tsx
 Function: This is the Profile Setup screen component for the app. Users answer questions to curate their travel profile.
 */
 
+// React Imports
 import { useState } from "react";
 import {
   View,
@@ -16,11 +17,16 @@ import {
 import { TextInput, Button, Text } from "react-native-paper";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { inputTheme, styles, selectedColors } from "../styles/app_styles.styles";
+
+// Firebase Imports
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB, FIREBASE_AUTH } from "../../FirebaseConfig";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+
+// File Imports
+import { inputTheme, styles, selectedColors } from "../styles/app_styles.styles";
 import { createPostStyles } from "../styles/create_post.styles";
+
 
 // Define the type for Home screen navigation prop
 export type RootParamList = {

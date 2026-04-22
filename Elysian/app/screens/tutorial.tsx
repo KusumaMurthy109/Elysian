@@ -1,12 +1,17 @@
+// React Imports
 import { useState } from "react";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image } from "react-native";
 import { Text, Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+
+// Firebase Imports
 import { getAuth } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
-import { tutorialStyles } from "../styles/tutorial.styles";
+
+// File Imports
 import { styles } from "../styles/app_styles.styles";
+import { tutorialStyles } from "../styles/tutorial.styles";
 
 
 export default function Tutorial() {

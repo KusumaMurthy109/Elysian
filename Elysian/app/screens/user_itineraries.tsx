@@ -2,6 +2,8 @@
 File: user_itineraries.tsx
 Function: This is the user's itineraries subtab screen component for the Profile page. 
 */
+
+// React Imports
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -13,7 +15,13 @@ import {
   Image,
   Modal,
 } from "react-native";
-import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { TextInput } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+// Firebase Imports
+import { getAuth } from "firebase/auth";
 import {
   arrayUnion,
   collection,
@@ -26,19 +34,20 @@ import {
   where,
   deleteDoc,
 } from "firebase/firestore";
-import { styles } from "../styles/app_styles.styles";
-import { TextInput } from "react-native-paper";
-import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
-import { Ionicons } from "@expo/vector-icons";
-import MaskedView from "@react-native-masked-view/masked-view";
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
-import { profileStyles } from "../styles/profile.styles";
-import { getAuth } from "firebase/auth";
-import { GlassView } from "expo-glass-effect";
-import { useNavigation } from "@react-navigation/native";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
+
+// File Imports
 import { ProfileStackParamList } from "./navigation_bar";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { styles } from "../styles/app_styles.styles";
+import { profileStyles } from "../styles/profile.styles";
+import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
+
+// Other Imports
+import { BlurView } from "expo-blur";
+import { GlassView } from "expo-glass-effect";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+
 
 type ProfileNav = NativeStackNavigationProp<
   ProfileStackParamList,

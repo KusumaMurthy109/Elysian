@@ -3,20 +3,26 @@ File: profile_preferences.tsx
 Function: Profile preferences page, displays questionnaire responses and logout.
 */
 
+// React Imports
 import React, { useState, useEffect } from "react";
 import { View, Pressable, Image, ImageBackground } from "react-native";
 import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { GlassView } from "expo-glass-effect";
 
+// Firebase Imports
+import { onAuthStateChanged } from "firebase/auth";
+import { getDoc, doc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
+
+// File Imports
 import { styles } from "../styles/app_styles.styles";
 import { profilePreferencesStyles } from "../styles/profile_preferences.styles";
 
-import { onAuthStateChanged, User, signOut } from "firebase/auth";
-import { getDoc, doc } from "firebase/firestore";
-import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
+// Other Imports
+import { GlassView } from "expo-glass-effect";
+import { Ionicons } from "@expo/vector-icons";
+
 
 const ProfilePreferences = () => {
   const navigation = useNavigation();

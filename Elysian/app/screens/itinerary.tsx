@@ -31,11 +31,15 @@ import { FIREBASE_DB } from "../../FirebaseConfig";
 import PenguinLoader from "./penguin_loader";
 import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
 
+import SearchOverlay from "../components/search_overlay_component";
+
+
 type FavCity = {
   id: string;
   name: string;
   country: string;
 };
+
 type ActivityCategory = "restaurants" | "outdoor" | "arts" | "entertainment";
 
 type Activity = {
@@ -46,8 +50,6 @@ type Activity = {
   date?: string;
 };
 
-
-
 type CalendarDay = {
   dateString: string;
   day: number;
@@ -55,7 +57,6 @@ type CalendarDay = {
   year: number;
   timestamp: number;
 };
-
 
 const FILTER_OPTIONS: { label: string; value: ActivityCategory }[] = [
   { label: "Restaurant", value: "restaurants" },
@@ -102,7 +103,6 @@ const Itinerary = () => {
   const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>(
     []
   );
-
 
   const showActivitiesUI =
     !activitiesLoading && !activitiesError && activityOptions.length > 0;
@@ -433,11 +433,13 @@ const Itinerary = () => {
           <Text style={itineraryStyles.itineraryTitle}>
             Create{"\n"}Itinerary
           </Text>
+
           <Text style={itineraryStyles.itineraryDescription}>
             Search your favorite cities, discover activities, and build your
             perfect itinerary. Save it to your profile to share and co-plan
             trips with friends!
           </Text>
+
           <Image
             source={require("../../assets/penguin.png")}
             style={itineraryStyles.bottomImage}
@@ -446,6 +448,7 @@ const Itinerary = () => {
         </View>
       )}
 
+      {/* ===== Back Button ===== */}
       {!searchOpen && (
         <View style={styles.topLeftIcon}>
           <Pressable onPress={handleBack}>
@@ -456,97 +459,63 @@ const Itinerary = () => {
         </View>
       )}
 
-      {/* Search overlay */}
-      <View style={styles.searchOverlay}>
-        <TouchableOpacity
-          style={styles.topRightIcon}
-          onPress={() => {
-            if (!searchOpen) {
-              setPreviousCity(selectedCity); // Remember current page
-              setSearchOpen(true);
-            } else {
-              closeSearch();
-            }
-          }}
-        >
-          <GlassView style={styles.glassButton}>
-            <Ionicons name="search" size={26} color="#000" />
-          </GlassView>
-        </TouchableOpacity>
-
-        {searchOpen && (
-          <GlassView style={styles.searchBarExpanded}>
-            <TextInput
-              placeholder="Search favorited cities..."
-              placeholderTextColor="#807f7fff"
-              value={searchQuery}
-              onChangeText={(text) => {
-                setSearchQuery(text);
-                setDropdownOpen(true);
-              }}
-              style={styles.searchInput}
-              mode="flat"
-              underlineColor="transparent"
-              activeUnderlineColor="transparent"
-              autoFocus
-              caretHidden={false}
-              selectionColor="#000"
-              cursorColor="#000"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+      <SearchOverlay
+        searchOpen={searchOpen}
+        setSearchOpen={(val) => {
+          if (!val) {
+            closeSearch();
+          } else {
+            setPreviousCity(selectedCity);
+            setSearchOpen(true);
+          }
+        }}
+        value={searchQuery}
+        onChange={(text) => {
+          setSearchQuery(text);
+          setDropdownOpen(true);
+        }}
+        placeholder="Search favorited cities..."
+        onClose={() => closeSearch()}
+      >
+        {dropdownOpen && searchQuery.trim().length > 0 && (
+          <GlassView style={styles.searchDropdown}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {loading ? (
+                <View style={styles.searchResultItem}>
+                  <Text>Loading...</Text>
+                </View>
+              ) : error ? (
+                <View style={styles.searchResultItem}>
+                  <Text>{error}</Text>
+                </View>
+              ) : filteredFavorites.length > 0 ? (
+                filteredFavorites.map((city) => (
+                  <TouchableOpacity
+                    key={city.id}
+                    style={styles.searchResultItem}
+                    onPress={() => handleSelectCity(city)}
+                  >
+                    <Text style={styles.searchResultItemText}>
+                      {city.name}, {city.country}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.searchResultItem}>
+                  <Text style={styles.searchResultNoneText}>
+                    No Results
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
           </GlassView>
         )}
-      </View>
+      </SearchOverlay>
 
-      {/* Tap outside to close search */}
-      {searchOpen && (
-        <Pressable
-          style={styles.searchBackdrop}
-          onPress={() => {
-            closeSearch();
-            Keyboard.dismiss();
-          }}
-        />
-      )}
-
-      {/* Dropdown results */}
-      {searchOpen && dropdownOpen && searchQuery.trim().length > 0 && (
-        <GlassView style={styles.searchDropdown}>
-          <ScrollView keyboardShouldPersistTaps="handled">
-            {loading ? (
-              <View style={styles.searchResultItem}>
-                <Text>Loading...</Text>
-              </View>
-            ) : error ? (
-              <View style={styles.searchResultItem}>
-                <Text>{error}</Text>
-              </View>
-            ) : filteredFavorites.length > 0 ? (
-              filteredFavorites.map((city) => (
-                <TouchableOpacity
-                  key={city.id}
-                  style={styles.searchResultItem}
-                  onPress={() => handleSelectCity(city)}
-                >
-                  <Text style={styles.searchResultItemText}>
-                    {city.name}, {city.country}
-                  </Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <View style={styles.searchResultItem}>
-                <Text style={styles.searchResultNoneText}>No Results</Text>
-              </View>
-            )}
-          </ScrollView>
-        </GlassView>
-      )}
-
-      {/* Display activites after selecting a city */}
+      {/* ===== ACTIVITIES VIEW ===== */}
       {!searchOpen && selectedCity && (
         <>
-          {/* ===== Loader & error messages overlay ===== */}
+          {/* Loader / error states */}
           {activitiesLoading ? (
             <PenguinLoader text="Loading activities..." />
           ) : activitiesError ? (
@@ -556,7 +525,7 @@ const Itinerary = () => {
           ) : null}
 
           <View style={itineraryStyles.pageContainer}>
-            {/* City header row */}
+            {/* City Header */}
             <View style={itineraryStyles.itineraryCityHeaderRow}>
               <Text style={itineraryStyles.itineraryCityName}>
                 {selectedCity.name}
@@ -566,9 +535,9 @@ const Itinerary = () => {
               </Text>
             </View>
 
+            {/* Filters + Activities */}
             {showActivitiesUI && (
               <>
-                {/* Category pills */}
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -672,7 +641,8 @@ const Itinerary = () => {
           </View>
         </>
       )}
-      {/* DATE MODAL */}
+
+      {/* ===== DATE MODAL ===== */}
       <Modal
         visible={dateModalVisible}
         transparent
@@ -680,7 +650,6 @@ const Itinerary = () => {
         onRequestClose={() => setDateModalVisible(false)}
       >
         <View style={styles.modalDimOverlay}>
-          {/* Tap outside to close */}
           <Pressable
             style={{ position: "absolute", width: "100%", height: "100%" }}
             onPress={() => setDateModalVisible(false)}
@@ -725,7 +694,6 @@ const Itinerary = () => {
           </View>
         </View>
       </Modal>
-
     </SafeAreaView>
   );
 };

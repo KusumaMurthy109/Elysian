@@ -3,23 +3,25 @@ File: navigation_bar.tsx
 Function: This is the Navigation Bar component for the Home and Profile screen. 
 */
 
+// React Imports
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { getFocusedRouteNameFromRoute, NavigatorScreenParams } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { NavigatorScreenParams } from "@react-navigation/native";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
-
-import { styles } from "../styles/app_styles.styles";
 import Icon from "react-native-vector-icons/Ionicons";
-import Home from "./home";
-import Recommendations from "./recommendations";
-import Favorites from "./favorites";
-import Profile from "./profile";
-import Itinerary from "./itinerary";
-import ProfilePreferences from "./profile_preferences";
-import ManageFriends from "./manage_friends";
+
+// File Imports
 import CreatePost from "./create_post";
+import Favorites from "./favorites";
+import Home from "./home";
+import Itinerary from "./itinerary";
 import ItineraryCoPlanning from "./itinerary_coplanning";
+import ManageFriends from "./manage_friends";
+import Profile from "./profile";
+import ProfilePreferences from "./profile_preferences";
+import Recommendations from "./recommendations";
+import { styles } from "../styles/app_styles.styles";
 import { triggerLightHaptic } from "../utils/effects";
+
 
 export type FavoritesStackParamList = {
   FavoritesMain: undefined;

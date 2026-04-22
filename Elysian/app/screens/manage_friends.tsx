@@ -34,6 +34,8 @@ import {
   triggerErrorHaptic,
 } from "../utils/effects";
 
+import SearchOverlay from "../components/search_overlay_component";
+
 type Friend = {
   uid: string;
   name: string;
@@ -695,121 +697,108 @@ const ManageFriends = () => {
           </View>
         )}
 
-        <View style={styles.searchOverlay}>
-          <TouchableOpacity
-            style={styles.topRightIcon}
-            onPress={async () => {
-              await triggerLightHaptic();
+        <SearchOverlay
+          searchOpen={searchOpen}
+          setSearchOpen={(val) => {
+            if (!val) {
+              setSearchOpen(false);
+              setSearchText("");
+              setSearchResults([]);
+              setDropdownOpen(false);
+              setSearchLoading(false);
+              Keyboard.dismiss();
+            } else {
+              setSearchOpen(true);
+            }
+          }}
+          value={searchText}
+          onChange={(text) => {
+            setSearchText(text);
+            handleSearchUsers(text);
+          }}
+          placeholder="Search users..."
+          onClose={() => {
+            setSearchOpen(false);
+            setSearchText("");
+            setSearchResults([]);
+            setDropdownOpen(false);
+            setSearchLoading(false);
+          }}
+        >
+          {/* Dropdown results */}
+          {dropdownOpen && searchText.length > 0 && (
+            <GlassView style={styles.searchDropdown}>
+              <ScrollView keyboardShouldPersistTaps="handled">
 
-              if (searchOpen) {
-                setSearchOpen(false);
-                setSearchText("");
-                setSearchResults([]);
-                setDropdownOpen(false);
-                setSearchLoading(false);
-                Keyboard.dismiss();
-              } else {
-                setSearchOpen(true);
-              }
-            }}
-          >
-            <GlassView style={styles.glassButton}>
-              <Ionicons name="search" size={26} color="#000" />
-            </GlassView>
-          </TouchableOpacity>
+                {searchLoading ? (
+                  <View style={styles.searchResultItem}>
+                    <Text style={styles.searchResultNoneText}>
+                      Loading...
+                    </Text>
+                  </View>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((user) => (
+                    <TouchableOpacity
+                      key={user.uid}
+                      style={styles.searchResultItem}
+                      onPress={() => sendFriendRequest(user.uid)}
+                      disabled={
+                        friendsMap[user.uid] ||
+                        sentMap[user.uid] ||
+                        receivedMap[user.uid]
+                      }
+                    >
+                      <View style={manageFriendsStyles.friendInfo}>
+                        <Text style={manageFriendsStyles.friendName}>
+                          {user.name}
+                        </Text>
+                        <Text style={manageFriendsStyles.friendUsername}>
+                          @{user.username}
+                        </Text>
+                      </View>
 
-          {searchOpen && (
-            <GlassView style={styles.searchBarExpanded}>
-              <TextInput
-                placeholder="Search users..."
-                placeholderTextColor="#807f7fff"
-                value={searchText}
-                onChangeText={(text) => {
-                  setSearchText(text);
-                  handleSearchUsers(text);
-                }}
-                style={styles.searchInput}
-                mode="flat"
-                underlineColor="transparent"
-                activeUnderlineColor="transparent"
-                autoFocus
-                caretHidden={false}
-                selectionColor="#000"
-              />
+                      {friendsMap[user.uid] ? (
+                        <Ionicons
+                          name="people-circle"
+                          size={24}
+                          color="#63a4e1"
+                        />
+                      ) : sentMap[user.uid] || receivedMap[user.uid] ? (
+                        <Ionicons
+                          name="time-outline"
+                          size={24}
+                          color="#999"
+                        />
+                      ) : (
+                        <Ionicons
+                          name="person-add-outline"
+                          size={24}
+                          color="#000"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <View style={styles.searchResultItem}>
+                    <Text style={styles.searchResultNoneText}>
+                      No Results
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
             </GlassView>
           )}
-        </View>
+        </SearchOverlay>
 
-        {searchOpen && (
-          <Pressable
-            style={styles.searchBackdrop}
-            onPress={() => {
-              closeSearch();
-            }}
-          />
-        )}
-
-        {searchOpen && dropdownOpen && searchText.length > 0 && (
-          <GlassView style={styles.searchDropdown}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {searchLoading ? (
-                <View style={styles.searchResultItem}>
-                  <Text style={styles.searchResultNoneText}>Loading...</Text>
-                </View>
-              ) : searchResults.length > 0 ? (
-                searchResults.map((user) => (
-                  <TouchableOpacity
-                    key={user.uid}
-                    style={styles.searchResultItem}
-                    onPress={() => sendFriendRequest(user.uid)}
-                    disabled={
-                      friendsMap[user.uid] ||
-                      sentMap[user.uid] ||
-                      receivedMap[user.uid]
-                    }
-                  >
-                    <View style={manageFriendsStyles.friendInfo}>
-                      <Text style={manageFriendsStyles.friendName}>
-                        {user.name}
-                      </Text>
-                      <Text style={manageFriendsStyles.friendUsername}>
-                        @{user.username}
-                      </Text>
-                    </View>
-
-                    {friendsMap[user.uid] ? (
-                      <Ionicons
-                        name="people-circle"
-                        size={24}
-                        color="#63a4e1"
-                      />
-                    ) : sentMap[user.uid] || receivedMap[user.uid] ? (
-                      <Ionicons name="time-outline" size={24} color="#999" />
-                    ) : (
-                      <Ionicons
-                        name="person-add-outline"
-                        size={24}
-                        color="#000"
-                      />
-                    )}
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <View style={styles.searchResultItem}>
-                  <Text style={styles.searchResultNoneText}>No Results</Text>
-                </View>
-              )}
-            </ScrollView>
-          </GlassView>
-        )}
-
+        {/* ===== MAIN TAB SYSTEM ===== */}
         {!searchOpen && (
           <View style={manageFriendsStyles.tabContainer}>
             <SubTab.Navigator
               key={activeTab}
               initialRouteName={activeTab}
               screenOptions={{
-                tabBarIndicatorStyle: manageFriendsStyles.tabIndicator,
+                tabBarIndicatorStyle:
+                  manageFriendsStyles.tabIndicator,
                 tabBarLabelStyle: manageFriendsStyles.tabLabel,
                 tabBarStyle: manageFriendsStyles.tabBar,
                 sceneStyle: { backgroundColor: "transparent" },
@@ -869,6 +858,7 @@ const ManageFriends = () => {
             </SubTab.Navigator>
           </View>
         )}
+
       </SafeAreaView>
     </ImageBackground>
   );

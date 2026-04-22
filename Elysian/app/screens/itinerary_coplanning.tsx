@@ -1,3 +1,4 @@
+// React Imports
 import React, { useEffect, useMemo, useState } from "react";
 import {
     View,
@@ -7,6 +8,10 @@ import {
     TouchableOpacity,
     Pressable,
 } from "react-native";
+import { Button, TextInput } from "react-native-paper";
+
+// Firebase Imports
+import { getAuth } from "firebase/auth";
 import {
     doc,
     onSnapshot,
@@ -15,16 +20,16 @@ import {
     deleteDoc,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
+
+// File Imports
 import { styles } from "../styles/app_styles.styles";
-import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
-import { Ionicons } from "@expo/vector-icons";
-import { Button, TextInput } from "react-native-paper";
-import { GlassView } from "expo-glass-effect";
 import { itineraryStyles } from "../styles/itinerary.styles";
-import { getAuth } from "firebase/auth";
+import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
 
+// Other Imports
+import { GlassView } from "expo-glass-effect";
+import { Ionicons } from "@expo/vector-icons";
 
-/* ------------------ TYPES ------------------ */
 
 type Activity = {
     name: string;
