@@ -74,25 +74,18 @@ const Favorites = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selectedCity, setSelectedCity] = useState<Recommendation | null>(null);
-  const [cityModalOpen, setCityModalOpen] = useState(false);
-
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
 
   const doubleTap = useRef<number | null>(null);
-  const [sortOption, setSortOption] = useState<"newest" | "alphabetical">(
-    "newest"
-  );
+  const [sortOption, setSortOption] = useState<"newest" | "alphabetical">("newest");
 
   const handlePress = async (city: Recommendation) => {
     const now = Date.now();
     if (doubleTap.current && now - doubleTap.current < 300) {
       await triggerLightHaptic();
-      setSelectedCity(city);
-      setCityModalOpen(true);
     }
     doubleTap.current = now;
   };
