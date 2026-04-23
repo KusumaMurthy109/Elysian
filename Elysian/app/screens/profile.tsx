@@ -17,6 +17,10 @@ import {
 import { Text, Button, TextInput } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { GlassView } from "expo-glass-effect";
+import * as ImagePicker from "expo-image-picker";
+
 import {
   onAuthStateChanged,
   User,
@@ -26,12 +30,10 @@ import {
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import { query, where, collection, getDocs, orderBy } from "firebase/firestore";
+import { setDoc, onSnapshot } from "firebase/firestore";
+
 import { styles, inputTheme } from "../styles/app_styles.styles";
 import { profileStyles } from "../styles/profile.styles";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { GlassView } from "expo-glass-effect";
-import * as ImagePicker from "expo-image-picker";
-import { setDoc, onSnapshot } from "firebase/firestore";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import UserItineraries from "./user_itineraries";
 import UserPosts from "./user_posts";
@@ -73,9 +75,6 @@ const Profile = () => {
   const [editedUsername, setEditedUsername] = useState(""); // Temporary value for when user is editing
   const [error, setError] = useState(""); // Stores error
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uloading, setUploading] = useState(true);
-  const [loadingUser, setLoadingUser] = useState(true);
-
   const [menuVisible, setMenuVisible] = useState(false);
 
   const auth = getAuth();
@@ -154,7 +153,6 @@ const Profile = () => {
             setUsername(data.username);
             setProfileImage(data.profileImage || null);
           }
-          setLoadingUser(false);
         });
         return unsubscribeSnapshot;
       }
@@ -220,7 +218,6 @@ const Profile = () => {
       console.error(error);
       Alert.alert("Upload failed");
     } finally {
-      setUploading(false);
     }
   };
 
