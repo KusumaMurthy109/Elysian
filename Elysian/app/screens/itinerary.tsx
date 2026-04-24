@@ -6,24 +6,16 @@ import {
   TouchableOpacity,
   Alert,
   Image,
-  Keyboard,
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, TextInput, Button } from "react-native-paper";
+import { Text, Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  RouteProp,
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 import { itineraryStyles } from "../styles/itinerary.styles";
 import { styles } from "../styles/app_styles.styles";
-import type { FavoritesStackParamList } from "./navigation_bar";
 import { Calendar } from "react-native-calendars";
-
 
 import { getAuth } from "firebase/auth";
 import { addDoc, collection, doc, onSnapshot } from "firebase/firestore";
@@ -32,7 +24,6 @@ import PenguinLoader from "./penguin_loader";
 import { itinerarySubTabStyles } from "../styles/user_itineraries.styles";
 
 import SearchOverlay from "../components/search_overlay_component";
-
 
 type FavCity = {
   id: string;
@@ -65,12 +56,8 @@ const FILTER_OPTIONS: { label: string; value: ActivityCategory }[] = [
   { label: "Entertainment", value: "entertainment" },
 ];
 
-type ItineraryRouteProp = RouteProp<FavoritesStackParamList, "Itinerary">;
-
 const Itinerary = () => {
   const navigation = useNavigation();
-  const route = useRoute<ItineraryRouteProp>();
-
   const [favoritesCities, setFavoritesCities] = useState<FavCity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +70,6 @@ const Itinerary = () => {
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
 
-
   // Favorites-style search UI state
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,7 +79,6 @@ const Itinerary = () => {
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [activityOptions, setActivityOptions] = useState<Activity[]>([]);
 
-
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
 
@@ -101,7 +86,7 @@ const Itinerary = () => {
   const isItineraryListMode = !!selectedCity;
 
   const [selectedFilters, setSelectedFilters] = useState<ActivityCategory[]>(
-    []
+    [],
   );
 
   const showActivitiesUI =
@@ -115,7 +100,7 @@ const Itinerary = () => {
         setSearchQuery("");
         setDropdownOpen(false);
       };
-    }, [])
+    }, []),
   );
 
   // Load favorited cities (userFavorites) in realtime
@@ -168,7 +153,7 @@ const Itinerary = () => {
         setError("Failed to load favorite cities.");
         setFavoritesCities([]);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -178,14 +163,14 @@ const Itinerary = () => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
     return favoritesCities.filter((c) =>
-      `${c.name}, ${c.country}`.toLowerCase().includes(q)
+      `${c.name}, ${c.country}`.toLowerCase().includes(q),
     );
   }, [favoritesCities, searchQuery]);
 
   const handleSelectCity = (city: FavCity) => {
     closeSearch();
-    setPendingCity(city);      // store city temporarily
-    setDateModalVisible(true); // open modal    
+    setPendingCity(city); // store city temporarily
+    setDateModalVisible(true); // open modal
   };
 
   const onDayPress = (day: CalendarDay) => {
@@ -246,8 +231,6 @@ const Itinerary = () => {
     return marked;
   };
 
-
-
   const confirmDates = () => {
     if (!startDate || !endDate) {
       Alert.alert("Missing dates", "Please select a start and end date.");
@@ -264,9 +247,6 @@ const Itinerary = () => {
       getActivities(pendingCity);
     }
   };
-
-
-
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -290,7 +270,7 @@ const Itinerary = () => {
   const visibleActivities = useMemo(() => {
     if (selectedFilters.length === 0) return activityOptions; // no filters = show all
     return activityOptions.filter((a) =>
-      selectedFilters.includes(a.category as ActivityCategory)
+      selectedFilters.includes(a.category as ActivityCategory),
     );
   }, [activityOptions, selectedFilters]);
 
@@ -305,16 +285,14 @@ const Itinerary = () => {
     return groups;
   }, [visibleActivities]);
 
-
   const getActivities = async (city: FavCity) => {
     setActivitiesLoading(true);
     setActivitiesError(null);
     const tripLength =
       Math.floor(
         (new Date(tripEnd).getTime() - new Date(tripStart).getTime()) /
-        (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24),
       ) + 1;
-
 
     try {
       const res = await fetch(
@@ -327,7 +305,7 @@ const Itinerary = () => {
             country: city.country,
             tripLength,
           }),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Failed to fetch activities.");
@@ -347,7 +325,6 @@ const Itinerary = () => {
     });
     return groups;
   };
-
 
   const saveItinerary = async () => {
     try {
@@ -423,7 +400,6 @@ const Itinerary = () => {
       console.error("Error saving itinerary:", err);
     }
   };
-
 
   return (
     <SafeAreaView style={styles.solidSafeArea} edges={["top"]}>
@@ -502,9 +478,7 @@ const Itinerary = () => {
                 ))
               ) : (
                 <View style={styles.searchResultItem}>
-                  <Text style={styles.searchResultNoneText}>
-                    No Results
-                  </Text>
+                  <Text style={styles.searchResultNoneText}>No Results</Text>
                 </View>
               )}
             </ScrollView>
@@ -553,7 +527,10 @@ const Itinerary = () => {
                         onPress={() =>
                           setSelectedFilters(
                             (prev) =>
-                              toggleInArray(prev, f.value) as ActivityCategory[]
+                              toggleInArray(
+                                prev,
+                                f.value,
+                              ) as ActivityCategory[],
                           )
                         }
                         style={[
@@ -565,7 +542,7 @@ const Itinerary = () => {
                           style={[
                             itineraryStyles.itineraryPillText,
                             selected &&
-                            itineraryStyles.itineraryPillTextSelected,
+                              itineraryStyles.itineraryPillTextSelected,
                           ]}
                         >
                           {f.label}
@@ -583,46 +560,50 @@ const Itinerary = () => {
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={{ paddingBottom: 200 }}
                   >
-                    {Object.entries(groupedByLocation).map(([location, activities]) => (
-                      <View key={location} style={{ marginBottom: 25 }}>
-                        <Text
-                          style={{
-                            fontSize: 20,
-                            fontWeight: "700",
-                            marginBottom: 10,
-                            color: "#333",
-                          }}
-                        >
-                          {location}
-                        </Text>
+                    {Object.entries(groupedByLocation).map(
+                      ([location, activities]) => (
+                        <View key={location} style={{ marginBottom: 25 }}>
+                          <Text
+                            style={{
+                              fontSize: 20,
+                              fontWeight: "700",
+                              marginBottom: 10,
+                              color: "#333",
+                            }}
+                          >
+                            {location}
+                          </Text>
 
-                        {activities.map((a) => {
-                          const checked = selectedActivities.includes(a.name);
-                          return (
-                            <TouchableOpacity
-                              key={a.name}
-                              onPress={() =>
-                                setSelectedActivities((prev) =>
-                                  toggleInArray(prev, a.name)
-                                )
-                              }
-                              style={itineraryStyles.itineraryActivityRow}
-                            >
-                              <View
-                                style={[
-                                  itineraryStyles.itineraryCheckbox,
-                                  checked && itineraryStyles.itineraryCheckboxChecked,
-                                ]}
-                              />
-                              <Text style={itineraryStyles.itineraryActivityText}>
-                                {a.name}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                    ))}
-
+                          {activities.map((a) => {
+                            const checked = selectedActivities.includes(a.name);
+                            return (
+                              <TouchableOpacity
+                                key={a.name}
+                                onPress={() =>
+                                  setSelectedActivities((prev) =>
+                                    toggleInArray(prev, a.name),
+                                  )
+                                }
+                                style={itineraryStyles.itineraryActivityRow}
+                              >
+                                <View
+                                  style={[
+                                    itineraryStyles.itineraryCheckbox,
+                                    checked &&
+                                      itineraryStyles.itineraryCheckboxChecked,
+                                  ]}
+                                />
+                                <Text
+                                  style={itineraryStyles.itineraryActivityText}
+                                >
+                                  {a.name}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      ),
+                    )}
 
                     {selectedCity && selectedActivities.length > 0 && (
                       <Button
@@ -657,19 +638,14 @@ const Itinerary = () => {
 
           <View style={itineraryStyles.dateModalContainer}>
             <View style={{ width: "100%" }}>
-
-              <Text style={itinerarySubTabStyles.shareTitle}>
-                Travel Dates
-              </Text>
+              <Text style={itinerarySubTabStyles.shareTitle}>Travel Dates</Text>
 
               <Text style={itinerarySubTabStyles.shareCitySubtitle}>
                 {pendingCity?.name}, {pendingCity?.country}
               </Text>
 
               {/* Calendar Date Range Picker */}
-              <GlassView
-                style={itineraryStyles.calendarContainer}
-              >
+              <GlassView style={itineraryStyles.calendarContainer}>
                 <Calendar
                   onDayPress={onDayPress}
                   markingType="period"
