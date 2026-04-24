@@ -6,6 +6,7 @@
  *
  */
 
+// React Imports
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -18,11 +19,11 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { styles } from "../styles/app_styles.styles";
-import { homeStyles } from "../styles/home.styles";
-import { favoritesStyles } from "../styles/favorites.styles";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+// Firebase Imports
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import {
   collection,
@@ -38,17 +39,21 @@ import {
   arrayUnion,
   getDoc,
 } from "firebase/firestore";
-import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { GlassView } from "expo-glass-effect";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { HomeStackParamList } from "./navigation_bar";
 import { getAuth } from "firebase/auth";
-import PostItem, { Post } from "../components/post_component";
-import { triggerSuccessHaptic, triggerLightHaptic } from "../utils/effects";
 
+// File Imports 
+import PostItem, { Post } from "../components/post_component";
 import SearchOverlay from "../components/search_overlay_component";
+import { styles } from "../styles/app_styles.styles";
+import { homeStyles } from "../styles/home.styles";
+import { favoritesStyles } from "../styles/favorites.styles";
+import type { HomeStackParamList } from "./navigation_bar";
+
+// Other Imports
+import { triggerSuccessHaptic, triggerLightHaptic } from "../utils/effects";
+import * as ImagePicker from "expo-image-picker";
+import { GlassView } from "expo-glass-effect";
+import { Ionicons } from "@expo/vector-icons";
 
 
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
@@ -61,30 +66,16 @@ interface City {
 
 const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [expandedReview, setExpandedReview] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [userFavorites, setUserFavorites] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [expandedReview, setExpandedReview] = useState<{[key: string]: boolean;}>({});
+  const [userFavorites, setUserFavorites] = useState<{[key: string]: boolean;}>({});
   const navigation = useNavigation<HomeNavigationProp>();
-  const [postImageIndices, setPostImageIndices] = useState<{
-    [postId: string]: number;
-  }>({});
+  const [postImageIndices, setPostImageIndices] = useState<{[postId: string]: number;}>({});
   const [userLikes, setUserLikes] = useState<{ [postId: string]: boolean }>({});
-  const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>(
-    {}
-  );
+  const [userFriends, setUserFriends] = useState<{ [uid: string]: boolean }>({});
   const currentUser = getAuth().currentUser;
-  const [friendRequestsSent, setFriendRequestsSent] = useState<{
-    [uid: string]: boolean;
-  }>({});
-  const [friendRequestsReceieved, setFriendRequestsReceieved] = useState<{
-    [uid: string]: boolean;
-  }>({});
-  const [activeTab, setActiveTab] = useState<"community" | "friends">(
-    "community"
-  );
+  const [friendRequestsSent, setFriendRequestsSent] = useState<{[uid: string]: boolean;}>({});
+  const [friendRequestsReceieved, setFriendRequestsReceieved] = useState<{[uid: string]: boolean;}>({});
+  const [activeTab, setActiveTab] = useState<"community" | "friends">("community");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -94,10 +85,7 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Screen focused → do nothing
-
       return () => {
-        // Screen blurred → reset UI state
         setSearchOpen(false);
         setSearchQuery("");
         setDropdownOpen(false);
