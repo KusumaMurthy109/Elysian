@@ -6,35 +6,25 @@ import {
   Pressable,
   Image,
   ImageBackground,
-  Keyboard,
 } from "react-native";
-import { Text, TextInput } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import { getAuth } from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  collection,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 import { styles } from "../styles/app_styles.styles";
 import { manageFriendsStyles } from "../styles/manage_friends.styles";
-import PenguinLoader from "./penguin_loader";
+import AddFriendsSearch from "../components/add_friends_search_component";
 import {
   triggerLightHaptic,
   triggerSuccessHaptic,
   triggerErrorHaptic,
 } from "../utils/effects";
-
-import SearchOverlay from "../components/search_overlay_component";
 
 type Friend = {
   uid: string;
@@ -99,6 +89,7 @@ const FriendsTab = ({
         .filter((info) => info.exists())
         .map((info) => {
           const fData = info.data();
+
           return {
             uid: info.id,
             name: fData?.name || "Unknown User",
@@ -157,7 +148,7 @@ const FriendsTab = ({
     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
       {loading ? (
         <View style={manageFriendsStyles.friendEmpty}>
-          <PenguinLoader textSize={20} textWeight={600}></PenguinLoader>
+          <Text style={manageFriendsStyles.emptyText}>Loading...</Text>
         </View>
       ) : friends.length === 0 ? (
         <View style={manageFriendsStyles.friendEmpty}>
@@ -177,6 +168,7 @@ const FriendsTab = ({
                 @{friend.username}
               </Text>
             </View>
+
             <TouchableOpacity onPress={() => removeFriend(friend.uid)}>
               <Ionicons name="remove" size={24} color="#000" />
             </TouchableOpacity>
@@ -232,6 +224,7 @@ const RequestsTab = ({
 
         if (senderSnap.exists()) {
           const senderData = senderSnap.data();
+
           requestUsers.push({
             uid: senderUid,
             name: senderData?.name || "Unknown User",
@@ -334,7 +327,7 @@ const RequestsTab = ({
     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
       {loading ? (
         <View style={manageFriendsStyles.friendEmpty}>
-          <PenguinLoader textSize={20} textWeight={600}></PenguinLoader>
+          <Text style={manageFriendsStyles.emptyText}>Loading...</Text>
         </View>
       ) : friendRequests.length === 0 ? (
         <View style={manageFriendsStyles.friendEmpty}>
@@ -354,10 +347,12 @@ const RequestsTab = ({
                 @{friend.username}
               </Text>
             </View>
+
             <View style={manageFriendsStyles.iconContainer}>
               <TouchableOpacity onPress={() => approveRequest(friend.uid)}>
                 <Ionicons name="checkmark-sharp" size={24} color="#000" />
               </TouchableOpacity>
+
               <TouchableOpacity onPress={() => rejectRequest(friend.uid)}>
                 <Ionicons name="close" size={24} color="#000" />
               </TouchableOpacity>
@@ -414,6 +409,7 @@ const RequestsSentTab = ({
 
         if (userSnap.exists()) {
           const userData = userSnap.data();
+
           sentUsers.push({
             uid: toUid,
             name: userData?.name || "Unknown User",
@@ -468,7 +464,7 @@ const RequestsSentTab = ({
     <ScrollView contentContainerStyle={manageFriendsStyles.scrollContainer}>
       {loading ? (
         <View style={manageFriendsStyles.friendEmpty}>
-          <PenguinLoader textSize={20} textWeight={600}></PenguinLoader>
+          <Text style={manageFriendsStyles.emptyText}>Loading...</Text>
         </View>
       ) : sentRequests.length === 0 ? (
         <View style={manageFriendsStyles.friendEmpty}>
@@ -490,6 +486,7 @@ const RequestsSentTab = ({
                 @{friend.username}
               </Text>
             </View>
+
             <TouchableOpacity onPress={() => removeRequest(friend.uid)}>
               <Ionicons name="remove" size={24} color="#000" />
             </TouchableOpacity>
@@ -506,167 +503,18 @@ const ManageFriends = () => {
   const navigation = useNavigation();
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<Friend[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("Friends");
-
-  const [friendsMap, setFriendsMap] = useState<{ [uid: string]: boolean }>({});
-  const [sentMap, setSentMap] = useState<{ [uid: string]: boolean }>({});
-  const [receivedMap, setReceivedMap] = useState<{ [uid: string]: boolean }>(
-    {}
-  );
 
   useFocusEffect(
     useCallback(() => {
       return () => {
         setSearchOpen(false);
-        setSearchText("");
-        setDropdownOpen(false);
       };
     }, [])
   );
 
-  const closeSearch = async () => {
-    await triggerLightHaptic();
-    setSearchOpen(false);
-    setSearchText("");
-    setSearchResults([]);
-    setDropdownOpen(false);
-    setSearchLoading(false);
-    Keyboard.dismiss();
-  };
-
-  const loadRelationshipMaps = async () => {
-    if (!currentUser) return;
-
-    try {
-      const userRef = doc(FIREBASE_DB, "users", currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      const data = userSnap.data();
-
-      const friendsArray: string[] = data?.friends || [];
-      const sentRequests: FriendRequestSent[] = data?.friendRequestsSent || [];
-      const incomingRequests: FriendRequestReceived[] =
-        data?.friendRequests || [];
-
-      const nextFriendsMap: { [uid: string]: boolean } = {};
-      friendsArray.forEach((uid) => {
-        nextFriendsMap[uid] = true;
-      });
-
-      const nextSentMap: { [uid: string]: boolean } = {};
-      sentRequests.forEach((req) => {
-        nextSentMap[req.to] = true;
-      });
-
-      const nextReceivedMap: { [uid: string]: boolean } = {};
-      incomingRequests.forEach((req) => {
-        nextReceivedMap[req.from] = true;
-      });
-
-      setFriendsMap(nextFriendsMap);
-      setSentMap(nextSentMap);
-      setReceivedMap(nextReceivedMap);
-    } catch (error) {
-      console.error("Error loading friend relationship maps:", error);
-    }
-  };
-
-  useEffect(() => {
-    loadRelationshipMaps();
-  }, []);
-
-  const handleSearchUsers = async (text: string) => {
-    if (!currentUser) return;
-
-    const trimmed = text.trim().toLowerCase();
-
-    if (!trimmed) {
-      setSearchResults([]);
-      setDropdownOpen(false);
-      setSearchLoading(false);
-      return;
-    }
-
-    setSearchLoading(true);
-    setDropdownOpen(true);
-
-    try {
-      await loadRelationshipMaps();
-
-      const usersSnap = await getDocs(collection(FIREBASE_DB, "users"));
-
-      const matchedUsers: Friend[] = usersSnap.docs
-        .filter((userDoc) => userDoc.id !== currentUser.uid)
-        .map((userDoc) => {
-          const data = userDoc.data();
-          return {
-            uid: userDoc.id,
-            name: data.name,
-            username: data.username,
-          };
-        })
-        .filter(
-          (user) =>
-            user.name &&
-            user.username &&
-            (user.name.toLowerCase().includes(trimmed) ||
-              user.username.toLowerCase().includes(trimmed))
-        );
-
-      setSearchResults(matchedUsers);
-    } catch (error) {
-      console.error("Error searching users:", error);
-      setSearchResults([]);
-    }
-
-    setSearchLoading(false);
-  };
-
-  const sendFriendRequest = async (friendUid: string) => {
-    if (!currentUser) return;
-
-    if (
-      friendUid === currentUser.uid ||
-      friendsMap[friendUid] ||
-      sentMap[friendUid] ||
-      receivedMap[friendUid]
-    ) {
-      return;
-    }
-
-    try {
-      await triggerSuccessHaptic();
-
-      const senderRef = doc(FIREBASE_DB, "users", currentUser.uid);
-      const receiverRef = doc(FIREBASE_DB, "users", friendUid);
-
-      const receiverSnap = await getDoc(receiverRef);
-      const receiverData = receiverSnap.data();
-
-      const pendingStatus = (receiverData?.friendRequests || []).some(
-        (req: FriendRequestReceived) => req.from === currentUser.uid
-      );
-
-      if (pendingStatus) return;
-
-      const timestamp = Date.now();
-
-      await updateDoc(receiverRef, {
-        friendRequests: arrayUnion({ from: currentUser.uid, timestamp }),
-      });
-
-      await updateDoc(senderRef, {
-        friendRequestsSent: arrayUnion({ to: friendUid, timestamp }),
-      });
-
-      await loadRelationshipMaps();
-      await handleSearchUsers(searchText);
-    } catch (error) {
-      console.error("Error sending friend request:", error);
-    }
+  const handleRelationshipsChanged = async () => {
+    return;
   };
 
   return (
@@ -697,108 +545,19 @@ const ManageFriends = () => {
           </View>
         )}
 
-        <SearchOverlay
+        <AddFriendsSearch
           searchOpen={searchOpen}
-          setSearchOpen={(val) => {
-            if (!val) {
-              setSearchOpen(false);
-              setSearchText("");
-              setSearchResults([]);
-              setDropdownOpen(false);
-              setSearchLoading(false);
-              Keyboard.dismiss();
-            } else {
-              setSearchOpen(true);
-            }
-          }}
-          value={searchText}
-          onChange={(text) => {
-            setSearchText(text);
-            handleSearchUsers(text);
-          }}
-          placeholder="Search users..."
-          onClose={() => {
-            setSearchOpen(false);
-            setSearchText("");
-            setSearchResults([]);
-            setDropdownOpen(false);
-            setSearchLoading(false);
-          }}
-        >
-          {/* Dropdown results */}
-          {dropdownOpen && searchText.length > 0 && (
-            <GlassView style={styles.searchDropdown}>
-              <ScrollView keyboardShouldPersistTaps="handled">
+          setSearchOpen={setSearchOpen}
+          onRelationshipsChanged={handleRelationshipsChanged}
+        />
 
-                {searchLoading ? (
-                  <View style={styles.searchResultItem}>
-                    <Text style={styles.searchResultNoneText}>
-                      Loading...
-                    </Text>
-                  </View>
-                ) : searchResults.length > 0 ? (
-                  searchResults.map((user) => (
-                    <TouchableOpacity
-                      key={user.uid}
-                      style={styles.searchResultItem}
-                      onPress={() => sendFriendRequest(user.uid)}
-                      disabled={
-                        friendsMap[user.uid] ||
-                        sentMap[user.uid] ||
-                        receivedMap[user.uid]
-                      }
-                    >
-                      <View style={manageFriendsStyles.friendInfo}>
-                        <Text style={manageFriendsStyles.friendName}>
-                          {user.name}
-                        </Text>
-                        <Text style={manageFriendsStyles.friendUsername}>
-                          @{user.username}
-                        </Text>
-                      </View>
-
-                      {friendsMap[user.uid] ? (
-                        <Ionicons
-                          name="people-circle"
-                          size={24}
-                          color="#63a4e1"
-                        />
-                      ) : sentMap[user.uid] || receivedMap[user.uid] ? (
-                        <Ionicons
-                          name="time-outline"
-                          size={24}
-                          color="#999"
-                        />
-                      ) : (
-                        <Ionicons
-                          name="person-add-outline"
-                          size={24}
-                          color="#000"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <View style={styles.searchResultItem}>
-                    <Text style={styles.searchResultNoneText}>
-                      No Results
-                    </Text>
-                  </View>
-                )}
-              </ScrollView>
-            </GlassView>
-          )}
-        </SearchOverlay>
-
-        {/* ===== MAIN TAB SYSTEM ===== */}
         {!searchOpen && (
           <View style={manageFriendsStyles.tabContainer}>
             <SubTab.Navigator
               key={activeTab}
               initialRouteName={activeTab}
               screenOptions={{
-                tabBarIndicatorStyle:
-                  manageFriendsStyles.tabIndicator,
+                tabBarIndicatorStyle: manageFriendsStyles.tabIndicator,
                 tabBarLabelStyle: manageFriendsStyles.tabLabel,
                 tabBarStyle: manageFriendsStyles.tabBar,
                 sceneStyle: { backgroundColor: "transparent" },
@@ -815,7 +574,9 @@ const ManageFriends = () => {
               >
                 {() => (
                   <View style={manageFriendsStyles.tabContent}>
-                    <FriendsTab onRelationshipsChanged={loadRelationshipMaps} />
+                    <FriendsTab
+                      onRelationshipsChanged={handleRelationshipsChanged}
+                    />
                   </View>
                 )}
               </SubTab.Screen>
@@ -832,7 +593,7 @@ const ManageFriends = () => {
                 {() => (
                   <View style={manageFriendsStyles.tabContent}>
                     <RequestsTab
-                      onRelationshipsChanged={loadRelationshipMaps}
+                      onRelationshipsChanged={handleRelationshipsChanged}
                     />
                   </View>
                 )}
@@ -850,7 +611,7 @@ const ManageFriends = () => {
                 {() => (
                   <View style={manageFriendsStyles.tabContent}>
                     <RequestsSentTab
-                      onRelationshipsChanged={loadRelationshipMaps}
+                      onRelationshipsChanged={handleRelationshipsChanged}
                     />
                   </View>
                 )}
@@ -858,7 +619,6 @@ const ManageFriends = () => {
             </SubTab.Navigator>
           </View>
         )}
-
       </SafeAreaView>
     </ImageBackground>
   );
