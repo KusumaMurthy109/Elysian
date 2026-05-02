@@ -18,6 +18,7 @@ import {
   Pressable,
   TouchableOpacity,
   ImageBackground,
+  Modal,
 } from "react-native";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { Text } from "react-native-paper";
@@ -74,18 +75,25 @@ const Favorites = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedCity, setSelectedCity] = useState<Recommendation | null>(null);
+  const [cityModalOpen, setCityModalOpen] = useState(false);
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
 
   const doubleTap = useRef<number | null>(null);
-  const [sortOption, setSortOption] = useState<"newest" | "alphabetical">("newest");
+  const [sortOption, setSortOption] = useState<"newest" | "alphabetical">(
+    "newest"
+  );
 
   const handlePress = async (city: Recommendation) => {
     const now = Date.now();
     if (doubleTap.current && now - doubleTap.current < 300) {
       await triggerLightHaptic();
+      setSelectedCity(city);
+      setCityModalOpen(true);
     }
     doubleTap.current = now;
   };
@@ -490,6 +498,49 @@ const Favorites = () => {
             )}
           </>
         )}
+        <Modal
+          visible={cityModalOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setCityModalOpen(false)}
+        >
+          <View style={styles.modalDimOverlay}>
+            <Pressable
+              style={{ position: "absolute", width: "100%", height: "100%" }}
+              onPress={async () => {
+                await triggerLightHaptic();
+                setCityModalOpen(false);
+              }}
+            />
+
+            {selectedCity && (
+              <View style={styles.cityModalContainer}>
+                <ScrollView contentContainerStyle={styles.cityModalContent}>
+                  {selectedCity.image && (
+                    <Image
+                      source={{ uri: selectedCity.image }}
+                      style={styles.cityModalImage}
+                      resizeMode="cover"
+                    />
+                  )}
+
+                  <Text style={styles.cityModalTitle}>
+                    {selectedCity.city_name}, {selectedCity.country}
+                  </Text>
+
+                  <Text style={styles.cityModalDescriptionLabel}>
+                    Description:
+                  </Text>
+
+                  <Text style={styles.cityModalDescription}>
+                    {selectedCity.description ||
+                      `${selectedCity.city_name} is a destination known for its culture, atmosphere, and local attractions.`}
+                  </Text>
+                </ScrollView>
+              </View>
+            )}
+          </View>
+        </Modal>
       </SafeAreaView>
     </ImageBackground>
   );

@@ -267,11 +267,25 @@ const Home = () => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
+
       if (!user) {
         console.error("User not signed in.");
         return;
       }
+
       const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      const cityRef = doc(FIREBASE_DB, "allCities", city.id);
+      const citySnap = await getDoc(cityRef);
+
+      let description = null;
+      let image = null;
+
+      if (citySnap.exists()) {
+        const data = citySnap.data();
+        description = data.description || null;
+        image = data.url || null;
+      }
 
       await setDoc(
         userFavoritesRef,
@@ -279,6 +293,8 @@ const Home = () => {
           [city.id]: {
             city_name: city.name,
             country_name: city.country,
+            description,
+            image,
           },
         },
         { merge: true }
